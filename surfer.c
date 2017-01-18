@@ -125,6 +125,7 @@ void
     c->webView = webkit_web_view_new();
   web_context= webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
 
+
     gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->webView));
 
     g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroyWindowCb), c);
@@ -133,6 +134,9 @@ void
    g_signal_connect(c->webView, "key-press-event",G_CALLBACK(keyboard), c);
    //g_signal_connect(c->webView, "create", G_CALLBACK(client_request), NULL);
     g_signal_connect(c->webView, "decide-policy",G_CALLBACK(decide_policy), c);
+
+
+
 
     gtk_widget_grab_focus(GTK_WIDGET(c->webView));
     gtk_widget_show_all(c->main_window);
@@ -143,6 +147,11 @@ void
 //g_object_set (settings, "user-agent", &value, NULL);	
      webkit_web_view_set_settings (WEBKIT_WEB_VIEW(c->webView), settings);
 webkit_settings_set_enable_webgl( settings,  enabled);
+g_object_set (G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
+
+
+
+
 
  if (uri != NULL)
     {
@@ -206,13 +215,14 @@ keyboard( GtkWidget *widget, GdkEvent *event, gpointer data)
   
  //WebKitWebContext *web_context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
 
+WebKitWebInspector *inspector;
+
    FILE *File;
   char buffer[256]= "</body></html>";
 
  //  gchar *link;
   const gchar * url;
 const gchar* tmp;  
-
 
 if (event->type == GDK_KEY_PRESS)
   {
@@ -231,6 +241,12 @@ if (event->type == GDK_KEY_PRESS)
 
                 case GDK_KEY_Right:
                 webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
+                        return TRUE;
+
+         case GDK_KEY_s:
+         inspector = webkit_web_view_get_inspector (WEBKIT_WEB_VIEW(c->webView));
+webkit_web_inspector_show (inspector);
+
                         return TRUE;
 
 

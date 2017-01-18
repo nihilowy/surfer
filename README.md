@@ -40,3 +40,5 @@ alt + b - bookmark site ( to remove just edit file with links:  .fav
 in your home dir)   
 
 Esc - stop loading
+
+alt + s - web inspector (page  source )
