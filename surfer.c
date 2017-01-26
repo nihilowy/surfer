@@ -440,9 +440,9 @@ int main(int argc, char* argv[])
 
 {
    int  i;
-    gchar *cookiefilename,*cookiepath;  
+    gchar *cookiefilename,*cookiepath,*Cookie;  
     gchar *favfilename;
-FILE *File;
+FILE *File,*File1;
   char buffer[256]= "<html><head></head><body bgcolor=black>";
 
     gtk_init(&argc, &argv);
@@ -458,7 +458,15 @@ webkit_cookie_manager_set_accept_policy(
 cookiepath = g_build_filename(getenv("HOME"), cookiefilename, NULL);
     g_free(cookiefilename);
     if (!g_file_test(cookiepath, G_FILE_TEST_EXISTS))
-        mkdir(cookiepath, 0600);
+{        
+mkdir(cookiepath, 0700);
+
+cookiefilename=g_strdup_printf("%s", "cookie");
+Cookie = g_build_filename(cookiepath,cookiefilename, NULL);
+File1 = fopen(Cookie,"wb+");
+                  fclose(File1);
+ g_free(cookiefilename);
+}
 
 webkit_cookie_manager_set_persistent_storage(webkit_web_context_get_cookie_manager(web_context),".cookies/cookie",WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
 
