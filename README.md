@@ -42,3 +42,5 @@ in your home dir)
 Esc - stop loading
 
 alt + s - web inspector (page  source )
+
+alt + r - reload page
