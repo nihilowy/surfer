@@ -254,6 +254,7 @@ webkit_web_inspector_show (inspector);
                         return TRUE;
                  case GDK_KEY_h:
                        webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), home);
+			return TRUE;
  		case GDK_KEY_r:
                        webkit_web_view_reload(WEBKIT_WEB_VIEW(c->webView));
                         return TRUE;
