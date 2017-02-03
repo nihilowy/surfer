@@ -36,11 +36,11 @@ struct Client {
 GtkWidget *main_window;
 GtkWidget *webView;
 GtkWidget *entry;
-GtkWidget *entry1;
+GtkWidget *entry_open;
 GtkWidget *box;
 GtkWidget  *window;
-GtkWidget *box1;
-GtkWidget  *window1;
+GtkWidget *box_open;
+GtkWidget  *window_open;
 int f;
 
 
@@ -164,16 +164,16 @@ g_free(link);
 g_signal_connect(G_OBJECT(c->window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(G_OBJECT(c->entry), "activate",G_CALLBACK(find), c);
 
-     c->window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-     gtk_window_set_default_size(GTK_WINDOW(c->window1), 350, 70);
-     gtk_window_set_title(GTK_WINDOW(c->window1), "open");
-      c->entry1= gtk_entry_new ();
+     c->window_open = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+     gtk_window_set_default_size(GTK_WINDOW(c->window_open), 350, 70);
+     gtk_window_set_title(GTK_WINDOW(c->window_open), "open");
+      c->entry_open= gtk_entry_new ();
 
- c->box1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(c->box1),c->entry1, TRUE, TRUE, 0);
-      gtk_container_add(GTK_CONTAINER(c->window1), c->box1);
-g_signal_connect(G_OBJECT(c->window1), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    g_signal_connect(G_OBJECT(c->entry1), "activate",G_CALLBACK(openlink), c);
+ c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
+      gtk_container_add(GTK_CONTAINER(c->window_open), c->box_open);
+g_signal_connect(G_OBJECT(c->window_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    g_signal_connect(G_OBJECT(c->entry_open), "activate",G_CALLBACK(openlink), c);
 
 
   clients++;
@@ -243,10 +243,10 @@ webkit_web_inspector_show (inspector);
 
 
                     case GDK_KEY_o:
-              gtk_widget_show_all(c->window1);
+              gtk_widget_show_all(c->window_open);
 
               url = webkit_web_view_get_uri (WEBKIT_WEB_VIEW(c->webView));
-             gtk_entry_set_text(GTK_ENTRY(c->entry1),url);
+             gtk_entry_set_text(GTK_ENTRY(c->entry_open),url);
 		//g_free(url);
                         return TRUE;
                    case GDK_KEY_n:
@@ -377,13 +377,13 @@ void openlink(GtkWidget *widget,gpointer data)
   struct Client *c = (struct Client *)data;
 gchar *link;
 const gchar *p;
-p= gtk_entry_get_text(GTK_ENTRY(c->entry1));
+p= gtk_entry_get_text(GTK_ENTRY(c->entry_open));
 
   link= ensure_uri_scheme(p);
      webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
 g_free(link);
 
-gtk_widget_hide (c->window1);
+gtk_widget_hide (c->window_open);
 }
 
 
