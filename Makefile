@@ -11,3 +11,4 @@ surfer: surfer.c
 
 install:all
 	sudo mv  surfer /usr/bin/
+	sudo cp  surfer.desktop /usr/share/applications/
