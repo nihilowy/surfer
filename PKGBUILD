@@ -11,7 +11,7 @@ license=('GPL')
 
 depends=('webkit2gtk')
 
-source=("$pkgname-$pkgver.tar.gz::https://github.com/nihilowy/surfer.git")
+source=("git+https://github.com/nihilowy/surfer.git")
 
 
 
