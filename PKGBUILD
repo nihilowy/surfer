@@ -1,5 +1,5 @@
 
-# Maintainer: nihilowy < at gmail dot com>
+# Maintainer: nihilowy <nihilowy at gmail dot com>
 pkgname=surfer
 pkgver=1
 pkgrel=1
