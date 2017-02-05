@@ -11,13 +11,13 @@ license=('GPL')
 
 depends=('webkit2gtk')
 
-source=("$pkgname-$pkgver.tar.gz::https://github.com/nihilowy/$pkgname-$pkgver.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::https://github.com/nihilowy/surfer.git")
 
 
 
 
 build() {
-	cd "$pkgname-master"
+	cd "$pkgname-$pkgver"
 	make
 }
 
@@ -27,4 +27,4 @@ package() {
 	cd "$pkgname-$pkgver"
 	make DESTDIR="$pkgdir/" install
 }
-md5sums=('73454dfa10b9fe9c1a5e0b68064dc183')
+md5sums=('21639801431746e77ced2641bad3bbe1')
