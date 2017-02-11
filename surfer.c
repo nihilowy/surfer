@@ -148,7 +148,7 @@ g_object_set (G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
  if (uri != NULL)
     {
         link= ensure_uri_scheme(uri);    
-     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), uri);
+     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
 g_free(link);
 }
 
@@ -431,10 +431,10 @@ tls_certs(WebKitWebContext *wc)
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 
 {
-   int  i;
+   int i;
     gchar *cookiefilename,*cookiepath,*Cookie;  
     gchar *favfilename;
 FILE *File,*File1;
@@ -480,14 +480,21 @@ File = fopen(favpath,"wb+");
 }
 
 home = g_build_filename("file:/", favpath, NULL);
+gchar *link;
+      
+if (argc > 1)
+{
+    for (i = 1; i < argc; i++)
+{
 
-    if (optind >= argc)
-     client_new(home);
-    else
-    {
-        for (i = optind; i < argc; i++)
-            client_new(argv[i]);
-    }
+link = argv[i];
+printf("%s\n",link);
+//
+client_new(link);
+}
+}
+else
+client_new(home);
 
     gtk_main();
 
