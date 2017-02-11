@@ -488,8 +488,7 @@ if (argc > 1)
 {
 
 link = argv[i];
-printf("%s\n",link);
-//
+
 client_new(link);
 }
 }
