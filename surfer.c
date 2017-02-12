@@ -21,6 +21,7 @@ static gboolean client_destroy_request(WebKitWebView *, gpointer data);
 static gboolean keyboard(GtkWidget *, GdkEvent *, gpointer);
 static void changed_title(GObject *, GParamSpec *, gpointer);
 static  void client_new( gchar *);
+//static WebKitWebView *create_request( gpointer);
 static gboolean decide_policy(WebKitWebView *, WebKitPolicyDecision *, WebKitPolicyDecisionType, gpointer);
 
 static void find(GtkWidget * ,gpointer);
@@ -30,7 +31,6 @@ static gint clients = 0;
 
 gchar  *home;
 gchar  *favpath;
-//static WebKitWebContext *web_context;
 struct Client {
 
 GtkWidget *main_window;
@@ -69,15 +69,7 @@ client_destroy_request( WebKitWebView *webView, gpointer data)
 
 }
 
-/*
-WebKitWebView *
 
-client_request(WebKitWebView *web_view)
-{
-    return client_new(NULL);
-}
-
-*/
 
 
 //from lariza browser
@@ -120,12 +112,12 @@ void
 
     gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->webView));
 
-    g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroyWindowCb), c);
-  g_signal_connect(c->webView, "notify::title", G_CALLBACK(changed_title), c);
+   g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroyWindowCb), c);
+   g_signal_connect(c->webView, "notify::title", G_CALLBACK(changed_title), c);
    g_signal_connect(c->webView, "close", G_CALLBACK(client_destroy_request), c	);
    g_signal_connect(c->webView, "key-press-event",G_CALLBACK(keyboard), c);
-   //g_signal_connect(c->webView, "create", G_CALLBACK(client_request), NULL);
-    g_signal_connect(c->webView, "decide-policy",G_CALLBACK(decide_policy), c);
+  // g_signal_connect(c->webView, "create", G_CALLBACK(create_request), c);
+   g_signal_connect(c->webView, "decide-policy",G_CALLBACK(decide_policy), c);
 
 
 
@@ -205,7 +197,6 @@ keyboard( GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     struct Client *c = (struct Client *)data;
   
- //WebKitWebContext *web_context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
 
 WebKitWebInspector *inspector;
 
@@ -215,6 +206,7 @@ WebKitWebInspector *inspector;
  //  gchar *link;
   const gchar * url;
 const gchar* tmp;  
+gdouble z;
 
 if (event->type == GDK_KEY_PRESS)
   {
@@ -302,6 +294,20 @@ webkit_web_inspector_show (inspector);
             webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
            return TRUE;
         }
+	 else if (((GdkEventKey *)event)->keyval == GDK_KEY_F5)
+       {
+		z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+		     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
+	return TRUE;
+	}
+	else if (((GdkEventKey *)event)->keyval == GDK_KEY_F6)
+       {
+			z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+		     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
+           return TRUE;
+	}
+
+
   }
   return FALSE;
 }
@@ -318,7 +324,6 @@ decide_policy( WebKitWebView *webView, WebKitPolicyDecision *decision,
     	guint button, mods;
    gchar *link;
    const gchar *t;
- //struct Client *c = (struct Client *)data;
 
     switch (type)
     {
@@ -470,12 +475,10 @@ favpath = g_build_filename(getenv("HOME"), favfilename, NULL);
     g_free(favfilename);
 
     if (!g_file_test(favpath, G_FILE_TEST_EXISTS))
-     //   mkdir(favpath, 0600);
 {
 
 File = fopen(favpath,"wb+");
      fprintf(File, "%s",buffer);
-                   // g_free(&tmp);   
                   fclose(File);
 }
 

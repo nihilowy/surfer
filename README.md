@@ -44,3 +44,7 @@ Esc - stop loading
 alt + s - web inspector (page  source )
 
 alt + r - reload page
+
+F5 - zoom in
+
+F6 - zoom out
