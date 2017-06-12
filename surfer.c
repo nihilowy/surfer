@@ -133,7 +133,7 @@ void
 webkit_settings_set_enable_webgl( settings,  enabled);
 g_object_set (G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
 
-
+webkit_web_context_set_tls_errors_policy(web_context, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
 
 
 
