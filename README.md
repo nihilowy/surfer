@@ -1,7 +1,6 @@
 #surfer
-about:
 
-surfer
+about surfer
 
 my try of webkitgtk web browser.No tabs.  Based on webkit2gtk and gtk3.
 lariza and epiphany, surf inspired.
@@ -11,11 +10,11 @@ No xlibs dependency - works on wayland, weston.
 No adsblock - but recommend /etc/hosts block  list from  sites like someonewhocares.org ( but only ads secction, whole is too long).
 
 
-compile  and install: 
+#compile  and install: 
 
 make && make install
 
-shortcuts:
+#shortcuts:
 
 
 ctrl + click link - open link in new window
