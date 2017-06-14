@@ -1,9 +1,8 @@
 #surfer
 
-about surfer
+Simple  keyboard based web browser. No tabs.
 
-my try of webkitgtk web browser.No tabs.  Based on webkit2gtk and gtk3.
-lariza and epiphany, surf inspired.
+ Based on webkit2gtk and  gtk3. lariza and epiphany, surf inspired.
 
 No xlibs dependency - works on wayland, weston.
 
