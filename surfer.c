@@ -137,6 +137,8 @@ webkit_web_context_set_tls_errors_policy(web_context, WEBKIT_TLS_ERRORS_POLICY_I
 
 
 
+
+
  if (uri != NULL)
     {
         link= ensure_uri_scheme(uri);    
@@ -448,6 +450,9 @@ FILE *File,*File1;
     gtk_init(&argc, &argv);
 WebKitWebContext *web_context;
  web_context = webkit_web_context_get_default();
+
+
+webkit_web_context_set_process_model(web_context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
 webkit_cookie_manager_set_accept_policy(
 			webkit_web_context_get_cookie_manager(web_context),
