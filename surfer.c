@@ -97,7 +97,18 @@ void
  client_new( gchar *uri){
     struct Client *c;
     gchar *link;
+    gchar *cookiefilename,*cookiepath,*Cookie,*cachedir;
+    FILE *File1;
     WebKitWebContext *web_context;
+cachedir =  g_build_filename(getenv("HOME"), ".cache", NULL);
+
+web_context = webkit_web_context_new_with_website_data_manager(
+		          webkit_website_data_manager_new(
+		          "base-cache-directory", cachedir,
+		          "base-data-directory", cachedir,
+		          NULL));
+
+//webkit_web_context_set_process_model(web_context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
  c = malloc(sizeof(struct Client));
 
@@ -135,6 +146,28 @@ g_object_set (G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
 
 webkit_web_context_set_tls_errors_policy(web_context, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
 
+
+
+webkit_cookie_manager_set_accept_policy(
+			webkit_web_context_get_cookie_manager(web_context),
+			WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY);
+//mkdir (".cookies");
+	//tell webkit where to store cookies
+ cookiefilename=g_strdup_printf("%s", ".cookies");
+cookiepath = g_build_filename(getenv("HOME"), cookiefilename, NULL);
+    g_free(cookiefilename);
+    if (!g_file_test(cookiepath, G_FILE_TEST_EXISTS))
+{        
+mkdir(cookiepath, 0700);
+
+cookiefilename=g_strdup_printf("%s", "cookie");
+Cookie = g_build_filename(cookiepath,cookiefilename, NULL);
+File1 = fopen(Cookie,"wb+");
+                  fclose(File1);
+ g_free(cookiefilename);
+}
+
+webkit_cookie_manager_set_persistent_storage(webkit_web_context_get_cookie_manager(web_context),".cookies/cookie",WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
 
 
 
@@ -442,38 +475,15 @@ int main(int argc, char *argv[])
 
 {
    int i;
-    gchar *cookiefilename,*cookiepath,*Cookie;  
+
     gchar *favfilename;
-FILE *File,*File1;
+FILE *File;
   char buffer[256]= "<html><head></head><body bgcolor=black>";
 
     gtk_init(&argc, &argv);
-WebKitWebContext *web_context;
- web_context = webkit_web_context_get_default();
+webkit_web_context_set_process_model(webkit_web_context_get_default(),
+        WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
-
-webkit_web_context_set_process_model(web_context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
-
-webkit_cookie_manager_set_accept_policy(
-			webkit_web_context_get_cookie_manager(web_context),
-			WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY);
-//mkdir (".cookies");
-	//tell webkit where to store cookies
- cookiefilename=g_strdup_printf("%s", ".cookies");
-cookiepath = g_build_filename(getenv("HOME"), cookiefilename, NULL);
-    g_free(cookiefilename);
-    if (!g_file_test(cookiepath, G_FILE_TEST_EXISTS))
-{        
-mkdir(cookiepath, 0700);
-
-cookiefilename=g_strdup_printf("%s", "cookie");
-Cookie = g_build_filename(cookiepath,cookiefilename, NULL);
-File1 = fopen(Cookie,"wb+");
-                  fclose(File1);
- g_free(cookiefilename);
-}
-
-webkit_cookie_manager_set_persistent_storage(webkit_web_context_get_cookie_manager(web_context),".cookies/cookie",WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
 
 favfilename=g_strdup_printf("%s", ".fav");
 favpath = g_build_filename(getenv("HOME"), favfilename, NULL);
