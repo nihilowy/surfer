@@ -150,7 +150,7 @@ webkit_web_context_set_tls_errors_policy(web_context, WEBKIT_TLS_ERRORS_POLICY_I
 
 webkit_cookie_manager_set_accept_policy(
 			webkit_web_context_get_cookie_manager(web_context),
-			WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY);
+			WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS);
 //mkdir (".cookies");
 	//tell webkit where to store cookies
  cookiefilename=g_strdup_printf("%s", ".cookies");
