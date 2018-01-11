@@ -12,6 +12,22 @@
 #include <gio/gio.h>
 #include <webkit2/webkit2.h>
 
+#define SURFER_META_MASK            GDK_CONTROL_MASK
+#define SURFER_NEW_WINDOW_KEY       GDK_KEY_n
+#define SURFER_OPEN_KEY             GDK_KEY_o
+#define SURFER_CLOSE_KEY            GDK_KEY_q
+#define SURFER_BACK_KEY             GDK_KEY_H
+#define SURFER_FORWARD_KEY          GDK_KEY_L
+#define SURFER_STOP_KEY             GDK_KEY_Escape
+#define SURFER_RELOAD_KEY           GDK_KEY_r
+#define SURFER_FIND_KEY             GDK_KEY_slash
+#define SURFER_HOME_KEY             GDK_KEY_h
+#define SURFER_BOOKMARK_KEY         GDK_KEY_b
+#define SURFER_INSPECTOR_KEY        GDK_KEY_i
+#define SURFER_ZOOM_IN_KEY          GDK_KEY_equal
+#define SURFER_ZOOM_OUT_KEY         GDK_KEY_minus
+#define SURFER_FULLSCREEN_KEY       GDK_KEY_F11
+
 static gchar *ensure_uri_scheme(const gchar *);
 
 static void destroyWindowCb(GtkWidget *obj, gpointer data);
@@ -203,55 +219,55 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
     WebKitWebInspector *inspector;
     FILE *File;
     char buffer[256] = "</body></html>";
-    //  gchar *link;
+    //gchar *link;
     const gchar *url;
     const gchar *tmp;
     gdouble z;
 
     if (event->type == GDK_KEY_PRESS) {
-        if (((GdkEventKey *) event)->state & GDK_MOD1_MASK) {
+        if (((GdkEventKey *) event)->state & SURFER_META_MASK) {
             switch (((GdkEventKey *) event)->keyval) {
-                case GDK_KEY_q:
+                case SURFER_CLOSE_KEY:
                     gtk_widget_destroy(c->main_window);
                     return TRUE;
 
-                case GDK_KEY_Left:
+                case SURFER_BACK_KEY:
                     webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
-                case GDK_KEY_Right:
+                case SURFER_FORWARD_KEY:
                     webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
-                case GDK_KEY_s:
+                case SURFER_INSPECTOR_KEY:
                     inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(c->webView));
                     webkit_web_inspector_show(inspector);
                     return TRUE;
 
-                case GDK_KEY_o:
+                case SURFER_OPEN_KEY:
                     gtk_widget_show_all(c->window_open);
                     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
                     gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
                     //g_free(url);
                     return TRUE;
 
-                case GDK_KEY_n:
+                case SURFER_NEW_WINDOW_KEY:
                     client_new(home);
                     return TRUE;
 
-                case GDK_KEY_h:
+                case SURFER_HOME_KEY:
                     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), home);
                     return TRUE;
 
-                case GDK_KEY_r:
+                case SURFER_RELOAD_KEY:
                     webkit_web_view_reload(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
-                case GDK_KEY_f:
+                case SURFER_FIND_KEY:
                     gtk_widget_show_all(c->window);
                     return TRUE;
 
-                case GDK_KEY_b:
+                case SURFER_BOOKMARK_KEY:
                     File = fopen(favpath, "a");
                     //if(File== NULL)
                     tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
@@ -260,7 +276,7 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
                     fclose(File);
                     return TRUE;
             }
-        } else if (((GdkEventKey *) event)->keyval == GDK_KEY_F11) {
+        } else if (((GdkEventKey *) event)->keyval == SURFER_FULLSCREEN_KEY) {
             if (c->f == 0) {
                 gtk_window_fullscreen(GTK_WINDOW(c->main_window));
                 c->f = 1;
@@ -269,20 +285,14 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
                 c->f = 0;
             }
             return TRUE;
-        } else if (((GdkEventKey *) event)->keyval == GDK_KEY_F2) {
-            webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
-            return TRUE;
-        } else if (((GdkEventKey *) event)->keyval == GDK_KEY_F3) {
-            webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
-            return TRUE;
-        } else if (((GdkEventKey *) event)->keyval == GDK_KEY_Escape) {
+        } else if (((GdkEventKey *) event)->keyval == SURFER_STOP_KEY) {
             webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
             return TRUE;
-        } else if (((GdkEventKey *) event)->keyval == GDK_KEY_F5) {
+        } else if (((GdkEventKey *) event)->keyval == SURFER_ZOOM_IN_KEY) {
             z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
             webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
             return TRUE;
-        } else if (((GdkEventKey *) event)->keyval == GDK_KEY_F6) {
+        } else if (((GdkEventKey *) event)->keyval == SURFER_ZOOM_OUT_KEY) {
             z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
             webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
             return TRUE;
