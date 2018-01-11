@@ -293,7 +293,7 @@ webkit_web_inspector_show (inspector);
                  File = fopen(favpath, "a");
                  //if(File== NULL)
                  tmp=webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-                 fprintf(File, "<a href=\"%s\" >%s</a><br>", (char *) tmp,(char *) tmp);
+                 fprintf(File, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp,(char *) tmp);
                   fprintf(File, "%s\n",buffer);
                   fclose(File);
 			          return TRUE;
