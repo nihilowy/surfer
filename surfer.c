@@ -64,7 +64,7 @@ struct Client {
 };
 
 static void
-destroyWindowCb(GtkWidget *obj, gpointer data) {
+destroyWindowCb(GtkWidget *obj __attribute__((__unused__)), gpointer data) {
     struct Client *c = (struct Client *) data;
     free(c);
     clients--;
@@ -74,7 +74,7 @@ destroyWindowCb(GtkWidget *obj, gpointer data) {
 }
 
 gboolean
-client_destroy_request(WebKitWebView *webView, gpointer data) {
+client_destroy_request(WebKitWebView *webView __attribute__((__unused__)), gpointer data) {
     struct Client *c = (struct Client *) data;
 
     gtk_widget_destroy(c->main_window);
@@ -103,16 +103,16 @@ void
 client_new(gchar *uri) {
     struct Client *c;
     gchar *link;
-    gchar *cookiefilename, *cookiepath, *Cookie, *cachedir;
+    gchar *cookiefilename, *cookiepath, *Cookie;//, *cachedir;
     FILE *File1;
     WebKitWebContext *web_context;
-    cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
+    //cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
 
-    web_context = webkit_web_context_new_with_website_data_manager(
+    /*web_context = webkit_web_context_new_with_website_data_manager(
             webkit_website_data_manager_new(
                     "base-cache-directory", cachedir,
                     "base-data-directory", cachedir,
-                    NULL));
+                    NULL));*/
     //webkit_web_context_set_process_model(web_context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
     c = malloc(sizeof(struct Client));
@@ -203,7 +203,7 @@ client_new(gchar *uri) {
 }
 
 void
-changed_title(GObject *obj, GParamSpec *pspec, gpointer data) {
+changed_title(GObject *obj __attribute__((__unused__)), GParamSpec *pspec __attribute__((__unused__)), gpointer data) {
     const gchar *t;
     struct Client *c = (struct Client *) data;
 
@@ -212,7 +212,7 @@ changed_title(GObject *obj, GParamSpec *pspec, gpointer data) {
 }
 
 gboolean
-keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
+keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointer data) {
     struct Client *c = (struct Client *) data;
     WebKitWebInspector *inspector;
     FILE *File;
@@ -298,6 +298,8 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
                     fprintf(File, "%s\n", buffer);
                     fclose(File);
                     return TRUE;
+                default:
+                    return FALSE;
             }
         } else {
             switch (key_pressed) {
@@ -324,6 +326,8 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
                     z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
                     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
                     return TRUE;
+                default:
+                    return FALSE;
             }
         }
     }
@@ -331,8 +335,8 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
 }
 
 gboolean
-decide_policy(WebKitWebView *webView, WebKitPolicyDecision *decision,
-              WebKitPolicyDecisionType type, gpointer data) {
+decide_policy(WebKitWebView *webView __attribute__((__unused__)), WebKitPolicyDecision *decision,
+              WebKitPolicyDecisionType type, gpointer data __attribute__((__unused__)) ) {
     WebKitResponsePolicyDecision *r;
     WebKitNavigationType navigation_type;
     WebKitNavigationPolicyDecision *navigationDecision;
@@ -395,7 +399,7 @@ decide_policy(WebKitWebView *webView, WebKitPolicyDecision *decision,
 }
 
 void
-openlink(GtkWidget *widget, gpointer data) {
+openlink(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     struct Client *c = (struct Client *) data;
     gchar *link;
     const gchar *p;
@@ -408,7 +412,7 @@ openlink(GtkWidget *widget, gpointer data) {
 }
 
 void
-find(GtkWidget *widget, gpointer data) {
+find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     struct Client *c = (struct Client *) data;
     static gchar *search_text;
     const gchar *p;
