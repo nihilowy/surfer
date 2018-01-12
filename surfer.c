@@ -27,6 +27,10 @@
 #define SURFER_ZOOM_IN_KEY          GDK_KEY_equal
 #define SURFER_ZOOM_OUT_KEY         GDK_KEY_minus
 #define SURFER_FULLSCREEN_KEY       GDK_KEY_F11
+#define SURFER_SCROLL_DOWN          GDK_KEY_j
+#define SURFER_SCROLL_UP            GDK_KEY_k
+#define SURFER_SCROLL_PAGE_DOWN     GDK_KEY_D
+#define SURFER_SCROLL_PAGE_UP       GDK_KEY_U
 
 static gchar *ensure_uri_scheme(const gchar *);
 
@@ -223,10 +227,35 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
     const gchar *url;
     const gchar *tmp;
     gdouble z;
+    bool meta_key_pressed;
+    int key_pressed;
 
     if (event->type == GDK_KEY_PRESS) {
-        if (((GdkEventKey *) event)->state & SURFER_META_MASK) {
-            switch (((GdkEventKey *) event)->keyval) {
+        key_pressed = ((GdkEventKey *) event)->keyval;
+        meta_key_pressed = ((GdkEventKey *) event)->state & SURFER_META_MASK;
+
+        if (meta_key_pressed) {
+            switch (key_pressed) {
+                case SURFER_SCROLL_DOWN:
+                    event->key.keyval = GDK_KEY_Down;
+                    gdk_event_put(event);
+                    return TRUE;
+
+                case SURFER_SCROLL_UP:
+                    event->key.keyval = GDK_KEY_Up;
+                    gdk_event_put(event);
+                    return TRUE;
+
+                case SURFER_SCROLL_PAGE_UP:
+                    event->key.keyval = GDK_KEY_Page_Up;
+                    gdk_event_put(event);
+                    return TRUE;
+
+                case SURFER_SCROLL_PAGE_DOWN:
+                    event->key.keyval = GDK_KEY_Page_Down;
+                    gdk_event_put(event);
+                    return TRUE;
+
                 case SURFER_CLOSE_KEY:
                     gtk_widget_destroy(c->main_window);
                     return TRUE;
@@ -276,26 +305,32 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
                     fclose(File);
                     return TRUE;
             }
-        } else if (((GdkEventKey *) event)->keyval == SURFER_FULLSCREEN_KEY) {
-            if (c->f == 0) {
-                gtk_window_fullscreen(GTK_WINDOW(c->main_window));
-                c->f = 1;
-            } else {
-                gtk_window_unfullscreen(GTK_WINDOW(c->main_window));
-                c->f = 0;
+        } else {
+            switch (key_pressed) {
+                case SURFER_FULLSCREEN_KEY:
+                    if (c->f == 0) {
+                        gtk_window_fullscreen(GTK_WINDOW(c->main_window));
+                        c->f = 1;
+                    } else {
+                        gtk_window_unfullscreen(GTK_WINDOW(c->main_window));
+                        c->f = 0;
+                    }
+                    return TRUE;
+
+                case SURFER_STOP_KEY:
+                    webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
+                    return TRUE;
+
+                case SURFER_ZOOM_IN_KEY:
+                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
+                    return TRUE;
+
+                case SURFER_ZOOM_OUT_KEY:
+                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
+                    return TRUE;
             }
-            return TRUE;
-        } else if (((GdkEventKey *) event)->keyval == SURFER_STOP_KEY) {
-            webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
-            return TRUE;
-        } else if (((GdkEventKey *) event)->keyval == SURFER_ZOOM_IN_KEY) {
-            z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
-            webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
-            return TRUE;
-        } else if (((GdkEventKey *) event)->keyval == SURFER_ZOOM_OUT_KEY) {
-            z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
-            webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
-            return TRUE;
         }
     }
     return FALSE;
@@ -425,6 +460,7 @@ int main(int argc, char *argv[]) {
     gchar *link;
 
     gtk_init(&argc, &argv);
+
     webkit_web_context_set_process_model(webkit_web_context_get_default(),
                                          WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
