@@ -27,10 +27,10 @@
 #define SURFER_ZOOM_IN_KEY          GDK_KEY_equal
 #define SURFER_ZOOM_OUT_KEY         GDK_KEY_minus
 #define SURFER_FULLSCREEN_KEY       GDK_KEY_F11
-#define SURFER_SCROLL_DOWN          GDK_KEY_j
-#define SURFER_SCROLL_UP            GDK_KEY_k
-#define SURFER_SCROLL_PAGE_DOWN     GDK_KEY_D
-#define SURFER_SCROLL_PAGE_UP       GDK_KEY_U
+#define SURFER_SCROLL_DOWN_KEY      GDK_KEY_j
+#define SURFER_SCROLL_UP_KEY        GDK_KEY_k
+#define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_D
+#define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_U
 
 static gchar *ensure_uri_scheme(const gchar *);
 
@@ -227,7 +227,7 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
     const gchar *url;
     const gchar *tmp;
     gdouble z;
-    bool meta_key_pressed;
+    guint meta_key_pressed;
     int key_pressed;
 
     if (event->type == GDK_KEY_PRESS) {
@@ -236,22 +236,22 @@ keyboard(GtkWidget *widget, GdkEvent *event, gpointer data) {
 
         if (meta_key_pressed) {
             switch (key_pressed) {
-                case SURFER_SCROLL_DOWN:
+                case SURFER_SCROLL_DOWN_KEY:
                     event->key.keyval = GDK_KEY_Down;
                     gdk_event_put(event);
                     return TRUE;
 
-                case SURFER_SCROLL_UP:
+                case SURFER_SCROLL_UP_KEY:
                     event->key.keyval = GDK_KEY_Up;
                     gdk_event_put(event);
                     return TRUE;
 
-                case SURFER_SCROLL_PAGE_UP:
+                case SURFER_SCROLL_PAGE_UP_KEY:
                     event->key.keyval = GDK_KEY_Page_Up;
                     gdk_event_put(event);
                     return TRUE;
 
-                case SURFER_SCROLL_PAGE_DOWN:
+                case SURFER_SCROLL_PAGE_DOWN_KEY:
                     event->key.keyval = GDK_KEY_Page_Down;
                     gdk_event_put(event);
                     return TRUE;
