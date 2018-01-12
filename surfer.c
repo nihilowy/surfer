@@ -294,7 +294,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     File = fopen(favpath, "a");
                     //if(File== NULL)
                     tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-                    fprintf(File, "<a href=\"%s\" >%s</a><br>", (char *) tmp, (char *) tmp);
+                    fprintf(File, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) tmp);
                     fprintf(File, "%s\n", buffer);
                     fclose(File);
                     return TRUE;
@@ -317,10 +317,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
-                case SURFER_ZOOM_IN_KEY:
-                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
-                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
-                    return TRUE;
+
 
                 case SURFER_ZOOM_OUT_KEY:
                     z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
@@ -375,7 +372,7 @@ decide_policy(WebKitWebView *webView __attribute__((__unused__)), WebKitPolicyDe
             navigation_type = webkit_navigation_action_get_navigation_type(navigation_action);
 
             if (navigation_type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
-
+entry
                 t = (gchar *) webkit_uri_request_get_uri(request);
                 link = ensure_uri_scheme(t);
                 client_new(link);
@@ -421,7 +418,7 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     WebKitFindController *fc = webkit_web_view_get_find_controller(web_View);
 
     p = gtk_entry_get_text(GTK_ENTRY(c->entry));
-    //gtk_entry_set_text(GTK_ENTRY(entry),p); //?
+    
     gtk_widget_grab_focus((c->webView));
 
     if (search_text != NULL)
@@ -438,11 +435,11 @@ tls_certs(WebKitWebContext *wc) {
     GTlsCertificate *certificate;
     const gchar *basedir, *keyfile;
 
-    basedir = g_build_filename(g_get_user_config_dir(), "/usr/bin/bro", "certs", NULL);
+    basedir = g_build_filename(g_get_user_config_dir(), "/usr/bin/surfer", "certs", NULL);
     directory = g_dir_open(basedir, 0, NULL);
 
     if (directory != NULL) {
-        keyfile = g_build_filename(g_get_user_config_dir(), "/usr/bin/bro", "certs", NULL);
+        keyfile = g_build_filename(g_get_user_config_dir(), "/usr/bin/surfer, "certs", NULL);
 
         certificate = g_tls_certificate_new_from_file(keyfile, NULL);
         webkit_web_context_allow_tls_certificate_for_host(wc, certificate, keyfile);
