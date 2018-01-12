@@ -1,48 +1,55 @@
-#surfer
+# Surfer
 
-Simple  keyboard based web browser. No tabs.
+Simple keyboard based web browser. No tabs.
 
- Based on webkit2gtk and  gtk3. lariza and epiphany, surf inspired.
+Based on webkit2gtk and gtk3. Lariza and Epiphany, Surf inspired.
 
-No xlibs dependency - works on wayland, weston.
+No xlibs dependency &mdash; works on wayland, weston.
 
-No adsblock - but recommend /etc/hosts block  list from  sites like someonewhocares.org ( but only ads secction, whole is too long).
+No adsblock &mdash; but recommend `/etc/hosts block` list from  sites like someonewhocares.org (but only ads secction, whole is too long).
 
+## Compile and install:
 
-#compile  and install: 
+    make && make install
 
-make && make install
+## Shortcuts:
 
-#shortcuts:
+`Ctrl + click` link &mdash; open link in new window
 
+`Ctrl + n` &mdash; new window
 
-ctrl + click link - open link in new window
+`Ctrl + shift + h` &mdash; go back
 
-F2 / alt + left - go back
+`Ctrl + shift + l` &mdash; go forward
 
-F3 / alt + right - go forward
+`Ctrl + q` &mdash; quit
 
-F11 - toogle fullscreen
+`Esc` &mdash; stop loading
 
-alt + h  -  home ( bookmarks list )
- 
-alt + n - new window
+`Ctrl + h` &mdash; home (bookmarks list)
 
-alt + q - quit
+`Ctrl + b` &mdash; bookmark site (to remove just edit file with links: .fav in your home dir)
 
-alt + o - enter new link to open ( and shows current url)
+`Ctrl + o` &mdash; enter new link to open (and shows current url)
 
-alt - f - find word
+`Ctrl + f` &mdash; find word
 
-alt + b - bookmark site ( to remove just edit file with links:  .fav 
-in your home dir)   
+`Ctrl + r` &mdash; reload page
 
-Esc - stop loading
+`Ctrl + =` &mdash; zoom in
 
-alt + s - web inspector (page  source )
+`Ctrl + -` &mdash; zoom out
 
-alt + r - reload page
+`Ctrl + j` &mdash; scroll down
 
-F5 - zoom in
+`Ctrl + k` &mdash; scroll up
 
-F6 - zoom out
+`Ctrl + Shift + u` &mdash; page up
+
+`Ctrl + Shift + d` &mdash; page down
+
+`Ctrl + i` &mdash; web inspector (page source)
+
+`F11` &mdash; toogle fullscreen
+
+**Edit `surfer.c` to change hotkeys**
