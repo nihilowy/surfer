@@ -298,6 +298,14 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     fprintf(File, "%s\n", buffer);
                     fclose(File);
                     return TRUE;
+		case SURFER_ZOOM_OUT_KEY:
+                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
+                    return TRUE;
+		case SURFER_ZOOM_IN_KEY:
+                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
+                    return TRUE;
                 default:
                     return FALSE;
             }
@@ -317,12 +325,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
-
-
-                case SURFER_ZOOM_OUT_KEY:
-                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
-                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
-                    return TRUE;
+                
                 default:
                     return FALSE;
             }
@@ -372,7 +375,7 @@ decide_policy(WebKitWebView *webView __attribute__((__unused__)), WebKitPolicyDe
             navigation_type = webkit_navigation_action_get_navigation_type(navigation_action);
 
             if (navigation_type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
-entry
+
                 t = (gchar *) webkit_uri_request_get_uri(request);
                 link = ensure_uri_scheme(t);
                 client_new(link);
@@ -439,7 +442,7 @@ tls_certs(WebKitWebContext *wc) {
     directory = g_dir_open(basedir, 0, NULL);
 
     if (directory != NULL) {
-        keyfile = g_build_filename(g_get_user_config_dir(), "/usr/bin/surfer, "certs", NULL);
+        keyfile = g_build_filename(g_get_user_config_dir(), "/usr/bin/surfer", "certs", NULL);
 
         certificate = g_tls_certificate_new_from_file(keyfile, NULL);
         webkit_web_context_allow_tls_certificate_for_host(wc, certificate, keyfile);
