@@ -1,15 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
 #include <gdk/gdk.h>
 
 #include <gtk/gtk.h>
-#include <gtk/gtkx.h>
-#include <gdk/gdkkeysyms.h>
-#include <gio/gio.h>
 #include <webkit2/webkit2.h>
 
 #define SURFER_META_MASK            GDK_CONTROL_MASK
