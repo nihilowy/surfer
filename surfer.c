@@ -26,9 +26,11 @@
 #define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_D
 #define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_U
 
+#define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
+
 static gchar *ensure_uri_scheme(const gchar *);
 
-static void destroyWindowCb(GtkWidget *obj, gpointer data);
+static void destroy_window(GtkWidget *obj, gpointer data);
 
 static void tls_certs(WebKitWebContext *);
 
@@ -64,7 +66,7 @@ struct Client {
 };
 
 static void
-destroyWindowCb(GtkWidget *obj __attribute__((__unused__)), gpointer data) {
+destroy_window(GtkWidget *obj __attribute__((__unused__)), gpointer data) {
     struct Client *c = (struct Client *) data;
     free(c);
     clients--;
@@ -103,8 +105,10 @@ void
 client_new(gchar *uri) {
     struct Client *c;
     gchar *link;
-    gchar *cookiefilename, *cookiepath, *Cookie;//, *cachedir;
-    FILE *File1;
+    gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL),
+          *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
+          //, *cachedir;
+    FILE *cookie_file_handler;
     WebKitWebContext *web_context;
     //cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
 
@@ -127,7 +131,7 @@ client_new(gchar *uri) {
 
     gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->webView));
 
-    g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroyWindowCb), c);
+    g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroy_window), c);
     g_signal_connect(c->webView, "notify::title", G_CALLBACK(changed_title), c);
     g_signal_connect(c->webView, "close", G_CALLBACK(client_destroy_request), c);
     g_signal_connect(c->webView, "key-press-event", G_CALLBACK(keyboard), c);
@@ -149,25 +153,18 @@ client_new(gchar *uri) {
 
     webkit_cookie_manager_set_accept_policy(
             webkit_web_context_get_cookie_manager(web_context),
-            WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS);
-    //mkdir (".cookies");
-    //tell webkit where to store cookies
-    cookiefilename = g_strdup_printf("%s", ".cookies");
-    cookiepath = g_build_filename(getenv("HOME"), cookiefilename, NULL);
-    g_free(cookiefilename);
-    if (!g_file_test(cookiepath, G_FILE_TEST_EXISTS)) {
-        mkdir(cookiepath, 0700);
+            SURFER_COOKIE_POLICY);
 
-        cookiefilename = g_strdup_printf("%s", "cookie");
-        Cookie = g_build_filename(cookiepath, cookiefilename, NULL);
-        File1 = fopen(Cookie, "wb+");
-        fclose(File1);
-        g_free(cookiefilename);
+    //tell webkit where to store cookies
+    if (!g_file_test(cookies_path, G_FILE_TEST_EXISTS)) {
+        mkdir(cookies_path, 0700);
+        cookie_file_handler = fopen(cookie_file, "wb+");
+        fclose(cookie_file_handler);
     }
 
     webkit_cookie_manager_set_persistent_storage(
-            webkit_web_context_get_cookie_manager(web_context), ".cookies/cookie",
-            WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
+            webkit_web_context_get_cookie_manager(web_context), cookie_file,
+            WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT); // as mentioned in surf sources only text storage works
 
     if (uri != NULL) {
         link = ensure_uri_scheme(uri);
@@ -298,14 +295,17 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     fprintf(File, "%s\n", buffer);
                     fclose(File);
                     return TRUE;
-		case SURFER_ZOOM_OUT_KEY:
+
+                case SURFER_ZOOM_OUT_KEY:
                     z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
                     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
                     return TRUE;
-		case SURFER_ZOOM_IN_KEY:
+
+                case SURFER_ZOOM_IN_KEY:
                     z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
                     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
                     return TRUE;
+
                 default:
                     return FALSE;
             }
@@ -325,7 +325,6 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
-                
                 default:
                     return FALSE;
             }
@@ -421,7 +420,7 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     WebKitFindController *fc = webkit_web_view_get_find_controller(web_View);
 
     p = gtk_entry_get_text(GTK_ENTRY(c->entry));
-    
+
     gtk_widget_grab_focus((c->webView));
 
     if (search_text != NULL)
