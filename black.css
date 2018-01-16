@@ -1,0 +1,21 @@
+/*
+ * NIGHTSHIFT - eye care:
+ * A darkening style for all websites.
+ * by vetinari - 2009
+ * contact: vetinari.userstyles@inode.at
+ */
+
+body,html { min-height: 100%!important; }
+
+html, body { background-color:#111!important }
+
+body>*:not(:empty){ background-color:#222!important }
+
+body>*>*:not(:empty){ background-color:#222!important }
+
+body>*>*>*:not(:empty){ background-color:#282828!important }
+
+body>*>*>*>*:not(:empty){ background-color:#282828!important }
+
+body>*>*>*>*>*:not(:empty){ background-color:#383838!important }
+

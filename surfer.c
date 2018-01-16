@@ -25,9 +25,15 @@
 #define SURFER_SCROLL_UP_KEY        GDK_KEY_k
 #define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_D
 #define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_U
+<<<<<<< HEAD
 #define SURFER_STYLE_KEY            GDK_KEY_s
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
+=======
+
+#define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
+
+>>>>>>> f5b258a78a30ee1a8ec8df69474dbb44bec76a37
 static gchar *ensure_uri_scheme(const gchar *);
 
 static void destroy_window(GtkWidget *obj, gpointer data);
@@ -111,7 +117,11 @@ client_new(gchar *uri) {
     gchar *link;
     gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL),
           *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
+<<<<<<< HEAD
     //gchar *cachedir;
+=======
+          //, *cachedir;
+>>>>>>> f5b258a78a30ee1a8ec8df69474dbb44bec76a37
     FILE *cookie_file_handler;
     WebKitWebContext *web_context;
    /* cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
@@ -327,6 +337,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     return TRUE;
 
                 case SURFER_ZOOM_OUT_KEY:
+<<<<<<< HEAD
                     z = webkit_web_view_get_zoom_level(c->webView);
                     webkit_web_view_set_zoom_level(c->webView, z - 0.1);
                     return TRUE;
@@ -345,6 +356,15 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
 			    webkit_web_view_get_user_content_manager(c->webView));
                         c->s = 0;
                     }
+=======
+                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
+                    return TRUE;
+
+                case SURFER_ZOOM_IN_KEY:
+                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
+>>>>>>> f5b258a78a30ee1a8ec8df69474dbb44bec76a37
                     return TRUE;
 
                 default:
@@ -462,7 +482,11 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
 
     p = gtk_entry_get_text(GTK_ENTRY(c->entry));
 
+<<<<<<< HEAD
     gtk_widget_grab_focus(GTK_WIDGET(c->webView));
+=======
+    gtk_widget_grab_focus((c->webView));
+>>>>>>> f5b258a78a30ee1a8ec8df69474dbb44bec76a37
 
     if (search_text != NULL)
         g_free(search_text);
