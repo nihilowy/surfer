@@ -4,6 +4,8 @@ CFLAGS += -Wall -Wextra -Wno-unused-parameter -O3
 
 .PHONY: all install
 
+
+
 all:surfer
 
 surfer: surfer.c
@@ -13,4 +15,4 @@ install:all
 	install -Dm755 surfer $(DESTDIR)/usr/bin/surfer
 	install -Dm644 surfer.desktop $(DESTDIR)/usr/share/applications/surfer.desktop
 	install -Dm644 surfer.1 $(DESTDIR)/usr/share/man/man1/surfer.1
-
+	install -Dm644 black.css $(DESTDIR)/usr/share/surfer/black.css

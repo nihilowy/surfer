@@ -25,10 +25,12 @@
 #define SURFER_SCROLL_UP_KEY        GDK_KEY_k
 #define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_D
 #define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_U
-
+#define SURFER_STYLE_KEY            GDK_KEY_s
+#define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
+#define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
 static gchar *ensure_uri_scheme(const gchar *);
 
-static void destroyWindowCb(GtkWidget *obj, gpointer data);
+static void destroy_window(GtkWidget *obj, gpointer data);
 
 static void tls_certs(WebKitWebContext *);
 
@@ -47,24 +49,28 @@ static void find(GtkWidget *, gpointer);
 
 static void openlink(GtkWidget *, gpointer);
 
+static void user_style(gpointer);
+
 static gint clients = 0;
 gchar *home;
 gchar *favpath;
 
+
 struct Client {
     GtkWidget *main_window;
-    GtkWidget *webView;
     GtkWidget *entry;
     GtkWidget *entry_open;
     GtkWidget *box;
     GtkWidget *window;
     GtkWidget *box_open;
     GtkWidget *window_open;
+    WebKitWebView *webView;
     int f;
+    int s;
 };
 
 static void
-destroyWindowCb(GtkWidget *obj __attribute__((__unused__)), gpointer data) {
+destroy_window(GtkWidget *obj __attribute__((__unused__)), gpointer data) {
     struct Client *c = (struct Client *) data;
     free(c);
     clients--;
@@ -103,31 +109,38 @@ void
 client_new(gchar *uri) {
     struct Client *c;
     gchar *link;
-    gchar *cookiefilename, *cookiepath, *Cookie;//, *cachedir;
-    FILE *File1;
+    gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL),
+          *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
+    //gchar *cachedir;
+    FILE *cookie_file_handler;
     WebKitWebContext *web_context;
-    //cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
+   /* cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
 
-    /*web_context = webkit_web_context_new_with_website_data_manager(
+    web_context = webkit_web_context_new_with_website_data_manager(
             webkit_website_data_manager_new(
                     "base-cache-directory", cachedir,
                     "base-data-directory", cachedir,
-                    NULL));*/
-    //webkit_web_context_set_process_model(web_context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+                    NULL));
+   */
 
     c = malloc(sizeof(struct Client));
 
     gboolean enabled = 1;
 
     c->f = 0;
+    c->s = 0;
     c->main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(c->main_window), 1100, 700);
-    c->webView = webkit_web_view_new();
+
+    
+
+    c->webView = WEBKIT_WEB_VIEW(webkit_web_view_new_with_user_content_manager(webkit_user_content_manager_new()));
+
     web_context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
 
     gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->webView));
 
-    g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroyWindowCb), c);
+    g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroy_window), c);
     g_signal_connect(c->webView, "notify::title", G_CALLBACK(changed_title), c);
     g_signal_connect(c->webView, "close", G_CALLBACK(client_destroy_request), c);
     g_signal_connect(c->webView, "key-press-event", G_CALLBACK(keyboard), c);
@@ -138,10 +151,10 @@ client_new(gchar *uri) {
     gtk_widget_show_all(c->main_window);
     tls_certs(web_context);
 
-    WebKitSettings *settings = webkit_settings_new();
+   WebKitSettings *settings = webkit_settings_new();
     //char *value = "Googlebot/2.1";
     //g_object_set(settings, "user-agent", &value, NULL);
-    webkit_web_view_set_settings(WEBKIT_WEB_VIEW(c->webView), settings);
+    webkit_web_view_set_settings(c->webView, settings);
     webkit_settings_set_enable_webgl(settings, enabled);
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
 
@@ -149,29 +162,22 @@ client_new(gchar *uri) {
 
     webkit_cookie_manager_set_accept_policy(
             webkit_web_context_get_cookie_manager(web_context),
-            WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS);
-    //mkdir (".cookies");
-    //tell webkit where to store cookies
-    cookiefilename = g_strdup_printf("%s", ".cookies");
-    cookiepath = g_build_filename(getenv("HOME"), cookiefilename, NULL);
-    g_free(cookiefilename);
-    if (!g_file_test(cookiepath, G_FILE_TEST_EXISTS)) {
-        mkdir(cookiepath, 0700);
+            SURFER_COOKIE_POLICY);
 
-        cookiefilename = g_strdup_printf("%s", "cookie");
-        Cookie = g_build_filename(cookiepath, cookiefilename, NULL);
-        File1 = fopen(Cookie, "wb+");
-        fclose(File1);
-        g_free(cookiefilename);
+    //tell webkit where to store cookies
+    if (!g_file_test(cookies_path, G_FILE_TEST_EXISTS)) {
+        mkdir(cookies_path, 0700);
+        cookie_file_handler = fopen(cookie_file, "wb+");
+        fclose(cookie_file_handler);
     }
 
     webkit_cookie_manager_set_persistent_storage(
-            webkit_web_context_get_cookie_manager(web_context), ".cookies/cookie",
-            WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
+            webkit_web_context_get_cookie_manager(web_context), cookie_file,
+            WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT); // as mentioned in surf sources only text storage works
 
     if (uri != NULL) {
         link = ensure_uri_scheme(uri);
-        webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
+        webkit_web_view_load_uri(c->webView, link);
         g_free(link);
     }
 
@@ -202,12 +208,33 @@ client_new(gchar *uri) {
     //return WEBKIT_WEB_VIEW(c->webView);
 }
 
+
+
+
+void
+user_style(gpointer data){
+	struct Client *c = (struct Client *) data;
+	gchar *contents;
+ 
+	g_file_get_contents(USER_STYLESHEET_FILENAME,&contents,NULL,NULL);
+	webkit_user_content_manager_add_style_sheet(
+	    webkit_web_view_get_user_content_manager(c->webView),
+	    webkit_user_style_sheet_new(contents,
+	    WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+	    WEBKIT_USER_STYLE_LEVEL_USER,
+	    NULL, NULL));
+
+	g_free(contents);
+}
+
+
+
 void
 changed_title(GObject *obj __attribute__((__unused__)), GParamSpec *pspec __attribute__((__unused__)), gpointer data) {
     const gchar *t;
     struct Client *c = (struct Client *) data;
 
-    t = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
+    t = webkit_web_view_get_title(c->webView);
     gtk_window_set_title(GTK_WINDOW(c->main_window), t);
 }
 
@@ -255,15 +282,15 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     return TRUE;
 
                 case SURFER_BACK_KEY:
-                    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_go_back(c->webView);
                     return TRUE;
 
                 case SURFER_FORWARD_KEY:
-                    webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_go_forward(c->webView);
                     return TRUE;
 
                 case SURFER_INSPECTOR_KEY:
-                    inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(c->webView));
+                    inspector = webkit_web_view_get_inspector(c->webView);
                     webkit_web_inspector_show(inspector);
                     return TRUE;
 
@@ -279,11 +306,11 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     return TRUE;
 
                 case SURFER_HOME_KEY:
-                    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), home);
+                    webkit_web_view_load_uri(c->webView, home);
                     return TRUE;
 
                 case SURFER_RELOAD_KEY:
-                    webkit_web_view_reload(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_reload(c->webView);
                     return TRUE;
 
                 case SURFER_FIND_KEY:
@@ -293,19 +320,33 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                 case SURFER_BOOKMARK_KEY:
                     File = fopen(favpath, "a");
                     //if(File== NULL)
-                    tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+                    tmp = webkit_web_view_get_uri(c->webView);
                     fprintf(File, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) tmp);
                     fprintf(File, "%s\n", buffer);
                     fclose(File);
                     return TRUE;
-		case SURFER_ZOOM_OUT_KEY:
-                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
-                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
+
+                case SURFER_ZOOM_OUT_KEY:
+                    z = webkit_web_view_get_zoom_level(c->webView);
+                    webkit_web_view_set_zoom_level(c->webView, z - 0.1);
                     return TRUE;
-		case SURFER_ZOOM_IN_KEY:
-                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
-                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
+
+                case SURFER_ZOOM_IN_KEY:
+                    z = webkit_web_view_get_zoom_level(c->webView);
+                    webkit_web_view_set_zoom_level(c->webView, z + 0.1);
                     return TRUE;
+		case SURFER_STYLE_KEY:
+                   
+		if (c->s == 0) {
+                 user_style(c);
+                        c->s = 1;
+                    } else {
+                      webkit_user_content_manager_remove_all_style_sheets(
+			    webkit_web_view_get_user_content_manager(c->webView));
+                        c->s = 0;
+                    }
+                    return TRUE;
+
                 default:
                     return FALSE;
             }
@@ -322,10 +363,9 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     return TRUE;
 
                 case SURFER_STOP_KEY:
-                    webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_stop_loading(c->webView);
                     return TRUE;
 
-                
                 default:
                     return FALSE;
             }
@@ -406,7 +446,7 @@ openlink(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
 
     p = gtk_entry_get_text(GTK_ENTRY(c->entry_open));
     link = ensure_uri_scheme(p);
-    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
+    webkit_web_view_load_uri(c->webView, link);
     g_free(link);
     gtk_widget_hide(c->window_open);
 }
@@ -417,12 +457,12 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     static gchar *search_text;
     const gchar *p;
 
-    WebKitWebView *web_View = WEBKIT_WEB_VIEW(c->webView);
+    WebKitWebView *web_View = c->webView;
     WebKitFindController *fc = webkit_web_view_get_find_controller(web_View);
 
     p = gtk_entry_get_text(GTK_ENTRY(c->entry));
-    
-    gtk_widget_grab_focus((c->webView));
+
+    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
 
     if (search_text != NULL)
         g_free(search_text);

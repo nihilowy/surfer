@@ -50,6 +50,10 @@ No adsblock &mdash; but recommend `/etc/hosts block` list from  sites like someo
 
 `Ctrl + i` &mdash; web inspector (page source)
 
+`Ctrl + s` &mdash; toogle user style black theme (/usr/share/surfer/black.css)
+
 `F11` &mdash; toogle fullscreen
+
+
 
 **Edit `surfer.c` to change hotkeys**
