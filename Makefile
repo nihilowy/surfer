@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -O3
 
 
-.PHONY: all install
+.PHONY: all install installdirs
 
 
 
@@ -10,6 +10,9 @@ all:surfer
 
 surfer: surfer.c
 	$(CC) -o $@ $^ $(CFLAGS) -o surfer `pkg-config --cflags --libs gtk+-3.0 glib-2.0 webkit2gtk-4.0`
+
+installdirs:
+	mkdir -p $(DESTDIR)$(/usr/share/surfer)
 
 install:all
 	install -Dm755 surfer $(DESTDIR)/usr/bin/surfer
