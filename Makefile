@@ -2,11 +2,15 @@ CC=gcc
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -O3
 
 
-.PHONY: all install installdirs
+
+.PHONY: all beforeinstall install installdirs 
 
 
 
 all:surfer
+
+beforeinstall: 
+	rm /usr/share/surfer/black.css
 
 surfer: surfer.c
 	$(CC) -o $@ $^ $(CFLAGS) -o surfer `pkg-config --cflags --libs gtk+-3.0 glib-2.0 webkit2gtk-4.0`
