@@ -3,12 +3,14 @@ CFLAGS += -Wall -Wextra -Wno-unused-parameter -O3
 
 
 
-.PHONY: all install installdirs 
+.PHONY: all clear install installdirs 
 
 
 
 all:surfer
 
+reinstall:install
+	rm -f /usr/share/surfer/black.css
 
 	
 
@@ -17,7 +19,7 @@ surfer: surfer.c
 
 installdirs:
 	mkdir -p $(DESTDIR)$(/usr/share/surfer)
-	rm -f /usr/share/surfer/black.css
+	
 install:all
 	install -Dm755 surfer $(DESTDIR)/usr/bin/surfer
 	install -Dm644 surfer.desktop $(DESTDIR)/usr/share/applications/surfer.desktop
