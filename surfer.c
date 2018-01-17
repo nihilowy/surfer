@@ -28,6 +28,7 @@
 #define SURFER_STYLE_KEY            GDK_KEY_s
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
+
 static gchar *ensure_uri_scheme(const gchar *);
 
 static void destroy_window(GtkWidget *obj, gpointer data);
@@ -111,17 +112,17 @@ client_new(gchar *uri) {
     gchar *link;
     gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL),
           *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
-    //gchar *cachedir;
+    gchar *cachedir;
     FILE *cookie_file_handler;
     WebKitWebContext *web_context;
-   /* cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
+    cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
 
     web_context = webkit_web_context_new_with_website_data_manager(
             webkit_website_data_manager_new(
                     "base-cache-directory", cachedir,
                     "base-data-directory", cachedir,
                     NULL));
-   */
+   
 
     c = malloc(sizeof(struct Client));
 
