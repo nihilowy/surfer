@@ -205,7 +205,7 @@ client_new(gchar *uri) {
 
     clients++;
     //webkit_web_context_set_web_extensions_directory(webkit_web_context_get_default(), c);
-    //return WEBKIT_WEB_VIEW(c->webView);
+    
 }
 
 
