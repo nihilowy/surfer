@@ -19,6 +19,18 @@ body>*>*>*>*:not(:empty){ background-color:#282828!important }
 
 body>*>*>*>*>*:not(:empty){ background-color:#383838!important }
 
+
+body>*>*>*>*>* *{ background-color:#383838!important }
+
+body table[border="0"] td{ background-color:#111!important }
+
+body table table[border="0"] td{ background-color:#333!important }
+
+body table table table[border="0"] td{ background-color:#222!important }
+
+body table table table table[border="0"] td{ 
+background-color:#444!important }
+
 body p:not(:empty), body p *, body h1, body h1 *, body h2, body h2 *, 
 body h3,
 body h3 *, body h4, body h4 *, body h5, body h5 *, body strong>*, body 
