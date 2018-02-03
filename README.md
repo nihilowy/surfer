@@ -4,7 +4,7 @@ Simple keyboard based web browser. No tabs.
 
 Based on webkit2gtk and gtk3. Lariza and Epiphany, Surf inspired.
 
-No xlibs dependency &mdash; works on wayland, weston.
+No xlibs dependency &mdash; works on wayland, weston, sway.
 
 No adsblock &mdash; but recommend `/etc/hosts block` list from  sites like someonewhocares.org (but only ads secction, whole is too long).
 
@@ -12,7 +12,7 @@ No adsblock &mdash; but recommend `/etc/hosts block` list from  sites like someo
 
     make && make install
 
-## Shortcuts:
+## Hotkeys:
 
 `Ctrl + click` link &mdash; open link in new window
 

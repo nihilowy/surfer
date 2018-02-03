@@ -59,15 +59,16 @@ gchar *favpath;
 
 struct Client {
     GtkWidget *main_window;
-    GtkWidget *entry;
+    GtkWidget *entry_find;
     GtkWidget *entry_open;
-    GtkWidget *box;
-    GtkWidget *window;
+    GtkWidget *box_find;
+    GtkWidget *window_find;
     GtkWidget *box_open;
     GtkWidget *window_open;
     WebKitWebView *webView;
     int f;
     int s;
+	
 };
 
 static void
@@ -182,16 +183,16 @@ client_new(gchar *uri) {
         g_free(link);
     }
 
-    c->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(c->window), 300, 70);
-    gtk_window_set_title(GTK_WINDOW(c->window), "find");
-    c->entry = gtk_entry_new();
+    c->window_find = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(GTK_WINDOW(c->window_find), 300, 70);
+    gtk_window_set_title(GTK_WINDOW(c->window_find), "find");
+    c->entry_find = gtk_entry_new();
 
-    c->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(c->box), c->entry, TRUE, TRUE, 0);
-    gtk_container_add(GTK_CONTAINER(c->window), c->box);
-    g_signal_connect(G_OBJECT(c->window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    g_signal_connect(G_OBJECT(c->entry), "activate", G_CALLBACK(find), c);
+    c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(c->box_find), c->entry_find, TRUE, TRUE, 0);
+    gtk_container_add(GTK_CONTAINER(c->window_find), c->box_find);
+    g_signal_connect(G_OBJECT(c->window_find), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
 
     c->window_open = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(c->window_open), 350, 70);
@@ -297,10 +298,10 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
 
                 case SURFER_OPEN_KEY:
                     gtk_widget_show_all(c->window_open);
-                    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+                    url = webkit_web_view_get_uri(c->webView);
                     gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
-                    //g_free(url);
                     return TRUE;
+                        
 
                 case SURFER_NEW_WINDOW_KEY:
                     client_new(home);
@@ -315,7 +316,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     return TRUE;
 
                 case SURFER_FIND_KEY:
-                    gtk_widget_show_all(c->window);
+                    gtk_widget_show_all(c->window_find);
                     return TRUE;
 
                 case SURFER_BOOKMARK_KEY:
@@ -461,7 +462,7 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     WebKitWebView *web_View = c->webView;
     WebKitFindController *fc = webkit_web_view_get_find_controller(web_View);
 
-    p = gtk_entry_get_text(GTK_ENTRY(c->entry));
+    p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
 
     gtk_widget_grab_focus(GTK_WIDGET(c->webView));
 
@@ -471,6 +472,7 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     search_text = g_strdup(p);
     webkit_find_controller_search(fc, search_text,
                                   WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE | WEBKIT_FIND_OPTIONS_WRAP_AROUND, G_MAXUINT);
+  gtk_widget_hide(c->window_find);
 }
 
 void
