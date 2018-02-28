@@ -63,6 +63,7 @@ struct Client {
     GtkWidget *entry_open;
     GtkWidget *box_find;
     GtkWidget *window_find;
+    GtkWidget *button;
     GtkWidget *box_open;
     GtkWidget *window_open;
     WebKitWebView *webView;
@@ -193,6 +194,14 @@ client_new(gchar *uri) {
     gtk_container_add(GTK_CONTAINER(c->window_find), c->box_find);
     g_signal_connect(G_OBJECT(c->window_find), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
+
+
+     
+   
+    c->button = gtk_button_new_with_label ("Close");
+     gtk_box_pack_end(GTK_BOX (c->box_find), c->button,TRUE, TRUE, 0);
+    g_signal_connect_swapped (G_OBJECT (c->button), "clicked",
+		      G_CALLBACK (gtk_widget_hide),GTK_WIDGET(c->window_find));
 
     c->window_open = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(c->window_open), 350, 70);
@@ -472,7 +481,7 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     search_text = g_strdup(p);
     webkit_find_controller_search(fc, search_text,
                                   WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE | WEBKIT_FIND_OPTIONS_WRAP_AROUND, G_MAXUINT);
-  gtk_widget_hide(c->window_find);
+//  gtk_widget_hide(c->window_find);
 }
 
 void
