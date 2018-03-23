@@ -62,13 +62,17 @@ struct Client {
     GtkWidget *entry_find;
     GtkWidget *entry_open;
     GtkWidget *box_find;
-    GtkWidget *window_find;
+ 
     GtkWidget *button;
     GtkWidget *box_open;
-    GtkWidget *window_open;
-    WebKitWebView *webView;
+
+    GtkWidget *vbox;
+   
+    GtkWidget *webView;
+    WebKitFindController *fc;
     int f;
     int s;
+    int o;
 	
 };
 
@@ -129,7 +133,7 @@ client_new(gchar *uri) {
     c = malloc(sizeof(struct Client));
 
     gboolean enabled = 1;
-
+    c->o = 0;
     c->f = 0;
     c->s = 0;
     c->main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -137,27 +141,81 @@ client_new(gchar *uri) {
 
     
 
-    c->webView = WEBKIT_WEB_VIEW(webkit_web_view_new_with_user_content_manager(webkit_user_content_manager_new()));
+  c->webView= webkit_web_view_new_with_user_content_manager(webkit_user_content_manager_new());
 
     web_context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
 
-    gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->webView));
+
+
+
+   c->vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+ 
+  c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+   c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+ c->button = gtk_button_new_with_label ("Close");
+    c->entry_find = gtk_entry_new();
+    c->entry_open= gtk_entry_new();
+
+
+gtk_box_pack_start(GTK_BOX(c->box_find), c->entry_find, TRUE, TRUE, 0);
+gtk_box_pack_end(GTK_BOX(c->box_find), c->button,TRUE, TRUE, 0);
+
+gtk_box_pack_start(GTK_BOX(c->box_open), c->entry_open, TRUE, TRUE, 0);
+
+gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);    
+
+gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
+gtk_box_pack_start(GTK_BOX(c->vbox),c->webView, TRUE, TRUE, 0);
+gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 1);    
+
+
+
+gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->vbox));
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+ g_signal_connect(G_OBJECT(c->box_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
+
+
+   g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
+  
+    g_signal_connect_swapped (G_OBJECT (c->button), "clicked",
+		      G_CALLBACK (gtk_widget_hide),GTK_WIDGET(c->box_find));
+
+
+    
 
     g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroy_window), c);
-    g_signal_connect(c->webView, "notify::title", G_CALLBACK(changed_title), c);
-    g_signal_connect(c->webView, "close", G_CALLBACK(client_destroy_request), c);
-    g_signal_connect(c->webView, "key-press-event", G_CALLBACK(keyboard), c);
-    // g_signal_connect(c->webView, "create", G_CALLBACK(create_request), c);
-    g_signal_connect(c->webView, "decide-policy", G_CALLBACK(decide_policy), c);
+    g_signal_connect(G_OBJECT(c->webView), "notify::title", G_CALLBACK(changed_title), c);
+    g_signal_connect(G_OBJECT(c->webView), "close", G_CALLBACK(client_destroy_request), c);
+    g_signal_connect(G_OBJECT(c->webView), "key-press-event", G_CALLBACK(keyboard), c);
+    // g_signal_connect(WEBKIT_WEB_VIEW(c->webView), "create", G_CALLBACK(create_request), c);
+    g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
 
     gtk_widget_grab_focus(GTK_WIDGET(c->webView));
     gtk_widget_show_all(c->main_window);
+gtk_widget_hide(c->box_find);
+gtk_widget_hide(c->box_open);
+
     tls_certs(web_context);
 
    WebKitSettings *settings = webkit_settings_new();
     //char *value = "Googlebot/2.1";
     //g_object_set(settings, "user-agent", &value, NULL);
-    webkit_web_view_set_settings(c->webView, settings);
+    webkit_web_view_set_settings(WEBKIT_WEB_VIEW(c->webView), settings);
     webkit_settings_set_enable_webgl(settings, enabled);
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
 
@@ -180,40 +238,20 @@ client_new(gchar *uri) {
 
     if (uri != NULL) {
         link = ensure_uri_scheme(uri);
-        webkit_web_view_load_uri(c->webView, link);
+        webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
         g_free(link);
     }
 
-    c->window_find = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(c->window_find), 300, 70);
-    gtk_window_set_title(GTK_WINDOW(c->window_find), "find");
-    c->entry_find = gtk_entry_new();
-
-    c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(c->box_find), c->entry_find, TRUE, TRUE, 0);
-    gtk_container_add(GTK_CONTAINER(c->window_find), c->box_find);
-    g_signal_connect(G_OBJECT(c->window_find), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
 
 
-     
-   
-    c->button = gtk_button_new_with_label ("Close");
-     gtk_box_pack_end(GTK_BOX (c->box_find), c->button,TRUE, TRUE, 0);
-    g_signal_connect_swapped (G_OBJECT (c->button), "clicked",
-		      G_CALLBACK (gtk_widget_hide),GTK_WIDGET(c->window_find));
 
-    c->window_open = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(c->window_open), 350, 70);
-    gtk_window_set_title(GTK_WINDOW(c->window_open), "open");
-    c->entry_open = gtk_entry_new();
 
-    c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(c->box_open), c->entry_open, TRUE, TRUE, 0);
-    gtk_container_add(GTK_CONTAINER(c->window_open), c->box_open);
-    g_signal_connect(G_OBJECT(c->window_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
+      
 
+
+    
+
+    
     clients++;
     //webkit_web_context_set_web_extensions_directory(webkit_web_context_get_default(), c);
     
@@ -229,7 +267,7 @@ user_style(gpointer data){
  
 	g_file_get_contents(USER_STYLESHEET_FILENAME,&contents,NULL,NULL);
 	webkit_user_content_manager_add_style_sheet(
-	    webkit_web_view_get_user_content_manager(c->webView),
+	    webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)),
 	    webkit_user_style_sheet_new(contents,
 	    WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
 	    WEBKIT_USER_STYLE_LEVEL_USER,
@@ -243,10 +281,13 @@ user_style(gpointer data){
 void
 changed_title(GObject *obj __attribute__((__unused__)), GParamSpec *pspec __attribute__((__unused__)), gpointer data) {
     const gchar *t;
+    const gchar *url;
     struct Client *c = (struct Client *) data;
 
-    t = webkit_web_view_get_title(c->webView);
+    t = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
     gtk_window_set_title(GTK_WINDOW(c->main_window), t);
+     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+                    gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
 }
 
 gboolean
@@ -293,22 +334,29 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     return TRUE;
 
                 case SURFER_BACK_KEY:
-                    webkit_web_view_go_back(c->webView);
+                    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
                 case SURFER_FORWARD_KEY:
-                    webkit_web_view_go_forward(c->webView);
+                    webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
                 case SURFER_INSPECTOR_KEY:
-                    inspector = webkit_web_view_get_inspector(c->webView);
+                    inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(c->webView));
                     webkit_web_inspector_show(inspector);
                     return TRUE;
 
                 case SURFER_OPEN_KEY:
-                    gtk_widget_show_all(c->window_open);
-                    url = webkit_web_view_get_uri(c->webView);
+                  if (c->o == 0) {
+                 gtk_widget_show_all(c->box_open);
+                    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
                     gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
+                        c->o = 1;
+                    } else {
+                     gtk_widget_hide(c->box_open);
+                       c->o = 0;
+                     }
+
                     return TRUE;
                         
 
@@ -317,34 +365,34 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     return TRUE;
 
                 case SURFER_HOME_KEY:
-                    webkit_web_view_load_uri(c->webView, home);
+                    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), home);
                     return TRUE;
 
                 case SURFER_RELOAD_KEY:
-                    webkit_web_view_reload(c->webView);
+                    webkit_web_view_reload(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
                 case SURFER_FIND_KEY:
-                    gtk_widget_show_all(c->window_find);
+                    gtk_widget_show_all(c->box_find);
                     return TRUE;
 
                 case SURFER_BOOKMARK_KEY:
                     File = fopen(favpath, "a");
                     //if(File== NULL)
-                    tmp = webkit_web_view_get_uri(c->webView);
+                    tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
                     fprintf(File, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) tmp);
                     fprintf(File, "%s\n", buffer);
                     fclose(File);
                     return TRUE;
 
                 case SURFER_ZOOM_OUT_KEY:
-                    z = webkit_web_view_get_zoom_level(c->webView);
-                    webkit_web_view_set_zoom_level(c->webView, z - 0.1);
+                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z - 0.1);
                     return TRUE;
 
                 case SURFER_ZOOM_IN_KEY:
-                    z = webkit_web_view_get_zoom_level(c->webView);
-                    webkit_web_view_set_zoom_level(c->webView, z + 0.1);
+                    z = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(c->webView));
+                    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView), z + 0.1);
                     return TRUE;
 		case SURFER_STYLE_KEY:
                    
@@ -353,7 +401,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                         c->s = 1;
                     } else {
                       webkit_user_content_manager_remove_all_style_sheets(
-			    webkit_web_view_get_user_content_manager(c->webView));
+			    webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
                         c->s = 0;
                     }
                     return TRUE;
@@ -374,7 +422,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     return TRUE;
 
                 case SURFER_STOP_KEY:
-                    webkit_web_view_stop_loading(c->webView);
+                    webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
 
                 default:
@@ -457,9 +505,9 @@ openlink(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
 
     p = gtk_entry_get_text(GTK_ENTRY(c->entry_open));
     link = ensure_uri_scheme(p);
-    webkit_web_view_load_uri(c->webView, link);
+    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
     g_free(link);
-    gtk_widget_hide(c->window_open);
+    gtk_widget_hide(c->box_open);
 }
 
 void
@@ -468,18 +516,18 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     static gchar *search_text;
     const gchar *p;
 
-    WebKitWebView *web_View = c->webView;
-    WebKitFindController *fc = webkit_web_view_get_find_controller(web_View);
+  //  WebKitWebView *web_View = c->webView;
+    c->fc= webkit_web_view_get_find_controller(WEBKIT_WEB_VIEW(c->webView));
 
     p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
 
-    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
+    gtk_widget_grab_focus(GTK_WIDGET(WEBKIT_WEB_VIEW(c->webView)));
 
     if (search_text != NULL)
         g_free(search_text);
 
     search_text = g_strdup(p);
-    webkit_find_controller_search(fc, search_text,
+    webkit_find_controller_search(c->fc, search_text,
                                   WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE | WEBKIT_FIND_OPTIONS_WRAP_AROUND, G_MAXUINT);
 //  gtk_widget_hide(c->window_find);
 }

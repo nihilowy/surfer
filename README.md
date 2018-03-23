@@ -30,7 +30,7 @@ No adsblock &mdash; but recommend `/etc/hosts block` list from  sites like someo
 
 `Ctrl + b` &mdash; bookmark site (to remove just edit file with links: .fav in your home dir)
 
-`Ctrl + o` &mdash; enter new link to open (and shows current url)
+`Ctrl + o` &mdash; toogle url bar
 
 `Ctrl + /` &mdash; find word
 
