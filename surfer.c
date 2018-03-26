@@ -52,6 +52,8 @@ static void openlink(GtkWidget *, gpointer);
 
 static void user_style(gpointer);
 
+static void close_find( gpointer);
+
 static gint clients = 0;
 gchar *home;
 gchar *favpath;
@@ -141,62 +143,47 @@ client_new(gchar *uri) {
 
     
 
-  c->webView= webkit_web_view_new_with_user_content_manager(webkit_user_content_manager_new());
+    c->webView= webkit_web_view_new_with_user_content_manager(webkit_user_content_manager_new());
 
     web_context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
 
 
 
 
-   c->vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    c->vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
  
-  c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-   c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
- c->button = gtk_button_new_with_label ("Close");
+    c->button = gtk_button_new_with_label ("Close");
     c->entry_find = gtk_entry_new();
     c->entry_open= gtk_entry_new();
 
 
-gtk_box_pack_start(GTK_BOX(c->box_find), c->entry_find, TRUE, TRUE, 0);
-gtk_box_pack_end(GTK_BOX(c->box_find), c->button,TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(c->box_find), c->entry_find, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(c->box_find), c->button,TRUE, TRUE, 0);
 
-gtk_box_pack_start(GTK_BOX(c->box_open), c->entry_open, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(c->box_open), c->entry_open, TRUE, TRUE, 0);
 
-gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);    
+    gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);    
 
-gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
-gtk_box_pack_start(GTK_BOX(c->vbox),c->webView, TRUE, TRUE, 0);
-gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 1);    
-
-
-
-gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->vbox));
+    gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(c->vbox),c->webView, TRUE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);    
 
 
 
-
+    gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->vbox));
    
 
 
 
-
-
-   
-
-
-
- g_signal_connect(G_OBJECT(c->box_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    g_signal_connect(G_OBJECT(c->box_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
 
-
-   g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
+    g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
   
-    g_signal_connect_swapped (G_OBJECT (c->button), "clicked",
-		      G_CALLBACK (gtk_widget_hide),GTK_WIDGET(c->box_find));
-
-
-    
+    g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c);
 
     g_signal_connect(c->main_window, "destroy", G_CALLBACK(destroy_window), c);
     g_signal_connect(G_OBJECT(c->webView), "notify::title", G_CALLBACK(changed_title), c);
@@ -207,12 +194,12 @@ gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->vbox));
 
     gtk_widget_grab_focus(GTK_WIDGET(c->webView));
     gtk_widget_show_all(c->main_window);
-gtk_widget_hide(c->box_find);
-gtk_widget_hide(c->box_open);
+    gtk_widget_hide(c->box_find);
+    gtk_widget_hide(c->box_open);
 
     tls_certs(web_context);
 
-   WebKitSettings *settings = webkit_settings_new();
+    WebKitSettings *settings = webkit_settings_new();
     //char *value = "Googlebot/2.1";
     //g_object_set(settings, "user-agent", &value, NULL);
     webkit_web_view_set_settings(WEBKIT_WEB_VIEW(c->webView), settings);
@@ -241,15 +228,7 @@ gtk_widget_hide(c->box_open);
         webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
         g_free(link);
     }
-
-
-
-
-
-      
-
-
-    
+     
 
     
     clients++;
@@ -276,6 +255,15 @@ user_style(gpointer data){
 	g_free(contents);
 }
 
+
+void
+close_find( gpointer data) {
+   
+    struct Client *c = (struct Client *) data;
+    gtk_widget_hide(c->box_find);
+    gtk_widget_grab_focus(c->webView);
+
+}
 
 
 void
@@ -516,20 +504,22 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     static gchar *search_text;
     const gchar *p;
 
-  //  WebKitWebView *web_View = c->webView;
     c->fc= webkit_web_view_get_find_controller(WEBKIT_WEB_VIEW(c->webView));
 
+    gtk_widget_grab_focus(c->entry_find);
     p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
 
-    gtk_widget_grab_focus(GTK_WIDGET(WEBKIT_WEB_VIEW(c->webView)));
-
-    if (search_text != NULL)
-        g_free(search_text);
-
     search_text = g_strdup(p);
+
+    if(search_text != NULL){
+       
+    
     webkit_find_controller_search(c->fc, search_text,
                                   WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE | WEBKIT_FIND_OPTIONS_WRAP_AROUND, G_MAXUINT);
-//  gtk_widget_hide(c->window_find);
+     g_free(search_text);
+
+    }
+    
 }
 
 void
