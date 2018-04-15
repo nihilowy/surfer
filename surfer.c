@@ -169,7 +169,6 @@ client_new(gchar *uri) {
 
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->vbox),c->webView, TRUE, TRUE, 0);
-    gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);    
 
 
 
