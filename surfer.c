@@ -339,6 +339,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
                     gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
                         c->o = 1;
+		
                     } else {
                      gtk_widget_hide(c->box_open);
                        c->o = 0;
@@ -361,6 +362,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
 
                 case SURFER_FIND_KEY:
                     gtk_widget_show_all(c->box_find);
+		    gtk_widget_grab_focus(c->entry_find);
                     return TRUE;
 
                 case SURFER_BOOKMARK_KEY:
@@ -505,7 +507,7 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
 
     c->fc= webkit_web_view_get_find_controller(WEBKIT_WEB_VIEW(c->webView));
 
-    gtk_widget_grab_focus(c->entry_find);
+    
     p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
 
     search_text = g_strdup(p);
