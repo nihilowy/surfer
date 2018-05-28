@@ -204,7 +204,10 @@ client_new(gchar *uri) {
     webkit_web_view_set_settings(WEBKIT_WEB_VIEW(c->webView), settings);
     webkit_settings_set_enable_webgl(settings, enabled);
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
-
+    g_object_set(G_OBJECT(settings),
+	             "enable-html5-database", TRUE, NULL);
+ g_object_set(G_OBJECT(settings),
+	             "enable-html5-local-storage", TRUE, NULL);
     webkit_web_context_set_tls_errors_policy(web_context, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
 
     webkit_cookie_manager_set_accept_policy(
