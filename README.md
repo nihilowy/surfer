@@ -6,15 +6,17 @@ Based on webkit2gtk and gtk3. Lariza and Epiphany, Surf inspired.
 
 No xlibs dependency &mdash; works on wayland, weston, sway.
 
-##adblock
+## Adblock
 
-No adsblock &mdash; but recommend `/etc/hosts block` list from  sites like someonewhocares.org
+Thanks to install this https://github.com/jun7/wyebadblock You can 
+adblock.
+After install:
+sudo ln -s /usr/lib/wyebrowser/adblock.so /usr/lib/surfer
 
-Also privoxy proxy adblock is available( after install):
 
-export HTTP_PROXY="http://127.0.0.1:8118"
+Beside there is also  `/etc/hosts block` list from  sites like 
+someonewhocares.org
 
-systemctl enable privoxy
 
 ## Compile and install:
 

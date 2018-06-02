@@ -54,6 +54,8 @@ static void user_style(gpointer);
 
 static void close_find( gpointer);
 
+
+
 static gint clients = 0;
 gchar *home;
 gchar *favpath;
@@ -230,17 +232,13 @@ client_new(gchar *uri) {
         webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
         g_free(link);
     }
-     
 
+webkit_web_context_set_web_extensions_directory(web_context, "/usr/lib/surfer/");
+    
     
     clients++;
-    //webkit_web_context_set_web_extensions_directory(webkit_web_context_get_default(), c);
-    
+
 }
-
-
-
-
 void
 user_style(gpointer data){
 	struct Client *c = (struct Client *) data;
@@ -575,6 +573,8 @@ int main(int argc, char *argv[]) {
         }
     } else
         client_new(home);
+
+
 
     gtk_main();
     return 0;
