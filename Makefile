@@ -7,7 +7,7 @@ else
 endif
 DDEBUG=-DDEBUG=${DEBUG}
 
-all: surfer ext.so
+all: surfer adblock.so
 
 surfer: surfer.c Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< \
