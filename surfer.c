@@ -233,7 +233,8 @@ client_new(gchar *uri) {
         g_free(link);
     }
 
-webkit_web_context_set_web_extensions_directory(web_context, "/usr/lib/surfer/");
+webkit_web_context_set_web_extensions_directory(webkit_web_context_get_default(), 
+"/usr/lib/surfer/");
     
     
     clients++;
