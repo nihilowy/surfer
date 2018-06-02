@@ -7,7 +7,7 @@ else
 endif
 DDEBUG=-DDEBUG=${DEBUG}
 
-all: surfer 
+all: surfer ext.so
 
 surfer: surfer.c Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< \
@@ -15,7 +15,7 @@ surfer: surfer.c Makefile
 		-DEXTENSION_DIR=\"$(EXTENSION_DIR)\" \
 		$(DDEBUG) -lm
 
-ext.so: ext.c Makefile
+adblock.so: ext.c Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -shared -fPIC \
 		`pkg-config --cflags --libs gtk+-3.0 glib-2.0 webkit2gtk-4.0` \
 		$(DDEBUG)

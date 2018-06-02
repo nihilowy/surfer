@@ -28,6 +28,7 @@
 #define SURFER_STYLE_KEY            GDK_KEY_s
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
+#define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
 
 static gchar *ensure_uri_scheme(const gchar *);
 
@@ -41,7 +42,7 @@ static gboolean keyboard(GtkWidget *, GdkEvent *, gpointer);
 
 static void changed_title(GObject *, GParamSpec *, gpointer);
 
-static void client_new(gchar *);
+static void client_new(gchar *, WebKitWebContext *);
 
 //static WebKitWebView *create_request(gpointer);
 static gboolean decide_policy(WebKitWebView *, WebKitPolicyDecision *, WebKitPolicyDecisionType, gpointer);
@@ -54,12 +55,13 @@ static void user_style(gpointer);
 
 static void close_find( gpointer);
 
+//static void initialize_web_extensions (WebKitWebContext *,gpointer );
 
 
 static gint clients = 0;
 gchar *home;
 gchar *favpath;
-
+WebKitWebContext *wc;
 
 struct Client {
     GtkWidget *main_window;
@@ -74,6 +76,7 @@ struct Client {
    
     GtkWidget *webView;
     WebKitFindController *fc;
+    
     int f;
     int s;
     int o;
@@ -117,23 +120,33 @@ ensure_uri_scheme(const gchar *t) {
 }
 
 void
-client_new(gchar *uri) {
-    struct Client *c;
+client_new(gchar *uri,WebKitWebContext *wc) {
+    
     gchar *link;
     gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL),
           *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
     gchar *cachedir;
     FILE *cookie_file_handler;
-    WebKitWebContext *web_context;
+   struct Client *c;
+   // WebKitWebContext *web_context;
     cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
 
-    web_context = webkit_web_context_new_with_website_data_manager(
+ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
+/*
+g_signal_connect (wc,
+                   "initialize-web-extensions",
+                    G_CALLBACK (initialize_web_extensions),
+                    NULL);
+
+
+    c->web_context = webkit_web_context_new_with_website_data_manager(
             webkit_website_data_manager_new(
                     "base-cache-directory", cachedir,
                     "base-data-directory", cachedir,
                     NULL));
-   
-
+ 
+   */ 
+    
     c = malloc(sizeof(struct Client));
 
     gboolean enabled = 1;
@@ -143,11 +156,13 @@ client_new(gchar *uri) {
     c->main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(c->main_window), 1100, 700);
 
-    
+        
 
-    c->webView= webkit_web_view_new_with_user_content_manager(webkit_user_content_manager_new());
+    c->webView= webkit_web_view_new();
+//with_user_content_manager(webkit_user_content_manager_new());
 
-    web_context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
+  //  web_context = 
+  //  wc =webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
 
 
 
@@ -193,12 +208,13 @@ client_new(gchar *uri) {
     // g_signal_connect(WEBKIT_WEB_VIEW(c->webView), "create", G_CALLBACK(create_request), c);
     g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
 
+
     gtk_widget_grab_focus(GTK_WIDGET(c->webView));
     gtk_widget_show_all(c->main_window);
     gtk_widget_hide(c->box_find);
     gtk_widget_hide(c->box_open);
 
-    tls_certs(web_context);
+    tls_certs(wc);
 
     WebKitSettings *settings = webkit_settings_new();
     //char *value = "Googlebot/2.1";
@@ -210,10 +226,10 @@ client_new(gchar *uri) {
 	             "enable-html5-database", TRUE, NULL);
  g_object_set(G_OBJECT(settings),
 	             "enable-html5-local-storage", TRUE, NULL);
-    webkit_web_context_set_tls_errors_policy(web_context, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+    webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
 
     webkit_cookie_manager_set_accept_policy(
-            webkit_web_context_get_cookie_manager(web_context),
+            webkit_web_context_get_cookie_manager(wc),
             SURFER_COOKIE_POLICY);
 
     //tell webkit where to store cookies
@@ -224,7 +240,7 @@ client_new(gchar *uri) {
     }
 
     webkit_cookie_manager_set_persistent_storage(
-            webkit_web_context_get_cookie_manager(web_context), cookie_file,
+            webkit_web_context_get_cookie_manager(wc), cookie_file,
             WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT); // as mentioned in surf sources only text storage works
 
     if (uri != NULL) {
@@ -233,13 +249,28 @@ client_new(gchar *uri) {
         g_free(link);
     }
 
-webkit_web_context_set_web_extensions_directory(webkit_web_context_get_default(), 
-"/usr/lib/surfer/");
     
     
     clients++;
 
 }
+
+/*
+static void
+initialize_web_extensions (WebKitWebContext *context,
+                           gpointer          user_data)
+{
+  // Web Extensions get a different ID for each Web Process 
+  static guint32 unique_id = 0;
+
+  webkit_web_context_set_web_extensions_directory (
+     wc, WEB_EXTENSIONS_DIRECTORY);
+  webkit_web_context_set_web_extensions_initialization_user_data (
+     wc, g_variant_new_uint32 (unique_id++));
+}
+
+*/
+
 void
 user_style(gpointer data){
 	struct Client *c = (struct Client *) data;
@@ -282,6 +313,7 @@ changed_title(GObject *obj __attribute__((__unused__)), GParamSpec *pspec __attr
 gboolean
 keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointer data) {
     struct Client *c = (struct Client *) data;
+   // WebKitWebContext *wc= c->web_context;
     WebKitWebInspector *inspector;
     FILE *File;
     char buffer[256] = "</body></html>";
@@ -351,7 +383,7 @@ keyboard(GtkWidget *widget __attribute__((__unused__)), GdkEvent *event, gpointe
                         
 
                 case SURFER_NEW_WINDOW_KEY:
-                    client_new(home);
+                    client_new(home,wc);
                     return TRUE;
 
                 case SURFER_HOME_KEY:
@@ -435,7 +467,9 @@ decide_policy(WebKitWebView *webView __attribute__((__unused__)), WebKitPolicyDe
     guint button, mods;
     gchar *link;
     const gchar *t;
-
+    struct Client *c = (struct Client *) data;
+    
+  //  WebKitWebContext *wc= c->web_context;
     switch (type) {
         case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
             navigationDecision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
@@ -450,7 +484,7 @@ decide_policy(WebKitWebView *webView __attribute__((__unused__)), WebKitPolicyDe
                 if (button == 1 && mods & GDK_CONTROL_MASK) {
                     t = (gchar *) webkit_uri_request_get_uri(request);
                     link = ensure_uri_scheme(t);
-                    client_new(link);
+                    client_new(link,wc);
                     webkit_policy_decision_ignore(decision);
                     return TRUE;
                 } else webkit_policy_decision_use(decision);
@@ -468,7 +502,7 @@ decide_policy(WebKitWebView *webView __attribute__((__unused__)), WebKitPolicyDe
 
                 t = (gchar *) webkit_uri_request_get_uri(request);
                 link = ensure_uri_scheme(t);
-                client_new(link);
+                client_new(link,wc);
                 webkit_policy_decision_ignore(decision);
             }
             break;
@@ -549,11 +583,15 @@ int main(int argc, char *argv[]) {
     FILE *File;
     char buffer[256] = "<html><head></head><body bgcolor=black>";
     gchar *link;
+ 
 
     gtk_init(&argc, &argv);
-
-    webkit_web_context_set_process_model(webkit_web_context_get_default(),
-                                         WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+    
+    //
+    wc = webkit_web_context_get_default();
+   
+    webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+   
 
     favfilename = g_strdup_printf("%s", ".fav");
     favpath = g_build_filename(getenv("HOME"), favfilename, NULL);
@@ -567,13 +605,14 @@ int main(int argc, char *argv[]) {
 
     home = g_build_filename("file:/", favpath, NULL);
 
+
     if (argc > 1) {
         for (i = 1; i < argc; i++) {
             link = argv[i];
-            client_new(link);
+            client_new(link,wc);
         }
     } else
-        client_new(home);
+        client_new(home,wc);
 
 
 

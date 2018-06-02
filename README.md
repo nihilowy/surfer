@@ -8,8 +8,13 @@ No xlibs dependency &mdash; works on wayland, weston, sway.
 
 ## Adblock
 
+Install https://github.com/jun7/wyebadblock
 
-You can use `/etc/hosts block` list from  sites like 
+Then sudo ln -s /usr/lib/wyebrowser/adblock.so  /usr/lib/surfer
+
+
+
+Otherwise You can use `/etc/hosts block` list from  sites like 
 someonewhocares.org
 
 
