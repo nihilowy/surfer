@@ -136,14 +136,14 @@ g_signal_connect (wc,
                    "initialize-web-extensions",
                     G_CALLBACK (initialize_web_extensions),
                     NULL);
-*/
+
 
     wc = webkit_web_context_new_with_website_data_manager(
             webkit_website_data_manager_new(
                     "base-cache-directory", cachedir,
                     "base-data-directory", cachedir,
                     NULL));
- 
+*/ 
     
     c = malloc(sizeof(struct Client));
 
