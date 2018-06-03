@@ -128,7 +128,6 @@ client_new(gchar *uri,WebKitWebContext *wc) {
     gchar *cachedir;
     FILE *cookie_file_handler;
    struct Client *c;
-   // WebKitWebContext *web_context;
     cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
 
  webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
@@ -137,15 +136,14 @@ g_signal_connect (wc,
                    "initialize-web-extensions",
                     G_CALLBACK (initialize_web_extensions),
                     NULL);
+*/
 
-
-    c->web_context = webkit_web_context_new_with_website_data_manager(
+    wc = webkit_web_context_new_with_website_data_manager(
             webkit_website_data_manager_new(
                     "base-cache-directory", cachedir,
                     "base-data-directory", cachedir,
                     NULL));
  
-   */ 
     
     c = malloc(sizeof(struct Client));
 
@@ -159,10 +157,6 @@ g_signal_connect (wc,
         
 
     c->webView= webkit_web_view_new();
-//with_user_content_manager(webkit_user_content_manager_new());
-
-  //  web_context = 
-  //  wc =webkit_web_view_get_context(WEBKIT_WEB_VIEW(c->webView));
 
 
 
