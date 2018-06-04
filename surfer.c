@@ -34,7 +34,7 @@ static gchar *ensure_uri_scheme(const gchar *);
 
 static void destroy_window(GtkWidget *obj, gpointer data);
 
-static void tls_certs(WebKitWebContext *);
+//static void tls_certs(WebKitWebContext *);
 
 static gboolean client_destroy_request(WebKitWebView *, gpointer data);
 
@@ -61,6 +61,7 @@ static void close_find( gpointer);
 static gint clients = 0;
 gchar *home;
 gchar *favpath;
+static gchar *fullname = "";
 WebKitWebContext *wc;
 
 struct Client {
@@ -123,31 +124,16 @@ void
 client_new(gchar *uri,WebKitWebContext *wc) {
     
     gchar *link;
-    gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL),
-          *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
-    gchar *cachedir;
     FILE *cookie_file_handler;
-   struct Client *c;
-    cachedir = g_build_filename(getenv("HOME"), ".cache", NULL);
-
- webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
-/*
-g_signal_connect (wc,
-                   "initialize-web-extensions",
-                    G_CALLBACK (initialize_web_extensions),
-                    NULL);
-
-
-    wc = webkit_web_context_new_with_website_data_manager(
-            webkit_website_data_manager_new(
-                    "base-cache-directory", cachedir,
-                    "base-data-directory", cachedir,
-                    NULL));
-*/ 
-    
-    c = malloc(sizeof(struct Client));
-
+    struct Client *c;
     gboolean enabled = 1;
+   
+
+
+
+ c = malloc(sizeof(struct Client));
+
+    
     c->o = 0;
     c->f = 0;
     c->s = 0;
@@ -157,6 +143,78 @@ g_signal_connect (wc,
         
 
     c->webView= webkit_web_view_new();
+
+
+
+
+    gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL),
+          *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
+    
+   gchar *datadir  = g_build_filename(g_get_user_data_dir() , fullname, NULL);
+   gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
+   gchar *localstoragedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
+     
+
+
+ WebKitSettings *settings = webkit_settings_new();
+    //char *value = "Googlebot/2.1";
+    //g_object_set(settings, "user-agent", &value, NULL);
+    webkit_web_view_set_settings(WEBKIT_WEB_VIEW(c->webView), settings);
+    webkit_settings_set_enable_webgl(settings, enabled);
+    g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
+ /*   g_object_set(G_OBJECT(settings),
+	             "enable-html5-database", TRUE, NULL);
+ g_object_set(G_OBJECT(settings),
+	             "enable-html5-local-storage", TRUE, NULL);
+*/  
+
+WebKitWebsiteDataManager *mgr;
+
+//wc = webkit_web_context_new();  
+/*
+wc = webkit_web_context_new_with_website_data_manager(
+            webkit_website_data_manager_new(
+                    "base-cache-directory", cachedir,
+                    "base-data-directory", datadir,
+                    NULL));
+*/
+
+
+mgr = webkit_website_data_manager_new("base-data-directory" , datadir,
+				"base-cache-directory", cachedir,
+				 NULL);
+
+
+wc = webkit_web_context_new_with_website_data_manager(mgr);
+
+   
+    webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+
+
+ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
+
+ //tell webkit where to store cookies
+    if (!g_file_test(cookies_path, G_FILE_TEST_EXISTS)) {
+        mkdir(cookies_path, 0700);
+        cookie_file_handler = fopen(cookie_file, "wb+");
+        fclose(cookie_file_handler);
+    }
+
+
+ // WebKitCookieManager *cookiemgr = webkit_website_data_manager_get_cookie_manager(mgr);
+  WebKitCookieManager *cookiemgr = webkit_web_context_get_cookie_manager(wc);
+
+    webkit_cookie_manager_set_persistent_storage(
+            cookiemgr, cookie_file,
+            WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT); // as mentioned in surf sources only text storage works
+
+   webkit_cookie_manager_set_accept_policy(
+            cookiemgr,
+            SURFER_COOKIE_POLICY);
+
+   
+      webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+   
 
 
 
@@ -187,7 +245,6 @@ g_signal_connect (wc,
    
 
 
-
     g_signal_connect(G_OBJECT(c->box_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
 
@@ -208,34 +265,11 @@ g_signal_connect (wc,
     gtk_widget_hide(c->box_find);
     gtk_widget_hide(c->box_open);
 
-    tls_certs(wc);
+//    tls_certs(wc);
 
-    WebKitSettings *settings = webkit_settings_new();
-    //char *value = "Googlebot/2.1";
-    //g_object_set(settings, "user-agent", &value, NULL);
-    webkit_web_view_set_settings(WEBKIT_WEB_VIEW(c->webView), settings);
-    webkit_settings_set_enable_webgl(settings, enabled);
-    g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
-    g_object_set(G_OBJECT(settings),
-	             "enable-html5-database", TRUE, NULL);
- g_object_set(G_OBJECT(settings),
-	             "enable-html5-local-storage", TRUE, NULL);
-    webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
-
-    webkit_cookie_manager_set_accept_policy(
-            webkit_web_context_get_cookie_manager(wc),
-            SURFER_COOKIE_POLICY);
-
-    //tell webkit where to store cookies
-    if (!g_file_test(cookies_path, G_FILE_TEST_EXISTS)) {
-        mkdir(cookies_path, 0700);
-        cookie_file_handler = fopen(cookie_file, "wb+");
-        fclose(cookie_file_handler);
-    }
-
-    webkit_cookie_manager_set_persistent_storage(
-            webkit_web_context_get_cookie_manager(wc), cookie_file,
-            WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT); // as mentioned in surf sources only text storage works
+   
+   
+   
 
     if (uri != NULL) {
         link = ensure_uri_scheme(uri);
@@ -552,7 +586,7 @@ find(GtkWidget *widget __attribute__((__unused__)), gpointer data) {
     }
     
 }
-
+/*
 void
 tls_certs(WebKitWebContext *wc) {
     GDir *directory;
@@ -570,21 +604,19 @@ tls_certs(WebKitWebContext *wc) {
         g_dir_close(directory);
     }
 }
-
+*/
 int main(int argc, char *argv[]) {
     int i;
     gchar *favfilename;
     FILE *File;
     char buffer[256] = "<html><head></head><body bgcolor=black>";
     gchar *link;
- 
-
+  
     gtk_init(&argc, &argv);
     
-    //
-    wc = webkit_web_context_get_default();
-   
-    webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+    
+     //
+    
    
 
     favfilename = g_strdup_printf("%s", ".fav");
