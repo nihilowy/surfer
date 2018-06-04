@@ -142,7 +142,7 @@ client_new(gchar *uri,WebKitWebContext *wc) {
 
         
 
-    c->webView= webkit_web_view_new();
+    
 
 
 
@@ -154,7 +154,7 @@ client_new(gchar *uri,WebKitWebContext *wc) {
    gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
    gchar *localstoragedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
      
-
+c->webView= webkit_web_view_new();
 
  WebKitSettings *settings = webkit_settings_new();
     //char *value = "Googlebot/2.1";
@@ -169,7 +169,7 @@ client_new(gchar *uri,WebKitWebContext *wc) {
 */  
 
 WebKitWebsiteDataManager *mgr;
-
+WebKitUserContentManager *contentmanager = webkit_user_content_manager_new(); 
 //wc = webkit_web_context_new();  
 /*
 wc = webkit_web_context_new_with_website_data_manager(
@@ -215,7 +215,17 @@ wc = webkit_web_context_new_with_website_data_manager(mgr);
    
       webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
    
+c->webView = g_object_new(WEBKIT_TYPE_WEB_VIEW,
+		    "settings", settings,
+		    "user-content-manager", contentmanager,
+		    "web-context",wc ,
+		    NULL);
 
+
+
+
+
+//g_object_set_data(c->webView, "v", v);
 
 
 
