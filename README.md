@@ -20,7 +20,10 @@ someonewhocares.org
 
 ## Compile and install:
 
-    make && make install
+  sudo make install
+
+
+  on Arch: yaourt surfer
 
 ## Hotkeys:
 
