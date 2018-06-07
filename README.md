@@ -64,6 +64,8 @@ someonewhocares.org
 
 `F11` &mdash; toogle fullscreen
 
+`F12` &mdash; show history (.hist file in HOME dir);
+
 
 
 **Edit `surfer.c` to change hotkeys**

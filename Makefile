@@ -3,7 +3,7 @@ ifeq ($(DEBUG), 1)
 	CFLAGS += -Wall
 else
 	DEBUG = 0
-	CFLAGS += -Wno-deprecated-declarations
+	CFLAGS += -Wno-deprecated-declarations -g 
 endif
 DDEBUG=-DDEBUG=${DEBUG}
 

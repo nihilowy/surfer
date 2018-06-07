@@ -33,7 +33,7 @@
 
 
 
-typedef struct Client {
+typedef struct {
     GtkWidget *main_window;
     GtkWidget *entry_find;
     GtkWidget *entry_open;
@@ -77,7 +77,7 @@ static Client *client_new(Client *rc);
 
 static WebKitWebView *clientview(Client *c, WebKitWebView *rv);
 
-static void loadurl(Client *c, gchar *url);
+static void loadurl(Client *rc, gchar *url);
 
 //static WebKitWebView *create_request(Client *c);
 static gboolean decide_policy(WebKitWebView *v,WebKitPolicyDecision *decision,
@@ -209,8 +209,10 @@ gchar *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
 gchar *datadir  = g_build_filename(g_get_user_data_dir() , fullname, NULL);
 gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
 
-if (rv) {
+if (rv != NULL) {
+                 c->webView=WEBKIT_WEB_VIEW(rv);
 		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(c->webView));
+                     printf("related\n");
 	} 
 
 
@@ -282,6 +284,8 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 		    "settings", settings,
 		    "user-content-manager", contentmanager,
 		    "web-context",wc );
+
+ printf("new\n");
 }
     g_signal_connect(G_OBJECT(view), "notify::title", G_CALLBACK(changed_title), c);
  //   g_signal_connect(G_OBJECT(view), "notify::url", G_CALLBACK(changed_url), c);
@@ -297,7 +301,7 @@ return view;
 
 
 void
-loadurl(Client *c, gchar *url)
+loadurl(Client *rc, gchar *url)
 {
     gchar *link;
 
@@ -316,7 +320,7 @@ loadurl(Client *c, gchar *url)
 
 //link = soup_uri_normalize(url,NULL);
  //printf("%s/n",link);   
-     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
+     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(rc->webView), link);
   
     g_free(link);
 
