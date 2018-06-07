@@ -33,7 +33,7 @@
 
 
 
-typedef struct {
+typedef struct Client{
     GtkWidget *main_window;
     GtkWidget *entry_find;
     GtkWidget *entry_open;
@@ -77,11 +77,11 @@ static Client *client_new(Client *rc);
 
 static WebKitWebView *clientview(Client *c, WebKitWebView *rv);
 
-static void loadurl(Client *rc, gchar *url);
+static void loadurl(Client *c, gchar *url);
 
 //static WebKitWebView *create_request(Client *c);
 static gboolean decide_policy(WebKitWebView *v,WebKitPolicyDecision *decision,
-  WebKitPolicyDecisionType type, Client *c,gpointer );
+  WebKitPolicyDecisionType type, Client *c);
 
 
 
@@ -177,7 +177,7 @@ Client *client_new(Client *rc) {
     g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c); 
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
-
+    g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
  //g_signal_connect(G_OBJECT(c->webView), "notify::url", G_CALLBACK(changed_url), c);
 
     
@@ -212,7 +212,7 @@ gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
 if (rv != NULL) {
                  c->webView=WEBKIT_WEB_VIEW(rv);
 		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(c->webView));
-                     printf("related\n");
+              //       printf("related\n");
 	} 
 
 
@@ -285,11 +285,11 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 		    "user-content-manager", contentmanager,
 		    "web-context",wc );
 
- printf("new\n");
+// printf("new\n");
 }
     g_signal_connect(G_OBJECT(view), "notify::title", G_CALLBACK(changed_title), c);
  //   g_signal_connect(G_OBJECT(view), "notify::url", G_CALLBACK(changed_url), c);
-    g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), NULL);
+ //   g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), NULL);
     g_signal_connect(G_OBJECT(view), "close", G_CALLBACK(close_request), c);
  //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
 
@@ -301,7 +301,7 @@ return view;
 
 
 void
-loadurl(Client *rc, gchar *url)
+loadurl(Client *c, gchar *url)
 {
     gchar *link;
 
@@ -320,7 +320,7 @@ loadurl(Client *rc, gchar *url)
 
 //link = soup_uri_normalize(url,NULL);
  //printf("%s/n",link);   
-     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(rc->webView), link);
+     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
   
     g_free(link);
 
@@ -556,7 +556,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 
 gboolean
 decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
-              WebKitPolicyDecisionType type,Client *c,gpointer data) {
+              WebKitPolicyDecisionType type,Client *c) {
     WebKitResponsePolicyDecision *r;
     WebKitNavigationType navigation_type;
     WebKitNavigationPolicyDecision *navigationDecision;
@@ -566,7 +566,7 @@ decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
     gchar *link;
      gchar *t;
     Client *rc;
-  
+    
 
 
     switch (type) {
@@ -584,6 +584,7 @@ decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
                     t = (gchar *) webkit_uri_request_get_uri(request);
                     
                     rc = client_new(c);
+                   
                     loadurl(rc,t);
                     webkit_policy_decision_ignore(decision);
                     return TRUE;
