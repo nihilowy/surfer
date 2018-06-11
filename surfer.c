@@ -232,7 +232,7 @@ gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
 if (rv != NULL) {
                  c->webView=WEBKIT_WEB_VIEW(rv);
 		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(c->webView));
-              //       printf("related\n");
+                    printf("related\n");
 	} 
 
 
@@ -313,7 +313,7 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
     g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), c);
 
 
-// printf("new\n");
+ printf("new\n");
 }
    
    
@@ -617,7 +617,7 @@ decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
             break;
 
          case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
-       /*     navigationDecision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
+            navigationDecision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
             navigation_action = webkit_navigation_policy_decision_get_navigation_action(navigationDecision);
             request = webkit_navigation_action_get_request(navigation_action);
             navigation_type = webkit_navigation_action_get_navigation_type(navigation_action);  
@@ -630,8 +630,8 @@ decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
               webkit_policy_decision_use(decision);
                return TRUE;
         
-             else  webkit_policy_decision_use(decision);
-              return TRUE; */
+             } else  webkit_policy_decision_use(decision);
+              return TRUE; 
              break;
 
         case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
