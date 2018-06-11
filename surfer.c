@@ -286,13 +286,13 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 		    "web-context",wc );
 
 // printf("new\n");
-
+}
     g_signal_connect(G_OBJECT(view), "notify::title", G_CALLBACK(changed_title), c);
  //   g_signal_connect(G_OBJECT(view), "notify::url", G_CALLBACK(changed_url), c);
   //  g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), NULL);
     g_signal_connect(G_OBJECT(view), "close", G_CALLBACK(close_request), c);
  //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
-}
+
    
 
 
