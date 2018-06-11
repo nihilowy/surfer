@@ -77,13 +77,14 @@ static Client *client_new(Client *rc);
 
 static WebKitWebView *clientview(Client *c, WebKitWebView *rv);
 
-static void loadurl(Client *c, gchar *url);
+static void loadurl(Client *rc, gchar *url);
 
-//static WebKitWebView *create_request(Client *c);
+
+
 static gboolean decide_policy(WebKitWebView *v,WebKitPolicyDecision *decision,
-  WebKitPolicyDecisionType type, Client *c);
+  WebKitPolicyDecisionType type, Client *rc);
 
-
+static GtkWidget *create_request(WebKitWebView *v,WebKitNavigationAction *a,Client *rc);
 
 
 static gboolean keyboard(GtkWidget *widget, GdkEvent *event, Client *c,  gpointer );
@@ -123,6 +124,27 @@ close_request(WebKitWebView *view,Client *c) {
     return TRUE;
 }
 
+
+GtkWidget
+*create_request(WebKitWebView *v,WebKitNavigationAction *a,Client *rc){
+
+Client *c;
+/*
+WebKitNavigationType type;
+WebKitURIRequest *request;
+gchar *t; 
+type = webkit_navigation_action_get_navigation_type(a);
+request = webkit_navigation_action_get_request(a);
+         
+           if (type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {    
+                    t = (gchar *) webkit_uri_request_get_uri(request);
+*/
+
+c = client_new(rc);
+
+
+  return GTK_WIDGET(c->webView);
+}
 
 
 
@@ -177,9 +199,7 @@ Client *client_new(Client *rc) {
     g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c); 
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
-    g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
- //g_signal_connect(G_OBJECT(c->webView), "notify::url", G_CALLBACK(changed_url), c);
-
+  
     
     gtk_widget_show_all(c->main_window);
     gtk_widget_grab_focus(GTK_WIDGET(c->webView));
@@ -285,14 +305,17 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 		    "user-content-manager", contentmanager,
 		    "web-context",wc );
 
-// printf("new\n");
-}
+
     g_signal_connect(G_OBJECT(view), "notify::title", G_CALLBACK(changed_title), c);
  //   g_signal_connect(G_OBJECT(view), "notify::url", G_CALLBACK(changed_url), c);
- //   g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), NULL);
+    g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), NULL);
     g_signal_connect(G_OBJECT(view), "close", G_CALLBACK(close_request), c);
- //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
+    g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), c);
 
+
+// printf("new\n");
+}
+   
    
 
 
@@ -301,7 +324,7 @@ return view;
 
 
 void
-loadurl(Client *c, gchar *url)
+loadurl(Client *rc, gchar *url)
 {
     gchar *link;
 
@@ -320,7 +343,7 @@ loadurl(Client *c, gchar *url)
 
 //link = soup_uri_normalize(url,NULL);
  //printf("%s/n",link);   
-     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
+     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(rc->webView), link);
   
     g_free(link);
 
@@ -556,7 +579,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 
 gboolean
 decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
-              WebKitPolicyDecisionType type,Client *c) {
+              WebKitPolicyDecisionType type,Client *rc) {
     WebKitResponsePolicyDecision *r;
     WebKitNavigationType navigation_type;
     WebKitNavigationPolicyDecision *navigationDecision;
@@ -565,7 +588,7 @@ decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
     guint button, mods;
     gchar *link;
      gchar *t;
-    Client *rc;
+    Client *c;
     
 
 
@@ -583,9 +606,9 @@ decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
                 if (button == 1 && mods & GDK_CONTROL_MASK) {
                     t = (gchar *) webkit_uri_request_get_uri(request);
                     
-                    rc = client_new(c);
+                    c = client_new(rc);
                    
-                    loadurl(rc,t);
+                    loadurl(c,t);
                     webkit_policy_decision_ignore(decision);
                     return TRUE;
                 } else webkit_policy_decision_use(decision);
@@ -593,21 +616,23 @@ decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
             }
             break;
 
-        case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
-            navigationDecision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
+         case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+       /*     navigationDecision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
             navigation_action = webkit_navigation_policy_decision_get_navigation_action(navigationDecision);
             request = webkit_navigation_action_get_request(navigation_action);
             navigation_type = webkit_navigation_action_get_navigation_type(navigation_action);  
             if (navigation_type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
 
-                t = (gchar *) webkit_uri_request_get_uri(request);
-                rc = client_new(c);
+               t = (gchar *) webkit_uri_request_get_uri(request);
+                c = client_new(rc);
                     loadurl(rc,t);
-                return TRUE;
-            }
-              webkit_policy_decision_ignore(decision);
-              return TRUE;
-            break;
+               webkit_policy_decision_ignore(decision);
+              webkit_policy_decision_use(decision);
+               return TRUE;
+        
+             else  webkit_policy_decision_use(decision);
+              return TRUE; */
+             break;
 
         case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
             r = WEBKIT_RESPONSE_POLICY_DECISION(decision);
