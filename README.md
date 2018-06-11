@@ -67,7 +67,8 @@ someonewhocares.org
 
 `F11` &mdash; toogle fullscreen
 
-`F12` &mdash; show history (.hist file in HOME dir);
+`F12` &mdash; show history (.hist file in HOME dir), to enable history 
+change HISTORY_ENABLE to 1 in surfer.c
 
 
 

@@ -30,7 +30,7 @@
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
-
+#define HISTORY_ENABLE	0         //change to 1 for enable history 
 
 
 typedef struct Client{
@@ -286,13 +286,13 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 		    "web-context",wc );
 
 // printf("new\n");
-}
+
     g_signal_connect(G_OBJECT(view), "notify::title", G_CALLBACK(changed_title), c);
  //   g_signal_connect(G_OBJECT(view), "notify::url", G_CALLBACK(changed_url), c);
- //   g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), NULL);
+  //  g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), NULL);
     g_signal_connect(G_OBJECT(view), "close", G_CALLBACK(close_request), c);
  //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
-
+}
    
 
 
@@ -364,28 +364,34 @@ changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c) {
     FILE *File;
     char textdate[100];
     
-    time_t now = time(NULL);
-    struct tm *t = localtime(&now);
 
-
-    strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
-
-     
-    
     title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
- 
+    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+   
     gtk_window_set_title(GTK_WINDOW(c->main_window), title);
     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
    gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
+    
+    if(HISTORY_ENABLE==1){
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);       
 
+    strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
 
-   File = fopen(histpath, "a");
+    File = fopen(histpath, "a");
                     //if(File== NULL)
                    
-                    fprintf(File, "%s,%s,%s\n",textdate,title,url );
+    fprintf(File, "%s,%s,%s\n",textdate,title,url );
                    
-                    fclose(File);
+    fclose(File);
+     
+    }
+    
+    
+    
+    
+
  
 }
 
