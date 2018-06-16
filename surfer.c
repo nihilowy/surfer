@@ -84,7 +84,7 @@ static gboolean decide_policy(WebKitWebView *v,WebKitPolicyDecision *decision,
   WebKitPolicyDecisionType type, Client *c);
 
 
-
+static gboolean crashed(WebKitWebView *v, Client *c);
 
 static gboolean keyboard(GtkWidget *widget, GdkEvent *event, Client *c,  gpointer );
 
@@ -123,6 +123,15 @@ close_request(WebKitWebView *view,Client *c) {
     return TRUE;
 }
 
+
+gboolean crashed(WebKitWebView *v, Client *c){
+
+
+webkit_web_view_reload(c->webView);
+
+
+
+}
 
 
 
@@ -178,9 +187,11 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
     g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
- //g_signal_connect(G_OBJECT(c->webView), "notify::url", G_CALLBACK(changed_url), c);
+    g_signal_connect(G_OBJECT(c->webView), "web-process-crashed",G_CALLBACK(crashed), c);
 
-    
+//g_signal_connect(G_OBJECT(c->webView), "notify::url", G_CALLBACK(changed_url), c);    
+
+
     gtk_widget_show_all(c->main_window);
     gtk_widget_grab_focus(GTK_WIDGET(c->webView));
     gtk_widget_hide(c->box_find);
@@ -667,6 +678,7 @@ p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
     }
     
 }
+
 
 /*
 void
