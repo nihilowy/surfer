@@ -31,9 +31,9 @@ someonewhocares.org
 
 `Ctrl + n` &mdash; new window
 
-`Ctrl + shift + h` &mdash; go back
+`Ctrl +  s` &mdash; go back
 
-`Ctrl + shift + l` &mdash; go forward
+`Ctrl +  d` &mdash; go forward
 
 `Ctrl + q` &mdash; quit
 
@@ -63,7 +63,8 @@ someonewhocares.org
 
 `Ctrl + i` &mdash; web inspector (page source)
 
-`Ctrl + s` &mdash; toogle user style black theme (/usr/share/surfer/black.css)
+`Ctrl + Shift + s` &mdash; toogle user style black theme 
+(/usr/share/surfer/black.css)
 
 `F11` &mdash; toogle fullscreen
 

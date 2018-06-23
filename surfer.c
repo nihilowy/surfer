@@ -10,8 +10,8 @@
 #define SURFER_NEW_WINDOW_KEY       GDK_KEY_n
 #define SURFER_OPEN_KEY             GDK_KEY_o
 #define SURFER_CLOSE_KEY            GDK_KEY_q
-#define SURFER_BACK_KEY             GDK_KEY_H
-#define SURFER_FORWARD_KEY          GDK_KEY_L
+#define SURFER_BACK_KEY             GDK_KEY_s
+#define SURFER_FORWARD_KEY          GDK_KEY_d
 #define SURFER_STOP_KEY             GDK_KEY_Escape
 #define SURFER_RELOAD_KEY           GDK_KEY_r
 #define SURFER_FIND_KEY             GDK_KEY_slash
@@ -26,7 +26,7 @@
 #define SURFER_SCROLL_UP_KEY        GDK_KEY_k
 #define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_D
 #define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_U
-#define SURFER_STYLE_KEY            GDK_KEY_s
+#define SURFER_STYLE_KEY            GDK_KEY_S
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
