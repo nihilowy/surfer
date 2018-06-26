@@ -21,7 +21,7 @@
 #define SURFER_ZOOM_IN_KEY          GDK_KEY_equal
 #define SURFER_ZOOM_OUT_KEY         GDK_KEY_minus
 #define SURFER_FULLSCREEN_KEY       GDK_KEY_F11
-#define SURFER_HISTORY_KEY          GDK_KEY_F12
+#define SURFER_HISTORY_KEY          GDK_KEY_R
 #define SURFER_SCROLL_DOWN_KEY      GDK_KEY_j
 #define SURFER_SCROLL_UP_KEY        GDK_KEY_k
 #define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_D
@@ -491,6 +491,10 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                      }
 
                     return TRUE;
+
+		case SURFER_HISTORY_KEY:
+                    webkit_web_view_load_uri(c->webView, history);
+                    return TRUE;
                         
 
                 case SURFER_NEW_WINDOW_KEY:     
@@ -559,9 +563,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                 case SURFER_STOP_KEY:
                     webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(c->webView));
                     return TRUE;
-                case SURFER_HISTORY_KEY:
-                    webkit_web_view_load_uri(c->webView, history);
-                    return TRUE;
+               
 
                 default:
                     return FALSE;

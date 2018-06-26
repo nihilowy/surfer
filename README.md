@@ -66,10 +66,12 @@ someonewhocares.org
 `Ctrl + Shift + s` &mdash; toogle user style black theme 
 (/usr/share/surfer/black.css)
 
+`Ctrl + Shift + r` &mdash; show history (.hist file in HOME dir), to 
+enable history 
+change HISTORY_ENABLE to 1 in surfer.c
+
 `F11` &mdash; toogle fullscreen
 
-`F12` &mdash; show history (.hist file in HOME dir), to enable history 
-change HISTORY_ENABLE to 1 in surfer.c
 
 
 
