@@ -184,9 +184,9 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
     g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c); 
-   // g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
+    g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
-    g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
+  //  g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
     g_signal_connect(G_OBJECT(c->webView), "web-process-crashed",G_CALLBACK(crashed), c);
 
 //g_signal_connect(G_OBJECT(c->webView), "notify::url", G_CALLBACK(changed_url), c);    
@@ -300,10 +300,10 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 }
     g_signal_connect(G_OBJECT(view), "notify::title", G_CALLBACK(changed_title), c);
  //   g_signal_connect(G_OBJECT(view), "notify::url", G_CALLBACK(changed_url), c);
-  //  g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), NULL);
+   g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), c);
     g_signal_connect(G_OBJECT(view), "close", G_CALLBACK(close_request), c);
  //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
-g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
+//g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
    
 
 
