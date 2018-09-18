@@ -221,9 +221,10 @@ gchar *datadir  = g_build_filename(g_get_user_data_dir() , fullname, NULL);
 gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
 
 if (rv != NULL) {
-                 c->webView=WEBKIT_WEB_VIEW(rv);
-		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(c->webView));
-              //       printf("related\n");
+               //  c->webView=WEBKIT_WEB_VIEW(rv);
+		view = WEBKIT_WEB_VIEW(
+		    webkit_web_view_new_with_related_view(rv));
+                 //  printf("related\n");
 	} 
 
 
