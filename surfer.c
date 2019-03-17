@@ -65,7 +65,7 @@ static gchar *fullname = "";
 
 static void destroy_window(GtkWidget* w,Client *rc);
 
-//static void tls_certs(WebKitWebContext *);
+static void tls_certs(WebKitWebContext *);
 
 static gboolean close_request(WebKitWebView *view,Client *c);
 
@@ -91,6 +91,8 @@ static gboolean keyboard(GtkWidget *widget, GdkEvent *event, Client *c,  gpointe
 static void changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c);
 
 static void changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c );
+
+static void changed_webload(WebKitWebView *webview,WebKitLoadEvent event, Client *c);
 
 static void find(GtkWidget *widget,Client *c);
 
@@ -176,7 +178,7 @@ Client *client_new(Client *rc) {
    
     
 
-//    tls_certs(wc);
+    //tls_certs(wc);
 
    
     
@@ -187,7 +189,7 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
   //  g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
-    g_signal_connect(G_OBJECT(c->webView), "web-process-crashed",G_CALLBACK(crashed), c);
+//    g_signal_connect(G_OBJECT(c->webView), "web-process-crashed",G_CALLBACK(crashed), c);
 
 //g_signal_connect(G_OBJECT(c->webView), "notify::url", G_CALLBACK(changed_url), c);    
 
@@ -240,13 +242,12 @@ contentmanager = webkit_user_content_manager_new();
 
   
 
-mgr = webkit_website_data_manager_new("base-data-directory" , datadir,
-				"base-cache-directory", cachedir,
-				 NULL);
+//mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
 
 
-wc = webkit_web_context_new_with_website_data_manager(mgr);
+//wc = webkit_web_context_new_with_website_data_manager(mgr);
   
+wc= webkit_web_context_get_default();
    // view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
 
     
@@ -257,7 +258,7 @@ wc = webkit_web_context_new_with_website_data_manager(mgr);
     g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
 
 
-
+tls_certs(wc);
 
    
 webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
@@ -274,13 +275,13 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
     }
 
 
-  cookiemgr = webkit_website_data_manager_get_cookie_manager(mgr);
-  //cookiemgr = webkit_web_context_get_cookie_manager(wc);
+ // cookiemgr = webkit_website_data_manager_get_cookie_manager(mgr);
+  cookiemgr = webkit_web_context_get_cookie_manager(wc);
 
     webkit_cookie_manager_set_persistent_storage(
             cookiemgr, cookie_file,
-            WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT); // as mentioned in surf sources only text storage works
-
+          //  WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT); // as mentioned in surf sources only text storage works
+WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
    webkit_cookie_manager_set_accept_policy(
             cookiemgr,
             SURFER_COOKIE_POLICY);
@@ -299,10 +300,17 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 
 // printf("new\n");
 }
-    g_signal_connect(G_OBJECT(view), "notify::title", G_CALLBACK(changed_title), c);
- //   g_signal_connect(G_OBJECT(view), "notify::url", G_CALLBACK(changed_url), c);
-   g_signal_connect(G_OBJECT(view), "decide-policy", G_CALLBACK(decide_policy), c);
-    g_signal_connect(G_OBJECT(view), "close", G_CALLBACK(close_request), c);
+
+g_object_connect(
+        G_OBJECT(view),"signal::load-changed", G_CALLBACK(changed_webload),c,
+                       "signal::notify::title", G_CALLBACK(changed_title),c ,
+                       "signal::notify::url", G_CALLBACK(changed_url), c,
+                       "signal::decide-policy", G_CALLBACK(decide_policy),c,
+                       "signal::close", G_CALLBACK(close_request), c,
+                       "signal::web-process-crashed",G_CALLBACK(crashed), c,
+    NULL
+    );
+
  //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
 //g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
    
@@ -417,6 +425,30 @@ changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c) {
    gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
    
 }
+
+static void changed_webload(WebKitWebView *webview,
+        WebKitLoadEvent event, Client *c)
+{
+    GTlsCertificateFlags tlsflags;
+    char *uri = NULL;
+
+    switch (event) {
+        case WEBKIT_LOAD_STARTED:
+           
+
+        case WEBKIT_LOAD_REDIRECTED:
+            break;
+
+        case WEBKIT_LOAD_COMMITTED:
+         
+            break;
+
+        case WEBKIT_LOAD_FINISHED:
+           
+            break;
+ } 
+}
+
 
 
 
@@ -684,7 +716,7 @@ p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
 }
 
 
-/*
+
 void
 tls_certs(WebKitWebContext *wc) {
     GDir *directory;
@@ -702,7 +734,7 @@ tls_certs(WebKitWebContext *wc) {
         g_dir_close(directory);
     }
 }
-*/
+
 int main(int argc, char *argv[]) {
     Client *c;
     int i;
