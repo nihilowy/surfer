@@ -438,7 +438,7 @@ static void changed_webload(WebKitWebView *webview,
   if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
     File = fopen(histpath, "a");                
                    
-    fprintf(File, "<a href=\"%s\" >%.110s</a>\n",url,title );
+    fprintf(File, "<a href=\"%s\" >%.60s</a>\n",url,title );
                    
     fclose(File);
    
@@ -457,7 +457,7 @@ static void changed_webload(WebKitWebView *webview,
 
     File = fopen(histpath, "a");                
                    
-    fprintf(File, "<a href=\"%s\" >%.110s</a>\n",url,title );
+    fprintf(File, "<a href=\"%s\" >%.60s</a>\n",url,title );
                    
     fclose(File);
    
