@@ -30,7 +30,7 @@
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
-#define HISTORY_ENABLE	0         //change to 1 for enable history 
+#define HISTORY_ENABLE	1         //change to 1 for enable history 
 
 
 typedef struct Client{
@@ -422,11 +422,10 @@ static void changed_webload(WebKitWebView *webview,
         WebKitLoadEvent event, Client *c)
 {
     GTlsCertificateFlags tlsflags;
-    char *uri = NULL;
     const gchar *title;
-    const gchar *url;
+    const gchar *url =NULL;
     FILE *File;
-    char textdate[100]; 
+    
     title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
@@ -436,6 +435,16 @@ static void changed_webload(WebKitWebView *webview,
            
 
         case WEBKIT_LOAD_REDIRECTED:
+  if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
+    File = fopen(histpath, "a");                
+                   
+    fprintf(File, "<a href=\"%s\" >%.110s</a>\n",url,title );
+                   
+    fclose(File);
+   
+     
+    }   
+     isbackforward= 0;
             break;
 
         case WEBKIT_LOAD_COMMITTED:
@@ -443,16 +452,12 @@ static void changed_webload(WebKitWebView *webview,
             break;
 
         case WEBKIT_LOAD_FINISHED:
-      if(HISTORY_ENABLE==1 && isbackforward==0){
-    time_t now = time(NULL);
-    struct tm *t = localtime(&now);       
+      if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
+    
 
-    strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
-
-    File = fopen(histpath, "a");
-                    //if(File== NULL)
+    File = fopen(histpath, "a");                
                    
-    fprintf(File, "%s,%s,%s\n",textdate,title,url );
+    fprintf(File, "<a href=\"%s\" >%.110s</a>\n",url,title );
                    
     fclose(File);
    
@@ -760,7 +765,7 @@ int main(int argc, char *argv[]) {
     FILE *File;
     char buffer[256] = "<html><head></head><body bgcolor=black>";
     gchar *link;
-  
+    char textdate[100]; 
     gtk_init(&argc, &argv);
     
     
@@ -784,13 +789,27 @@ int main(int argc, char *argv[]) {
     g_free(histfilename);
 
     if (!g_file_test(histpath, G_FILE_TEST_EXISTS)) {
-        File = fopen(histpath, "ab+");
-       
+        File = fopen(histpath, "wb+");
+        fprintf(File, "%s", buffer);
         fclose(File);
         g_free(File);
     }
+     
+     if(HISTORY_ENABLE==1 ){
+        time_t now = time(NULL);
+    struct tm *t = localtime(&now);       
+
+    strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
+
+    File = fopen(histpath, "a");
+                   
+                   
+    fprintf(File, "%s",textdate);
 
 
+                   
+    fclose(File);
+}
   
     //home =  g_strdup(favpath);
 
