@@ -763,7 +763,7 @@ int main(int argc, char *argv[]) {
     gchar *favfilename;
     gchar *histfilename;
     FILE *File;
-    char buffer[256] = "<html><head></head><body bgcolor=black>";
+    char buffer[256] = "<!DOCTYPE html><html><head><style>body {background-color: #000009;}p    {color: yellow;} a:link { color: #00e900; }</style><p>";
     gchar *link;
     char textdate[100]; 
     gtk_init(&argc, &argv);
