@@ -47,7 +47,7 @@ typedef struct Client{
     WebKitWebView *webView;
 //  WebKitPolicyDecision *decision1;
     WebKitFindController *fc;
-
+    
     
     int f;
     int s;
@@ -61,6 +61,8 @@ gchar *history;
 gchar *favpath;
 gchar *histpath;
 static gchar *fullname = "";
+
+static gboolean isbackforward= 0;
 
 
 static void destroy_window(GtkWidget* w,Client *rc);
@@ -376,13 +378,16 @@ close_find(Client *rc) {
 }
 
 
+
+
+
+
 void
 changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c) {
     const gchar *title;
     const gchar *url;
 
-    FILE *File;
-    char textdate[100];
+    
     
 
     title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
@@ -393,20 +398,7 @@ changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c) {
 
    gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
     
-    if(HISTORY_ENABLE==1){
-    time_t now = time(NULL);
-    struct tm *t = localtime(&now);       
-
-    strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
-
-    File = fopen(histpath, "a");
-                    //if(File== NULL)
-                   
-    fprintf(File, "%s,%s,%s\n",textdate,title,url );
-                   
-    fclose(File);
-     
-    }
+   
     
     
     
@@ -431,9 +423,16 @@ static void changed_webload(WebKitWebView *webview,
 {
     GTlsCertificateFlags tlsflags;
     char *uri = NULL;
+    const gchar *title;
+    const gchar *url;
+    FILE *File;
+    char textdate[100]; 
+    title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
+    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
     switch (event) {
         case WEBKIT_LOAD_STARTED:
+             break;
            
 
         case WEBKIT_LOAD_REDIRECTED:
@@ -444,7 +443,23 @@ static void changed_webload(WebKitWebView *webview,
             break;
 
         case WEBKIT_LOAD_FINISHED:
-           
+      if(HISTORY_ENABLE==1 && isbackforward==0){
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);       
+
+    strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
+
+    File = fopen(histpath, "a");
+                    //if(File== NULL)
+                   
+    fprintf(File, "%s,%s,%s\n",textdate,title,url );
+                   
+    fclose(File);
+   
+     
+    }   
+     isbackforward= 0;
+        
             break;
  } 
 }
@@ -500,10 +515,12 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 
                 case SURFER_BACK_KEY:
                     webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
+                    isbackforward= 1;
                     return TRUE;
 
                 case SURFER_FORWARD_KEY:
                     webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
+                    isbackforward= 1;
                     return TRUE;
 
                 case SURFER_INSPECTOR_KEY:
