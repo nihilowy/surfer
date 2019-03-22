@@ -763,7 +763,7 @@ int main(int argc, char *argv[]) {
     gchar *favfilename;
     gchar *histfilename;
     FILE *File;
-    char buffer[256] = "<!DOCTYPE html><html><head><style>body {background-color: #000009;}p    {color: yellow;} a:link { color: #00e900; }</style><p>";
+    char buffer[256] = "<!DOCTYPE html><html><head><meta charset=utf8><style>body {background-color: #000009;}p    {color: yellow;} a:link { color: #00e900; }</style><p>";
     gchar *link;
     char textdate[100]; 
     gtk_init(&argc, &argv);
@@ -793,7 +793,7 @@ int main(int argc, char *argv[]) {
         fprintf(File, "%s", buffer);
         fclose(File);
         g_free(File);
-    }
+}    
      
      if(HISTORY_ENABLE==1 ){
         time_t now = time(NULL);
@@ -810,6 +810,7 @@ int main(int argc, char *argv[]) {
                    
     fclose(File);
 }
+
   
     //home =  g_strdup(favpath);
 
