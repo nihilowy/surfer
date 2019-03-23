@@ -30,7 +30,7 @@
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
-#define HISTORY_ENABLE	1         //change to 1 for enable history 
+#define HISTORY_ENABLE	0         //change to 1 for enable history 
 
 
 typedef struct Client{
