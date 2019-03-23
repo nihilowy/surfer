@@ -19,11 +19,14 @@ someonewhocares.org
 
 
 ## Compile and install:
-
+  
+  git clone https://github.com/nihilowy/surfer.git
+  cd surfer
+  make
   sudo make install
 
 
-  on Arch: yaourt surfer
+  on Arch: pacaur surfer
 
 ## Hotkeys:
 
