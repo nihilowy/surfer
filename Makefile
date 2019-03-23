@@ -31,7 +31,11 @@ install:all
 	install -Dm644 surfer.1 $(DESTDIR)/usr/share/man/man1/surfer.1
 	install -Dm644 black.css $(DESTDIR)/usr/share/surfer/black.css
 
-  
+uninstall:
+	$(RM) $(DESTDIR)/usr/bin/surfer
+	$(RM) $(DESTDIR)$/usr/man/man1/vimb.1
+	$(RM) $(DESTDIR)/usr/share/surfer/black.css
+	$(RM) $(DESTDIR)/usr/share/applications/surfer.desktop
 
 
 
