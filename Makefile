@@ -33,7 +33,7 @@ install:all
 
 uninstall:
 	$(RM) $(DESTDIR)/usr/bin/surfer
-	$(RM) $(DESTDIR)$/usr/man/man1/vimb.1
+	$(RM) $(DESTDIR)/usr/man/man1/surfer.1
 	$(RM) $(DESTDIR)/usr/share/surfer/black.css
 	$(RM) $(DESTDIR)/usr/share/applications/surfer.desktop
 
