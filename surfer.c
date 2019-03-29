@@ -40,6 +40,7 @@ typedef struct Client{
     GtkWidget *box_find;
  
     GtkWidget *button;
+    GtkWidget *button_find_back;
     GtkWidget *box_open;
 
     GtkWidget *vbox;
@@ -71,7 +72,7 @@ static void tls_certs(WebKitWebContext *);
 
 static gboolean close_request(WebKitWebView *view,Client *c);
 
-
+static void find_back(GtkWidget * widget,Client *c);
 
 
 
@@ -157,7 +158,8 @@ Client *client_new(Client *rc) {
  //   c->webView = clientview(c);
    c->webView = clientview(c, rc ? rc->webView : NULL);
 
-     
+
+    c->fc= webkit_web_view_get_find_controller(c->webView);     
 
     c->vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
  
@@ -165,11 +167,13 @@ Client *client_new(Client *rc) {
     c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     c->button = gtk_button_new_with_label ("Close");
+    c->button_find_back = gtk_button_new_with_label ("Find Back");
     c->entry_find = gtk_entry_new();
     c->entry_open= gtk_entry_new();
   
 
     gtk_box_pack_start(GTK_BOX(c->box_find), c->entry_find, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(c->box_find), c->button_find_back, TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_find), c->button,TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
     gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);    
@@ -187,13 +191,16 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->box_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
-    g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c); 
+   g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
+   g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c); 
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
   //  g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
 //    g_signal_connect(G_OBJECT(c->webView), "web-process-crashed",G_CALLBACK(crashed), c);
 
 //g_signal_connect(G_OBJECT(c->webView), "notify::url", G_CALLBACK(changed_url), c);    
+
+
 
 
     gtk_widget_show_all(c->main_window);
@@ -251,6 +258,8 @@ contentmanager = webkit_user_content_manager_new();
   
 wc= webkit_web_context_get_default();
    // view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
+
+
 
     
     //char *value = "Googlebot/2.1";
@@ -315,12 +324,23 @@ g_object_connect(
 
  //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
 //g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
-   
+//g_signal_connect(G_OBJECT(wc), "download-started",G_CALLBACK(we_download), NULL);   
 
 
 return view;
  }
 
+
+/*
+
+void
+we_download(WebKitWebView *web_view, WebKitDownload *download,
+                          gpointer data){
+         g_signal_connect(G_OBJECT(download), "decide-destination",
+                          G_CALLBACK(download_handle), data);
+}
+
+*/
 
 void
 loadurl(Client *c, gchar *url)
@@ -369,11 +389,12 @@ user_style(Client *c){
 
 
 void
-close_find(Client *rc) {
+close_find(Client *c) {
    
- 
-    gtk_widget_hide(rc->box_find);
-    gtk_widget_grab_focus(GTK_WIDGET(rc->webView));
+   gtk_entry_set_text(GTK_ENTRY(c->entry_find), "");
+ find(c->entry_find,c);
+    gtk_widget_hide(c->box_find);
+    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
 
 }
 
@@ -719,7 +740,6 @@ find(GtkWidget * widget,Client *c) {
     static gchar *search_text;
     const gchar *p;
 
-    c->fc= webkit_web_view_get_find_controller(c->webView);
 
     
 
@@ -738,6 +758,15 @@ p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
 }
 
 
+void
+find_back(GtkWidget * widget,Client *c){
+
+
+
+webkit_find_controller_search_previous(c->fc);
+    
+
+}
 
 void
 tls_certs(WebKitWebContext *wc) {
