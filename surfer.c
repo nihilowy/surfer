@@ -70,9 +70,12 @@ static void destroy_window(GtkWidget* w,Client *rc);
 
 static void tls_certs(WebKitWebContext *);
 
+static void display_webview( WebKitWebView *rc,Client *c);
+
 static gboolean close_request(WebKitWebView *view,Client *c);
 
 static void find_back(GtkWidget * widget,Client *c);
+
 
 
 
@@ -86,6 +89,11 @@ static void loadurl(Client *rc, gchar *url);
 static gboolean decide_policy(WebKitWebView *v,WebKitPolicyDecision *decision,
   WebKitPolicyDecisionType type, Client *c);
 
+//static void we_download(WebKitWebView *rv, WebKitDownload *download,Client *c);
+
+//static void download_handle_finished(WebKitDownload *download,gchar *uri,Client *c,gpointer data);
+
+//static gboolean download_handle(WebKitDownload *download, gchar *uri,Client *c);
 
 static gboolean crashed(WebKitWebView *v, Client *c);
 
@@ -203,10 +211,17 @@ Client *client_new(Client *rc) {
 
 
 
-    gtk_widget_show_all(c->main_window);
-    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
-    gtk_widget_hide(c->box_find);
-    gtk_widget_hide(c->box_open);
+//    gtk_widget_show_all(c->main_window);
+//    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
+
+
+        display_webview(NULL, c);
+ 
+        
+
+
+
+    
     
     
     clients++;
@@ -309,7 +324,7 @@ view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 		    "user-content-manager", contentmanager,
 		    "web-context",wc );
 
-// printf("new\n");
+ //printf("new\n");
 }
 
 g_object_connect(
@@ -318,13 +333,14 @@ g_object_connect(
                        "signal::notify::url", G_CALLBACK(changed_url), c,
                        "signal::decide-policy", G_CALLBACK(decide_policy),c,
                        "signal::close", G_CALLBACK(close_request), c,
+                       "signal::ready-to-show",G_CALLBACK(display_webview), c,
                        "signal::web-process-crashed",G_CALLBACK(crashed), c,
     NULL
     );
 
  //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
 //g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
-//g_signal_connect(G_OBJECT(wc), "download-started",G_CALLBACK(we_download), NULL);   
+//g_signal_connect(G_OBJECT(wc), "download-started",G_CALLBACK(we_download), c);   
 
 
 return view;
@@ -334,13 +350,59 @@ return view;
 /*
 
 void
-we_download(WebKitWebView *web_view, WebKitDownload *download,
-                          gpointer data){
-         g_signal_connect(G_OBJECT(download), "decide-destination",
-                          G_CALLBACK(download_handle), data);
+we_download(WebKitWebView *rc, WebKitDownload *download,Client *c)
+{
+         g_signal_connect(G_OBJECT(download), "decide-destination",G_CALLBACK(download_handle), c);
+}
+
+gboolean
+download_handle(WebKitDownload *download, gchar *uri, Client *c)
+{
+
+gchar *downl_message;
+
+
+webkit_download_set_destination(download, uri);
+        
+
+
+
+downl_message = g_strdup_printf("Download started %s", uri);
+
+
+//gtk_entry_set_text(GTK_ENTRY(c->entry_open), downl_message);
+
+gtk_widget_show_all(c->box_open);
+
+
+//g_signal_connect(G_OBJECT(download), "finished",G_CALLBACK(download_handle_finished), NULL);
+
+g_free(downl_message);
+g_free(uri);
+}
+
+void
+download_handle_finished(WebKitDownload *download, gchar *uri,Client *c,gpointer data)
+{
+
+gchar *downl_message;
+    
+downl_message = g_strdup_printf("Download finished %s", uri);
+
+
+gtk_entry_set_text(GTK_ENTRY(c->entry_open), downl_message);
+
+gtk_widget_show_all(c->box_open);
+
+g_free(downl_message);
+g_free(uri);
+
 }
 
 */
+
+
+
 
 void
 loadurl(Client *c, gchar *url)
@@ -785,6 +847,17 @@ tls_certs(WebKitWebContext *wc) {
         g_dir_close(directory);
     }
 }
+void
+display_webview(WebKitWebView *rc, Client *c)
+{
+ //   printf("new\n");   
+    gtk_widget_show_all(c->main_window);
+    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
+    gtk_widget_hide(c->box_find);
+    gtk_widget_hide(c->box_open);   
+}
+
+
 
 int main(int argc, char *argv[]) {
     Client *c;
@@ -847,6 +920,7 @@ int main(int argc, char *argv[]) {
     history = (gchar *) g_strdup_printf("file://%s", histpath); 
 
     c = client_new(NULL);
+
 
     if (argc > 1) {
         for (i = 1; i < argc; i++) {
