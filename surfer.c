@@ -57,7 +57,7 @@ typedef struct Client{
 } Client;
 
 static gint clients = 0;
-const gchar *home;
+gchar *home;
 const gchar *history;
 gchar *favpath;
 gchar *histpath;
@@ -83,7 +83,7 @@ static Client *client_new(Client *rc);
 
 static WebKitWebView *clientview(Client *c, WebKitWebView *rv);
 
-static void loadurl(Client *rc, const gchar *url);
+static void loadurl(Client *rc, gchar *url);
 
 static WebKitWebView *create_request(WebKitWebView *rv,WebKitNavigationAction *navact, Client *c);
 
@@ -392,10 +392,10 @@ g_free(uri);
 
 
 void
-loadurl(Client *c, const gchar *url)
+loadurl(Client *c,  gchar *url)
 {
     gchar *link;
-/*
+
     link = g_ascii_strdown(url, -1);
     if (!g_str_has_prefix(link, "http:") &&
         !g_str_has_prefix(link, "https:") &&
@@ -406,10 +406,10 @@ loadurl(Client *c, const gchar *url)
     } else
 
        link = g_strdup(url);
-  */ 
+   
 
 
-   link = soup_uri_normalize(url,NULL);
+  // link = soup_uri_normalize(url,NULL);
  //printf("%s/n",link);   
    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
   
@@ -728,7 +728,7 @@ void decide_navaction(WebKitPolicyDecision *decision,Client *c) {
     WebKitURIRequest *request;
     guint button, mods;
     gchar *link;
-    const gchar *t;
+    gchar *t;
     Client *rc;
 
 
@@ -736,7 +736,7 @@ void decide_navaction(WebKitPolicyDecision *decision,Client *c) {
     request = webkit_navigation_action_get_request(navigation_action);
     navigation_type = webkit_navigation_action_get_navigation_type(navigation_action);
            
-    t =  webkit_uri_request_get_uri(request);
+    t =  ( gchar *) webkit_uri_request_get_uri(request);
     mods = webkit_navigation_action_get_modifiers(navigation_action);
     button = webkit_navigation_action_get_mouse_button(navigation_action);
 
@@ -750,7 +750,7 @@ void decide_navaction(WebKitPolicyDecision *decision,Client *c) {
        rc = client_new(c);
                    
        loadurl(rc,t);
-                    
+      // g_free(t);                
      } 
     else webkit_policy_decision_use(decision);
  //    printf("no\n");
@@ -761,14 +761,21 @@ void decide_newwindow(WebKitPolicyDecision *decision,Client *c)
 
     WebKitNavigationType navigation_type;
     WebKitNavigationAction *navigation_action;
-
+    WebKitURIRequest *request;
+    gchar *t;
+    Client *rc;
 
     navigation_action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
+    request = webkit_navigation_action_get_request(navigation_action);
     navigation_type =webkit_navigation_action_get_navigation_type(navigation_action);
-
+    
   
     switch (navigation_type) {
         case WEBKIT_NAVIGATION_TYPE_LINK_CLICKED:
+
+             t = (gchar *) webkit_uri_request_get_uri(request);
+             rc = client_new(c);
+             loadurl(rc,t);
         case WEBKIT_NAVIGATION_TYPE_FORM_SUBMITTED: 
         case WEBKIT_NAVIGATION_TYPE_BACK_FORWARD:
         case WEBKIT_NAVIGATION_TYPE_RELOAD:
