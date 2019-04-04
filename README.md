@@ -24,12 +24,9 @@ someonewhocares.org
 
   cd surfer
 
-  make
+  make &&  sudo make install
 
-  sudo make install
-
-
-  on Arch: pacaur surfer
+  on Arch: pacaur -S surfer
 
 ## Hotkeys:
 
@@ -37,9 +34,9 @@ someonewhocares.org
 
 `Ctrl + n` &mdash; new window
 
-`Ctrl +  s` &mdash; go back
+`Ctrl +  b` &mdash; go back
 
-`Ctrl +  d` &mdash; go forward
+`Ctrl +  f` &mdash; go forward
 
 `Ctrl + q` &mdash; quit
 
@@ -47,7 +44,8 @@ someonewhocares.org
 
 `Ctrl + h` &mdash; home (bookmarks list)
 
-`Ctrl + b` &mdash; bookmark site (to remove just edit file with links: .fav in your home dir)
+`Ctrl + shift + b` &mdash; bookmark site (to remove just edit file with 
+links: .fav in your home dir)
 
 `Ctrl + o` &mdash; toogle url bar
 
@@ -59,20 +57,20 @@ someonewhocares.org
 
 `Ctrl + -` &mdash; zoom out
 
-`Ctrl + j` &mdash; scroll down
+`Ctrl + e` &mdash; scroll down
 
-`Ctrl + k` &mdash; scroll up
+`Ctrl + d` &mdash; scroll up
 
-`Ctrl + Shift + u` &mdash; page up
+`Ctrl +  j` &mdash; page up
 
-`Ctrl + Shift + d` &mdash; page down
+`Ctrl +  k` &mdash; page down
 
 `Ctrl + i` &mdash; web inspector (page source)
 
 `Ctrl + Shift + s` &mdash; toogle user style black theme 
 (/usr/share/surfer/black.css)
 
-`Ctrl + Shift + r` &mdash; show history (.hist file in HOME dir), to 
+`Ctrl + Shift + h` &mdash; show history (.hist file in HOME dir), to 
 enable history 
 change HISTORY_ENABLE to 1 in surfer.c
 

@@ -10,22 +10,22 @@
 #define SURFER_NEW_WINDOW_KEY       GDK_KEY_n
 #define SURFER_OPEN_KEY             GDK_KEY_o
 #define SURFER_CLOSE_KEY            GDK_KEY_q
-#define SURFER_BACK_KEY             GDK_KEY_s
-#define SURFER_FORWARD_KEY          GDK_KEY_d
+#define SURFER_BACK_KEY             GDK_KEY_b
+#define SURFER_FORWARD_KEY          GDK_KEY_f
 #define SURFER_STOP_KEY             GDK_KEY_Escape
 #define SURFER_RELOAD_KEY           GDK_KEY_r
 #define SURFER_FIND_KEY             GDK_KEY_slash
 #define SURFER_HOME_KEY             GDK_KEY_h
-#define SURFER_BOOKMARK_KEY         GDK_KEY_b
+#define SURFER_BOOKMARK_KEY         GDK_KEY_B
 #define SURFER_INSPECTOR_KEY        GDK_KEY_i
 #define SURFER_ZOOM_IN_KEY          GDK_KEY_equal
 #define SURFER_ZOOM_OUT_KEY         GDK_KEY_minus
 #define SURFER_FULLSCREEN_KEY       GDK_KEY_F11
-#define SURFER_HISTORY_KEY          GDK_KEY_R
-#define SURFER_SCROLL_DOWN_KEY      GDK_KEY_j
-#define SURFER_SCROLL_UP_KEY        GDK_KEY_k
-#define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_D
-#define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_U
+#define SURFER_HISTORY_KEY          GDK_KEY_H
+#define SURFER_SCROLL_DOWN_KEY      GDK_KEY_d
+#define SURFER_SCROLL_UP_KEY        GDK_KEY_e
+#define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_k
+#define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_j
 #define SURFER_STYLE_KEY            GDK_KEY_S
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
@@ -57,8 +57,8 @@ typedef struct Client{
 } Client;
 
 static gint clients = 0;
-gchar *home;
-gchar *history;
+const gchar *home;
+const gchar *history;
 gchar *favpath;
 gchar *histpath;
 static gchar *fullname = "";
@@ -83,11 +83,18 @@ static Client *client_new(Client *rc);
 
 static WebKitWebView *clientview(Client *c, WebKitWebView *rv);
 
-static void loadurl(Client *rc, gchar *url);
+static void loadurl(Client *rc, const gchar *url);
 
-//static WebKitWebView *create_request(Client *c);
-static gboolean decide_policy(WebKitWebView *v,WebKitPolicyDecision *decision,
-  WebKitPolicyDecisionType type, Client *c);
+static WebKitWebView *create_request(WebKitWebView *rv,WebKitNavigationAction *navact, Client *c);
+
+
+static gboolean decide_policy(WebKitWebView *v,WebKitPolicyDecision *decision,WebKitPolicyDecisionType type, Client *c);
+
+static void decide_navaction(WebKitPolicyDecision *decision,Client *c);
+
+static void decide_newwindow(WebKitPolicyDecision *decision,Client *c);
+
+static void decide_response(WebKitPolicyDecision *decision,Client *c);
 
 //static void we_download(WebKitWebView *rv, WebKitDownload *download,Client *c);
 
@@ -142,7 +149,7 @@ gboolean crashed(WebKitWebView *v, Client *c){
 
 webkit_web_view_reload(c->webView);
 
-
+return TRUE;
 
 }
 
@@ -164,7 +171,7 @@ Client *client_new(Client *rc) {
     gtk_window_set_default_size(GTK_WINDOW(c->main_window), 1100, 700);
 
  //   c->webView = clientview(c);
-   c->webView = clientview(c, rc ? rc->webView : NULL);
+    c->webView = clientview(c, rc ? rc->webView : NULL);
 
 
     c->fc= webkit_web_view_get_find_controller(c->webView);     
@@ -199,29 +206,18 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->box_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
-   g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
-   g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c); 
+    g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
+    g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c); 
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
-  //  g_signal_connect(G_OBJECT(c->webView), "decide-policy", G_CALLBACK(decide_policy), c);
-//    g_signal_connect(G_OBJECT(c->webView), "web-process-crashed",G_CALLBACK(crashed), c);
-
-//g_signal_connect(G_OBJECT(c->webView), "notify::url", G_CALLBACK(changed_url), c);    
-
-
+  
 
 
 //    gtk_widget_show_all(c->main_window);
 //    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
 
 
-        display_webview(NULL, c);
- 
-        
-
-
-
-    
+    display_webview(NULL, c);
     
     
     clients++;
@@ -267,15 +263,11 @@ contentmanager = webkit_user_content_manager_new();
   
 
 //mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
-
-
 //wc = webkit_web_context_new_with_website_data_manager(mgr);
   
 wc= webkit_web_context_get_default();
+
    // view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
-
-
-
     
     //char *value = "Googlebot/2.1";
     //g_object_set(settings, "user-agent", &value, NULL);
@@ -302,15 +294,11 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
 
  // cookiemgr = webkit_website_data_manager_get_cookie_manager(mgr);
+  
   cookiemgr = webkit_web_context_get_cookie_manager(wc);
 
-    webkit_cookie_manager_set_persistent_storage(
-            cookiemgr, cookie_file,
-          //  WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT); // as mentioned in surf sources only text storage works
-WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
-   webkit_cookie_manager_set_accept_policy(
-            cookiemgr,
-            SURFER_COOKIE_POLICY);
+   webkit_cookie_manager_set_persistent_storage(cookiemgr, cookie_file,WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
+   webkit_cookie_manager_set_accept_policy(cookiemgr,SURFER_COOKIE_POLICY);
 
    
    webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
@@ -318,7 +306,6 @@ WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
 
 
    
-
 view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
 		    "settings", settings,
 		    "user-content-manager", contentmanager,
@@ -334,17 +321,17 @@ g_object_connect(
                        "signal::decide-policy", G_CALLBACK(decide_policy),c,
                        "signal::close", G_CALLBACK(close_request), c,
                        "signal::ready-to-show",G_CALLBACK(display_webview), c,
+                       "signal::create",G_CALLBACK(create_request), c,
                        "signal::web-process-crashed",G_CALLBACK(crashed), c,
     NULL
     );
 
- //   g_signal_connect(G_OBJECT(view), "create", G_CALLBACK(create_request), rc);
-//g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
+ 
 //g_signal_connect(G_OBJECT(wc), "download-started",G_CALLBACK(we_download), c);   
 
 
 return view;
- }
+}
 
 
 /*
@@ -405,10 +392,10 @@ g_free(uri);
 
 
 void
-loadurl(Client *c, gchar *url)
+loadurl(Client *c, const gchar *url)
 {
     gchar *link;
-
+/*
     link = g_ascii_strdown(url, -1);
     if (!g_str_has_prefix(link, "http:") &&
         !g_str_has_prefix(link, "https:") &&
@@ -419,14 +406,14 @@ loadurl(Client *c, gchar *url)
     } else
 
        link = g_strdup(url);
-    
+  */ 
 
 
-//link = soup_uri_normalize(url,NULL);
+   link = soup_uri_normalize(url,NULL);
  //printf("%s/n",link);   
-     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
+   webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
   
-    g_free(link);
+   g_free(link);
 
 
 
@@ -469,9 +456,7 @@ void
 changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c) {
     const gchar *title;
     const gchar *url;
-
-    
-    
+        
 
     title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
@@ -481,12 +466,6 @@ changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c) {
 
    gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
     
-   
-    
-    
-    
-    
-
  
 }
 
@@ -513,21 +492,22 @@ static void changed_webload(WebKitWebView *webview,
     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
     switch (event) {
-        case WEBKIT_LOAD_STARTED:
+       case WEBKIT_LOAD_STARTED:
              break;
            
 
-        case WEBKIT_LOAD_REDIRECTED:
-  if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
-    File = fopen(histpath, "a");                
+       case WEBKIT_LOAD_REDIRECTED:
+         if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
+    
+          File = fopen(histpath, "a");                
                    
-    fprintf(File, "<a href=\"%s\" >%.60s</a>\n",url,title );
+          fprintf(File, "<a href=\"%s\" >%.60s</a>\n",url,title );
                    
-    fclose(File);
+          fclose(File);
    
-     
-    }   
-     isbackforward= 0;
+          }   
+    
+          isbackforward= 0;
             break;
 
         case WEBKIT_LOAD_COMMITTED:
@@ -535,21 +515,21 @@ static void changed_webload(WebKitWebView *webview,
             break;
 
         case WEBKIT_LOAD_FINISHED:
-      if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
+           if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
     
 
-    File = fopen(histpath, "a");                
+            File = fopen(histpath, "a");                
                    
-    fprintf(File, "<a href=\"%s\" >%.60s</a>\n",url,title );
+            fprintf(File, "<a href=\"%s\" >%.60s</a>\n",url,title );
                    
-    fclose(File);
+            fclose(File);
    
      
-    }   
-     isbackforward= 0;
+          }   
+            isbackforward= 0;
         
             break;
- } 
+    } 
 }
 
 
@@ -713,80 +693,114 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 }
 
 gboolean
-decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision,
-              WebKitPolicyDecisionType type,Client *c) {
-    WebKitResponsePolicyDecision *r;
+decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision, WebKitPolicyDecisionType type,Client *c) {
+
+         
+    switch (type) {
+        case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+             decide_navaction(decision,c);
+            break;
+
+        case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+           decide_newwindow(decision,c);
+            break;
+
+        case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
+           decide_response(decision,c);
+            break;
+
+        default:
+            webkit_policy_decision_ignore(decision);
+           break;
+    }
+    return TRUE;
+}
+
+void decide_navaction(WebKitPolicyDecision *decision,Client *c) {
+
     WebKitNavigationType navigation_type;
     WebKitNavigationPolicyDecision *navigationDecision;
     WebKitNavigationAction *navigation_action;
     WebKitURIRequest *request;
     guint button, mods;
     gchar *link;
-     gchar *t;
+    const gchar *t;
     Client *rc;
-    
 
 
-    switch (type) {
-        case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
-            navigationDecision = WEBKIT_NAVIGATION_POLICY_DECISION(WEBKIT_POLICY_DECISION(decision));
-            navigation_action = webkit_navigation_policy_decision_get_navigation_action(navigationDecision);
-            request = webkit_navigation_action_get_request(navigation_action);
-            navigation_type = webkit_navigation_action_get_navigation_type(navigation_action);  
+    navigation_action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));  
+    request = webkit_navigation_action_get_request(navigation_action);
+    navigation_type = webkit_navigation_action_get_navigation_type(navigation_action);
+           
+    t =  webkit_uri_request_get_uri(request);
+    mods = webkit_navigation_action_get_modifiers(navigation_action);
+    button = webkit_navigation_action_get_mouse_button(navigation_action);
 
-            if (navigation_type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
-                mods = webkit_navigation_action_get_modifiers(navigation_action);
-                button = webkit_navigation_action_get_mouse_button(navigation_action);
 
-                if (button == 1 && mods & GDK_CONTROL_MASK) {
-                    t = (gchar *) webkit_uri_request_get_uri(request);
+
+    if (navigation_type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED && button == 1 && mods & GDK_CONTROL_MASK) {
+               
                     
-                    rc = client_new(c);
+       webkit_policy_decision_ignore(decision);
+   //                 printf("new\n");
+       rc = client_new(c);
                    
-                    loadurl(rc,t);
-                    webkit_policy_decision_ignore(decision);
-                    return TRUE;
-                } else webkit_policy_decision_use(decision);
-                return TRUE;
-            }
-            break;
+       loadurl(rc,t);
+                    
+     } 
+    else webkit_policy_decision_use(decision);
+ //    printf("no\n");
+}
 
-        case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
-            navigationDecision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
-            navigation_action = webkit_navigation_policy_decision_get_navigation_action(navigationDecision);
-            request = webkit_navigation_action_get_request(navigation_action);
-            navigation_type = webkit_navigation_action_get_navigation_type(navigation_action);  
-            if (navigation_type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
+void decide_newwindow(WebKitPolicyDecision *decision,Client *c)
+{
 
-                t = (gchar *) webkit_uri_request_get_uri(request);
-                rc = client_new(c);
-                    loadurl(rc,t);
-                return TRUE;
-            }
-              webkit_policy_decision_ignore(decision);
-              return TRUE;
-            break;
+    WebKitNavigationType navigation_type;
+    WebKitNavigationAction *navigation_action;
 
-        case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
-            r = WEBKIT_RESPONSE_POLICY_DECISION(decision);
-            if (!webkit_response_policy_decision_is_mime_type_supported(r))
-                webkit_policy_decision_download(decision);
-            else
-                webkit_policy_decision_use(decision);
-            break;
 
+    navigation_action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
+    navigation_type =webkit_navigation_action_get_navigation_type(navigation_action);
+
+  
+    switch (navigation_type) {
+        case WEBKIT_NAVIGATION_TYPE_LINK_CLICKED:
+        case WEBKIT_NAVIGATION_TYPE_FORM_SUBMITTED: 
+        case WEBKIT_NAVIGATION_TYPE_BACK_FORWARD:
+        case WEBKIT_NAVIGATION_TYPE_RELOAD:
+        case WEBKIT_NAVIGATION_TYPE_FORM_RESUBMITTED:
+        case WEBKIT_NAVIGATION_TYPE_OTHER:
         default:
-            webkit_policy_decision_use(decision);
-            return FALSE;
-    }
-    return TRUE;
+
+           break;
+     }
+    webkit_policy_decision_ignore(decision);
+
+}
+
+void decide_response(WebKitPolicyDecision *decision,Client *c){
+
+   guint status;
+   WebKitURIResponse *response;
+  
+   response = webkit_response_policy_decision_get_response(WEBKIT_RESPONSE_POLICY_DECISION(decision));
+   status = webkit_uri_response_get_status_code(response);
+   
+   
+   if (webkit_response_policy_decision_is_mime_type_supported(WEBKIT_RESPONSE_POLICY_DECISION(decision)))
+        webkit_policy_decision_use(decision);
+   else if (SOUP_STATUS_IS_SUCCESSFUL(status) || status == SOUP_STATUS_NONE)
+        webkit_policy_decision_download(decision);
+   else
+        webkit_policy_decision_ignore(decision);
+   
 }
 
 void
 openlink(GtkWidget * widget,Client *c){
 
 
-    gchar *link;
+   gchar *link;
    const gchar *p;
 
    p = gtk_entry_get_text(GTK_ENTRY(c->entry_open));
@@ -801,19 +815,15 @@ find(GtkWidget * widget,Client *c) {
 
     static gchar *search_text;
     const gchar *p;
+ 
 
-
-    
-
-p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
+    p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
     search_text = g_strdup(p);
 
     if(search_text != NULL){
-       
-    
-    webkit_find_controller_search(c->fc, search_text,
-                                  WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE | WEBKIT_FIND_OPTIONS_WRAP_AROUND, G_MAXUINT);
-     g_free(search_text);
+           
+    webkit_find_controller_search(c->fc, search_text,WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE | WEBKIT_FIND_OPTIONS_WRAP_AROUND, G_MAXUINT);
+    g_free(search_text);
 
     }
     
@@ -822,7 +832,6 @@ p = gtk_entry_get_text(GTK_ENTRY(c->entry_find));
 
 void
 find_back(GtkWidget * widget,Client *c){
-
 
 
 webkit_find_controller_search_previous(c->fc);
@@ -857,6 +866,15 @@ display_webview(WebKitWebView *rc, Client *c)
     gtk_widget_hide(c->box_open);   
 }
 
+WebKitWebView *create_request(WebKitWebView *rv,WebKitNavigationAction *navact, Client *c)
+{
+    Client *rc;
+ 
+     rc = client_new(c);
+    // rc->webView = rv;     
+    return rc->webView;
+}
+
 
 
 int main(int argc, char *argv[]) {
@@ -865,14 +883,12 @@ int main(int argc, char *argv[]) {
     gchar *favfilename;
     gchar *histfilename;
     FILE *File;
-    char buffer[256] = "<!DOCTYPE html><html><head><meta charset=utf8><style>body {background-color: #000009;}p    {color: yellow;} a:link { color: #00e900; }</style><p>";
+    char buffer[256] = "<!DOCTYPE html><html><head><meta charset=utf8><style>body {background-color: #000009;}p    {color: yellow;} a:link { color: #00e900; }</style></head><body><p>";
     gchar *link;
     char textdate[100]; 
     gtk_init(&argc, &argv);
     
-    
-     //
-    
+        
    
 
     favfilename = g_strdup_printf("%s", ".fav");
@@ -895,23 +911,20 @@ int main(int argc, char *argv[]) {
         fprintf(File, "%s", buffer);
         fclose(File);
         g_free(File);
-}    
+    }    
      
-     if(HISTORY_ENABLE==1 ){
+    else if(HISTORY_ENABLE==1 ){
         time_t now = time(NULL);
     struct tm *t = localtime(&now);       
 
     strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
 
-    File = fopen(histpath, "a");
-                   
+    File = fopen(histpath, "a");                   
                    
     fprintf(File, "%s",textdate);
-
-
                    
     fclose(File);
-}
+    }
 
   
     //home =  g_strdup(favpath);
@@ -929,7 +942,7 @@ int main(int argc, char *argv[]) {
         }
     } 
    
-  else    loadurl(c,home);
+     else    loadurl(c,home);
 
 
    gtk_main();
