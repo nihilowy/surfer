@@ -395,7 +395,7 @@ void
 loadurl(Client *c,  gchar *url)
 {
     gchar *link;
-/*
+
     link = g_ascii_strdown(url, -1);
     if (!g_str_has_prefix(link, "http:") &&
         !g_str_has_prefix(link, "https:") &&
@@ -406,10 +406,10 @@ loadurl(Client *c,  gchar *url)
     } else
 
        link = g_strdup(url);
-  */ 
+  
 
 
-   link = soup_uri_normalize(url,NULL);
+  // link = soup_uri_normalize(url,NULL);
  //printf("%s/n",link);   
    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(c->webView), link);
   
