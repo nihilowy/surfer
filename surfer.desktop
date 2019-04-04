@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Web
+Name=Surfer
 Exec=surfer %U
 StartupNotify=true
 Terminal=false
