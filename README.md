@@ -61,9 +61,9 @@ links: .fav in your home dir)
 
 `Ctrl + d` &mdash; scroll up
 
-`Ctrl +  x` &mdash; page up
+`Ctrl +  w` &mdash; page up
 
-`Ctrl +  z` &mdash; page down
+`Ctrl +  s` &mdash; page down
 
 `Ctrl + i` &mdash; web inspector (page source)
 
