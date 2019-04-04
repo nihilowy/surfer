@@ -395,8 +395,11 @@ void
 loadurl(Client *c,  gchar *url)
 {
     gchar *link;
-
+    gchar *nospaces;
+    
+    nospaces = g_strchug(url);
     link = g_ascii_strdown(url, -1);
+    
     if (!g_str_has_prefix(link, "http:") &&
         !g_str_has_prefix(link, "https:") &&
         !g_str_has_prefix(link, "file:") &&
