@@ -962,7 +962,7 @@ int main(int argc, char *argv[]) {
    
     gtk_init(&argc, &argv);
     
-      setup();  
+      //setup();  
    
 
      
@@ -1000,9 +1000,6 @@ int main(int argc, char *argv[]) {
 
 
     
-
- 
-
 
    gtk_main();
 
