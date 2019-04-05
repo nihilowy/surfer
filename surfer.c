@@ -2,9 +2,13 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <gdk/gdk.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/file.h>
 
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
+
 
 #define SURFER_META_MASK            GDK_CONTROL_MASK
 #define SURFER_NEW_WINDOW_KEY       GDK_KEY_n
@@ -120,7 +124,7 @@ static void user_style(Client *c);
 
 static void close_find( Client *c);
 
-
+static gboolean setup();
 
 
 
@@ -241,6 +245,11 @@ gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL);
 gchar *cookie_file = g_build_filename(cookies_path, "cookie", NULL); 
 gchar *datadir  = g_build_filename(g_get_user_data_dir() , fullname, NULL);
 gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
+
+
+
+
+
 
 if (rv != NULL) {
                //  c->webView=WEBKIT_WEB_VIEW(rv);
@@ -890,73 +899,110 @@ WebKitWebView *create_request(WebKitWebView *rv,WebKitNavigationAction *navact, 
 }
 
 
+gboolean 
+setup(){
 
-int main(int argc, char *argv[]) {
-    Client *c;
-    int i;
     gchar *favfilename;
     gchar *histfilename;
-    FILE *File;
-    char buffer[256] = "<!DOCTYPE html><html><head><meta charset=utf8><style>body {background-color: #000009;}p    {color: yellow;} a:link { color: #00e900; }</style></head><body><p>";
-    gchar *link;
-    char textdate[100]; 
-    gtk_init(&argc, &argv);
-    
-        
+    FILE *File,*File1;
+    char buffer[256] = "<!DOCTYPE html><html><head><meta charset=utf8><style>body {background-color: #000009;}p\
+    {color: yellow;} a:link { color: #00e900; }</style></head><body><p>";
    
-
+    
+   
     favfilename = g_strdup_printf("%s", ".fav");
     favpath = g_build_filename(getenv("HOME"), favfilename, NULL);
     g_free(favfilename);
+
+    
+    histfilename = g_strdup_printf("%s", ".hist");
+    histpath = g_build_filename(getenv("HOME"), histfilename, NULL);
+    g_free(histfilename);
+    
 
     if (!g_file_test(favpath, G_FILE_TEST_EXISTS)) {
         File = fopen(favpath, "wb+");
         fprintf(File, "%s", buffer);
         fclose(File);
-        g_free(File);
+        //g_free(File);
     }
 
-    histfilename = g_strdup_printf("%s", ".hist");
-    histpath = g_build_filename(getenv("HOME"), histfilename, NULL);
-    g_free(histfilename);
+
+
+
+
+  //if (HISTORY_ENABLE == 1)
 
     if (!g_file_test(histpath, G_FILE_TEST_EXISTS)) {
-        File = fopen(histpath, "wb+");
-        fprintf(File, "%s", buffer);
-        fclose(File);
-        g_free(File);
+        File1 = fopen(histpath, "wb+");
+        fprintf(File1, "%s", buffer);
+        fclose(File1);
+        //g_free(File1);
     }    
      
-    else if(HISTORY_ENABLE==1 ){
-        time_t now = time(NULL);
-    struct tm *t = localtime(&now);       
-
-    strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
-
-    File = fopen(histpath, "a");                   
-                   
-    fprintf(File, "%s",textdate);
-                   
-    fclose(File);
-    }
-
-  
+    
     //home =  g_strdup(favpath);
 
-    home = (gchar *) g_strdup_printf("file://%s", favpath); 
-    history = (gchar *) g_strdup_printf("file://%s", histpath); 
 
+    history = (gchar *) g_strdup_printf("file://%s", histpath);
+
+    home = (gchar *) g_strdup_printf("file://%s", favpath); 
+    
+
+return TRUE;
+}
+
+
+int main(int argc, char *argv[]) {
+    Client *c;
+    int i;
+    FILE *File1;
+    gchar *link;
+    char textdate[100];    
+ 
+   
+    gtk_init(&argc, &argv);
+    
+      setup();  
+   
+
+     
+   if (setup() == TRUE){
     c = client_new(NULL);
 
-
-    if (argc > 1) {
-        for (i = 1; i < argc; i++) {
-            link = (gchar *) argv[i];
-            loadurl(c,link);
-        }
-    } 
+     if (argc > 1){
+ 
+         for (i = 1; i < argc; i++) {
+         link = (gchar *) argv[i];
+         loadurl(c,link);
+         }
+     } 
    
-     else    loadurl(c,home);
+     else 
+      
+     loadurl(c,home);
+    }
+    else printf("SETUP PROBLEM\n");
+   
+     if (HISTORY_ENABLE == 1){
+    
+     time_t now = time(NULL);
+     struct tm *t = localtime(&now);       
+
+     strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
+
+     File1 = fopen(histpath, "a");                   
+                   
+     fprintf(File1, "%s",textdate);                   
+     fclose(File1);
+//     g_free(File1);
+
+     }
+
+
+    
+
+ 
 
 
    gtk_main();
