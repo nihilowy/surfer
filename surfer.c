@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <gdk/gdk.h>
-#include <fcntl.h>
-#include <errno.h>
+
 #include <sys/file.h>
 
 #include <gtk/gtk.h>
