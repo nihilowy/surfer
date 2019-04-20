@@ -56,6 +56,15 @@ typedef struct Client{
     int f;
     int s;
     int o;
+
+    
+  /* TLS information. */
+  GTlsCertificate *certificate;
+  GTlsCertificateFlags tls_errors;
+
+  gboolean bypass_safe_browsing;
+  gboolean loading_error_page;
+  char *tls_error_failing_uri;
 	
 } Client;
 
@@ -71,7 +80,9 @@ static gboolean isbackforward= 0;
 
 static void destroy_window(GtkWidget* w,Client *rc);
 
-static void tls_certs(WebKitWebContext *);
+//static void tls_certs(WebKitWebContext *wc);
+
+static void allow_tls_cert (Client *c);
 
 static void display_webview( WebKitWebView *rc,Client *c);
 
@@ -202,7 +213,6 @@ Client *client_new(Client *rc) {
    
     
 
-    //tls_certs(wc);
 
    
     
@@ -214,7 +224,8 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
   
-
+    
+   // g_signal_connect_object (G_OBJECT(c->main_window), "allow-tls-certificate",G_CALLBACK (allow_tls_cert),c);
 
 //    gtk_widget_show_all(c->main_window);
 //    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
@@ -277,17 +288,19 @@ wc= webkit_web_context_get_default();
 
    // view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
     
-    //char *value = "Googlebot/2.1";
-    //g_object_set(settings, "user-agent", &value, NULL);
+ //   char *value = "Mozilla/5.0";
+ //   g_object_set(settings, "user-agent", &value, NULL);
 
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
     g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
 
 
-tls_certs(wc);
+//allow_tls_cert(c,wc);
 
    
-webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+webkit_web_context_set_process_model(wc,
+//WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
 webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
@@ -309,7 +322,7 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
    webkit_cookie_manager_set_accept_policy(cookiemgr,SURFER_COOKIE_POLICY);
 
    
-   webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+   //webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
    
 
 
@@ -331,6 +344,7 @@ g_object_connect(
                        "signal::ready-to-show",G_CALLBACK(display_webview), c,
                        "signal::create",G_CALLBACK(create_request), c,
                        "signal::web-process-crashed",G_CALLBACK(crashed), c,
+                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,                   
     NULL
     );
 
@@ -524,6 +538,7 @@ static void changed_webload(WebKitWebView *webview,
         case WEBKIT_LOAD_COMMITTED:
          
             break;
+
 
         case WEBKIT_LOAD_FINISHED:
            if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
@@ -861,23 +876,42 @@ webkit_find_controller_search_previous(c->fc);
 
 }
 
+
+  
 void
-tls_certs(WebKitWebContext *wc) {
-    GDir *directory;
-    GTlsCertificate *certificate;
-    const gchar *basedir, *keyfile;
+allow_tls_cert(Client *c)
+{
+  SoupURI *uri;
+  gchar *url;
+  gchar *tls_message;
+  //if (webkit_web_view_get_page_id (WEBKIT_WEB_VIEW (c->webView)) != page_id)
+    //return;
 
-    basedir = g_build_filename(g_get_user_config_dir(), "/usr/bin/surfer", "certs", NULL);
-    directory = g_dir_open(basedir, 0, NULL);
+  g_assert (G_IS_TLS_CERTIFICATE (c->certificate));
+  g_assert (c->tls_error_failing_uri != NULL);
 
-    if (directory != NULL) {
-        keyfile = g_build_filename(g_get_user_config_dir(), "/usr/bin/surfer", "certs", NULL);
+  uri = soup_uri_new (c->tls_error_failing_uri);
+  webkit_web_context_allow_tls_certificate_for_host (webkit_web_view_get_context(c->webView),c->certificate,uri->host);
+  
+  url = (gchar *)webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+  
+tls_message = g_strdup_printf("tls cert error for site ignored %s", url);
 
-        certificate = g_tls_certificate_new_from_file(keyfile, NULL);
-        webkit_web_context_allow_tls_certificate_for_host(wc, certificate, keyfile);
-        g_dir_close(directory);
-    }
+
+gtk_entry_set_text(GTK_ENTRY(c->entry_open), tls_message);
+
+gtk_widget_show_all(c->box_open);
+
+
+  loadurl(c, url);
+  soup_uri_free (uri);
+//  g_free(url);
 }
+
+
+
+  
+
 void
 display_webview(WebKitWebView *rc, Client *c)
 {
