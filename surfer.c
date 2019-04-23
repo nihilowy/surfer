@@ -293,6 +293,7 @@ wc= webkit_web_context_get_default();
 
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
     g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
+  
     g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
 
 
@@ -321,7 +322,7 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
    webkit_cookie_manager_set_accept_policy(cookiemgr,SURFER_COOKIE_POLICY);
 
    
-   //webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+   webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
    
 
 
@@ -343,7 +344,7 @@ g_object_connect(
                        "signal::ready-to-show",G_CALLBACK(display_webview), c,
                        "signal::create",G_CALLBACK(create_request), c,
                        "signal::web-process-crashed",G_CALLBACK(crashed), c,
-                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,                   
+//                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,                   
     NULL
     );
 
