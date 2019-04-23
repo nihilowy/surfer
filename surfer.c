@@ -293,6 +293,7 @@ wc= webkit_web_context_get_default();
 
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
     g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
+    g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
 
 
 //allow_tls_cert(c,wc);
@@ -320,7 +321,7 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
    webkit_cookie_manager_set_accept_policy(cookiemgr,SURFER_COOKIE_POLICY);
 
    
-   webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+   //webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
    
 
 
@@ -342,7 +343,7 @@ g_object_connect(
                        "signal::ready-to-show",G_CALLBACK(display_webview), c,
                        "signal::create",G_CALLBACK(create_request), c,
                        "signal::web-process-crashed",G_CALLBACK(crashed), c,
-   //                    "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,                   
+                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,                   
     NULL
     );
 
@@ -882,27 +883,30 @@ allow_tls_cert(Client *c)
   SoupURI *uri;
   gchar *url;
   gchar *tls_message;
+ 
   //if (webkit_web_view_get_page_id (WEBKIT_WEB_VIEW (c->webView)) != page_id)
     //return;
 
-  g_assert (G_IS_TLS_CERTIFICATE (c->certificate));
+ g_assert (G_IS_TLS_CERTIFICATE (c->certificate));
   g_assert (c->tls_error_failing_uri != NULL);
+
+
 
   uri = soup_uri_new (c->tls_error_failing_uri);
   webkit_web_context_allow_tls_certificate_for_host (webkit_web_view_get_context(c->webView),c->certificate,uri->host);
   
 //  url = (gchar *)webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-  
+/*  
 tls_message = g_strdup_printf("tls cert error for site ignored");
 
 
 gtk_entry_set_text(GTK_ENTRY(c->entry_open), tls_message);
 
 gtk_widget_show_all(c->box_open);
-
+*/
 
   //loadurl(c, url);
-  soup_uri_free (uri);
+//  soup_uri_free (uri);
 //  g_free(url);
 }
 
