@@ -1,10 +1,10 @@
 
 # Maintainer: nihilowy <nihilowy at gmail dot com>
 pkgname=surfer
-pkgver=1
-pkgrel=1
+pkgver=3
+pkgrel=0
 
-pkgdesc="basic webkit2gtk browser"
+pkgdesc="simple webkit2gtk browser"
 arch=('i686' 'x86_64')
 url="https://github.com/nihilowy/surfer"
 license=('GPL')
