@@ -482,7 +482,9 @@ download_progress( WebKitDownload *download,GParamSpec *pspec,    GtkWidget *tb)
     p = p > 1 ? 1 : p;
     p = p < 0 ? 0 : p;
     p *= 100;
-    b = (int) p;
+//    b = (int) p;
+
+
 
     resp = webkit_download_get_response(download);
     size_mb = webkit_uri_response_get_content_length(resp) / 1e6;
@@ -491,7 +493,7 @@ download_progress( WebKitDownload *download,GParamSpec *pspec,    GtkWidget *tb)
     filename = g_filename_from_uri(uri, NULL, NULL);
 
     base = g_path_get_basename(filename);
-        t = g_strdup_printf("%s (%d%% of %d MB)", base, b, size_mb);
+        t = g_strdup_printf("%s (%.0f%% of %.1f MB)", base, p, size_mb);
         g_free(filename);
         g_free(base);
 
