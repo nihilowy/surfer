@@ -391,7 +391,6 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
     const gchar *download_uri;
 
 if (!suggested_filename || !*suggested_filename) {
-        /* Try to find a matching name if there is no suggested filename. */
         download_uri = webkit_uri_request_get_uri(webkit_download_get_request(download));
         uri  = soup_uri_decode(download_uri);
         basename     = g_filename_display_basename(uri);
