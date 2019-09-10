@@ -35,7 +35,6 @@
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
 #define HISTORY_ENABLE	0         //change to 1 for enable history 
 
-
 typedef struct Client{
     GtkWidget *main_window;
     GtkWidget *entry_find;
@@ -43,7 +42,10 @@ typedef struct Client{
     GtkWidget *box_find;
 
     GtkWidget *button;
+    GtkWidget *button_dm;
     GtkWidget *button_find_back;
+
+
     GtkWidget *box_open;
 
     GtkWidget *vbox;
@@ -65,16 +67,26 @@ typedef struct Client{
   gboolean loading_error_page;
   char *tls_error_failing_uri;
 
+
+
+
 } Client;
 
-static gint clients = 0;
+static GtkWidget *menuitem1;
+static GtkWidget *menu;
+//static gchar *download_dir = "/var/tmp";
+
+static gint clients = 0,downloads = 0;
 gchar *home;
 const gchar *history;
 gchar *favpath;
 gchar *histpath;
+gchar *downloads_dir;
+
 static gchar *fullname = "";
 
-static gboolean isbackforward= 0;
+static gboolean isbackforward= 0,dl_win_show=FALSE;
+static gboolean wc_setup_done = FALSE;
 
 
 static void destroy_window(GtkWidget* w,Client *rc);
@@ -102,35 +114,29 @@ static WebKitWebView *create_request(WebKitWebView *rv,WebKitNavigationAction *n
 
 
 static gboolean decide_policy(WebKitWebView *v,WebKitPolicyDecision *decision,WebKitPolicyDecisionType type, Client *c);
-
 static void decide_navaction(WebKitPolicyDecision *decision,Client *c);
-
 static void decide_newwindow(WebKitPolicyDecision *decision,Client *c);
-
 static void decide_response(WebKitPolicyDecision *decision,Client *c);
 
-//static void we_download(WebKitWebView *rv, WebKitDownload *download,Client *c);
+static gboolean button_press( Client *c);
+static gboolean download_handle(WebKitDownload *, gchar *, gpointer);
+static void download_handle_start(WebKitWebView *, WebKitDownload *, gpointer);
+static void download_cancel( GtkWidget *,WebKitDownload *download);
+static void download_handle_finished(WebKitDownload *download, gpointer data);
+static void download_progress( WebKitDownload *download,GParamSpec *pspec,    GtkWidget *tb);
 
-//static void download_handle_finished(WebKitDownload *download,gchar *uri,Client *c,gpointer data);
-
-//static gboolean download_handle(WebKitDownload *download, gchar *uri,Client *c);
 
 static gboolean crashed(WebKitWebView *v, Client *c);
 
 static gboolean keyboard(GtkWidget *widget, GdkEvent *event, Client *c,  gpointer );
 
 static void changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c);
-
 static void changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c );
-
 static void changed_webload(WebKitWebView *webview,WebKitLoadEvent event, Client *c);
 
 static void find(GtkWidget *widget,Client *c);
-
 static void openlink(GtkWidget *widget,Client *c);
-
 static void user_style(Client *c);
-
 static void close_find( Client *c);
 
 static gboolean setup();
@@ -194,6 +200,11 @@ Client *client_new(Client *rc) {
     c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
+    c->button_dm = gtk_button_new_with_label("Downloads");
+
+    gtk_widget_show_all (menuitem1);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem1);
+
     c->button = gtk_button_new_with_label ("Close");
     c->button_find_back = gtk_button_new_with_label ("Find Back");
     c->entry_find = gtk_entry_new();
@@ -204,9 +215,13 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_find), c->button_find_back, TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_find), c->button,TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(c->box_open), c->button_dm,FALSE, FALSE, 0);
+
     gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->vbox),GTK_WIDGET(c->webView), TRUE, TRUE, 0);
+
+    //gtk_container_add(GTK_CONTAINER(c->button_dm), GTK_WIDGET(menu));
 
     gtk_container_add(GTK_CONTAINER(c->main_window), GTK_WIDGET(c->vbox));
 
@@ -216,15 +231,15 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
     g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
+    g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(button_press), c);
     g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c);
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
 
    // g_signal_connect_object (G_OBJECT(c->main_window), "allow-tls-certificate",G_CALLBACK (allow_tls_cert),c);
 
-//    gtk_widget_show_all(c->main_window);
+    gtk_widget_show_all(c->main_window);
 //    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
-
 
     display_webview(NULL, c);
 
@@ -252,9 +267,6 @@ gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
 
 
 
-
-
-
 if (rv != NULL) {
                //  c->webView=WEBKIT_WEB_VIEW(rv);
 		view = WEBKIT_WEB_VIEW(
@@ -272,8 +284,6 @@ settings = webkit_settings_new();
 contentmanager = webkit_user_content_manager_new();
 
 
-
-
 //mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
 //wc = webkit_web_context_new_with_website_data_manager(mgr);
  wc= webkit_web_context_get_default();
@@ -281,6 +291,14 @@ contentmanager = webkit_user_content_manager_new();
    // view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
  //   char *value = "Mozilla/5.0";
  //   g_object_set(settings, "user-agent", &value, NULL);
+
+    if (!wc_setup_done)
+    {
+
+    g_signal_connect(G_OBJECT(wc), "download-started", G_CALLBACK(download_handle_start), NULL);
+    wc_setup_done = TRUE;
+    }
+
 
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
     g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
@@ -339,64 +357,136 @@ g_object_connect(
     );
 
 
-//g_signal_connect(G_OBJECT(wc), "download-started",G_CALLBACK(we_download), c);
-
-
 return view;
 }
 
 
-/*
+gboolean
+button_press( Client *c )
+{
+
+    gtk_menu_popup_at_pointer (GTK_MENU (menu), NULL);
+
+    return FALSE;
+}
+
 
 void
-we_download(WebKitWebView *rc, WebKitDownload *download,Client *c)
+download_handle_start(WebKitWebView *web_view, WebKitDownload *download,
+                      gpointer data)
 {
-         g_signal_connect(G_OBJECT(download), "decide-destination",G_CALLBACK(download_handle), c);
+    g_signal_connect(G_OBJECT(download), "decide-destination",
+                     G_CALLBACK(download_handle), data);
 }
+
 
 gboolean
-download_handle(WebKitDownload *download, gchar *uri, Client *c)
+download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer data)
 {
+    gchar *sug, *path, *path2 = NULL, *uri;
+    GtkWidget *tb;
+    int suffix = 1;
+    size_t i;
 
-gchar *downl_message;
+    sug = g_strdup(suggested_filename);
+    for (i = 0; i < strlen(sug); i++)
+        if (sug[i] == G_DIR_SEPARATOR)
+            sug[i] = '_';
+
+    path = g_build_filename(downloads_dir, sug, NULL);
+    path2 = g_strdup(path);
+
+    while (g_file_test(path2, G_FILE_TEST_EXISTS) && suffix < 100)
+    {
+        g_free(path2);
+
+        path2 = g_strdup_printf("%s.%d", path, suffix);
+        suffix++;
+    }
+
+    if (suffix == 100)
+    {
+        fprintf(stderr, "Surfer : Suffix reached limit for download.\n");
+        webkit_download_cancel(download);
+    }
+    else
+    {
+        uri = g_filename_to_uri(path2, NULL, NULL);
+        webkit_download_set_destination(download, uri);
+        g_free(uri);
+        downloads++;
+
+        tb = gtk_menu_item_new_with_label(sug);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu),tb);
+        gtk_widget_show_all (GTK_WIDGET(menu));
 
 
-webkit_download_set_destination(download, uri);
+        g_signal_connect(G_OBJECT(download), "notify::estimated-progress",G_CALLBACK(download_progress), tb);
+
+        g_signal_connect(G_OBJECT(download), "finished",G_CALLBACK(download_handle_finished), NULL);
+
+        g_object_ref(download);
+        g_signal_connect(G_OBJECT(tb), "activate",G_CALLBACK(download_cancel), download);
 
 
+    }
 
-downl_message = g_strdup_printf("Download started %s", uri);
+    g_free(sug);
+    g_free(path);
+    g_free(path2);
 
-
-//gtk_entry_set_text(GTK_ENTRY(c->entry_open), downl_message);
-
-gtk_widget_show_all(c->box_open);
-
-
-//g_signal_connect(G_OBJECT(download), "finished",G_CALLBACK(download_handle_finished), NULL);
-
-g_free(downl_message);
-g_free(uri);
+    return FALSE;
 }
 
 void
-download_handle_finished(WebKitDownload *download, gchar *uri,Client *c,gpointer data)
+download_cancel( GtkWidget *tb,WebKitDownload *download)
 {
 
-gchar *downl_message;
-downl_message = g_strdup_printf("Download finished %s", uri);
+    webkit_download_cancel(download);
+    g_object_unref(download);
 
-
-gtk_entry_set_text(GTK_ENTRY(c->entry_open), downl_message);
-
-gtk_widget_show_all(c->box_open);
-
-g_free(downl_message);
-g_free(uri);
-
+    gtk_widget_destroy(GTK_WIDGET(tb));
 }
 
-*/
+void
+download_handle_finished(WebKitDownload *download, gpointer data)
+{
+    downloads--;
+}
+
+
+void
+download_progress( WebKitDownload *download,GParamSpec *pspec,    GtkWidget *tb)
+{
+    WebKitURIResponse *resp;
+
+    const gchar *uri;
+    gchar *t, *filename, *base;
+    gdouble p,size_mb;
+    int b;
+    p = webkit_download_get_estimated_progress(download);
+    p = p > 1 ? 1 : p;
+    p = p < 0 ? 0 : p;
+    p *= 100;
+    b = (int) p;
+
+    resp = webkit_download_get_response(download);
+    size_mb = webkit_uri_response_get_content_length(resp) / 1e6;
+
+    uri = webkit_download_get_destination(download);
+    filename = g_filename_from_uri(uri, NULL, NULL);
+
+    base = g_path_get_basename(filename);
+        t = g_strdup_printf("%s (%d%% of %d MB)", base, b, size_mb);
+        g_free(filename);
+        g_free(base);
+
+    gtk_menu_item_set_label(GTK_MENU_ITEM(tb), t);
+    g_free(t);
+
+
+
+}
 
 
 
@@ -749,7 +839,7 @@ void decide_navaction(WebKitPolicyDecision *decision,Client *c) {
 
 
 
-    if (navigation_type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED && button == 1 && mods & GDK_CONTROL_MASK) {
+    if (navigation_type == WEBKIT_NAVIGATION_TYPE_LINK_CLICKED && button == 1 && mods & SURFER_META_MASK) {
 
        webkit_policy_decision_ignore(decision);
    //                 printf("new\n");
@@ -912,10 +1002,11 @@ WebKitWebView *create_request(WebKitWebView *rv,WebKitNavigationAction *navact, 
 }
 
 
-gboolean
-setup(){
+gboolean setup(){
+
 
     gchar *favfilename;
+    gchar *downloadsfilename;
     gchar *histfilename;
     FILE *File,*File1;
     char buffer[256] = "<!DOCTYPE html><html><head><meta charset=utf8><style>body {background-color: #000009;}p\
@@ -925,6 +1016,18 @@ setup(){
     favfilename = g_strdup_printf("%s", ".fav");
     favpath = g_build_filename(getenv("HOME"), favfilename, NULL);
     g_free(favfilename);
+
+    downloadsfilename = g_strdup_printf("%s", "downloads");
+
+    downloads_dir = g_build_filename(getenv("HOME"), downloadsfilename, NULL);
+    g_free(downloadsfilename);
+
+
+
+ if (!g_file_test(downloads_dir, G_FILE_TEST_EXISTS)) {
+        mkdir(downloads_dir, 0700);
+
+    }
 
 
     histfilename = g_strdup_printf("%s", ".hist");
@@ -936,9 +1039,10 @@ setup(){
         fprintf(File, "%s", buffer);
         fclose(File);
         //g_free(File);
+
+
+    return TRUE;
     }
-
-
 
 
 
@@ -959,7 +1063,6 @@ setup(){
     home = (gchar *) g_strdup_printf("file://%s", favpath);
 
 
-return TRUE;
 }
 
 
@@ -972,10 +1075,14 @@ int main(int argc, char *argv[]) {
 
     gtk_init(&argc, &argv);
 
-      //setup()
 
 
-   if (setup() == TRUE){
+menu =gtk_menu_new();
+    menuitem1 = gtk_menu_item_new_with_label("Click to cancel");
+gtk_menu_shell_append(GTK_MENU_SHELL(menu),menuitem1);
+//gtk_widget_show_all(menu);
+
+    setup();
     c = client_new(NULL);
 
      if (argc > 1){
@@ -989,8 +1096,7 @@ int main(int argc, char *argv[]) {
      else
 
      loadurl(c,home);
-    }
-    else printf("SETUP PROBLEM\n");
+
 
      if (HISTORY_ENABLE == 1){
 
