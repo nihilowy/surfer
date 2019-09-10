@@ -383,14 +383,29 @@ download_handle_start(WebKitWebView *web_view, WebKitDownload *download,
 gboolean
 download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer data)
 {
-    gchar *sug, *path, *path2 = NULL, *uri;
+    gchar *sug, *path, *path2 = NULL, *basename;
     GtkWidget *tb;
     int suffix = 1;
     size_t i;
+    gchar *uri = NULL;
+    const gchar *download_uri;
+
+if (!suggested_filename || !*suggested_filename) {
+        /* Try to find a matching name if there is no suggested filename. */
+        download_uri = webkit_uri_request_get_uri(webkit_download_get_request(download));
+        uri  = soup_uri_decode(download_uri);
+        basename     = g_filename_display_basename(uri);
+        g_free(uri);
+
+        suggested_filename = basename;
+    }
 
     sug = g_strdup(suggested_filename);
+
+
+
     for (i = 0; i < strlen(sug); i++)
-        if (sug[i] == G_DIR_SEPARATOR)
+        if (sug[i] == G_DIR_SEPARATOR )
             sug[i] = '_';
 
     path = g_build_filename(downloads_dir, sug, NULL);
