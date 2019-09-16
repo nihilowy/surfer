@@ -26,7 +26,7 @@ someonewhocares.org
 
   make &&  sudo make install
 
-  on Arch: pacaur -S surfer
+  on Arch: pacaur -S surfer-git
 
 ## Hotkeys:
 
