@@ -138,6 +138,8 @@ static void find(GtkWidget *widget,Client *c);
 static void openlink(GtkWidget *widget,Client *c);
 static void user_style(Client *c);
 static void close_find( Client *c);
+static void goback(Client *c);
+static void goforward(Client *c);
 
 static gboolean setup();
 
@@ -356,6 +358,9 @@ g_object_connect(
 //                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,
     NULL
     );
+
+
+
 
 
 return view;
@@ -608,6 +613,9 @@ static void changed_webload(WebKitWebView *webview,
     const gchar *url =NULL;
     FILE *File;
 
+     
+
+
     title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
@@ -642,6 +650,8 @@ static void changed_webload(WebKitWebView *webview,
             fclose(File);
 
           }
+
+            
             isbackforward= 0;
 
             break;
@@ -665,6 +675,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
     guint meta_key_pressed;
     int key_pressed;
 //   GdkEvent *event = c->eventt;
+
 
     if (event->type == GDK_KEY_PRESS) {
         key_pressed = ((GdkEventKey *) event)->keyval;
@@ -698,12 +709,14 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                     return TRUE;
 
                 case SURFER_BACK_KEY:
-                    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
+          	     goback(c);
+
                     isbackforward= 1;
                     return TRUE;
 
                 case SURFER_FORWARD_KEY:
-                    webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
+                     goforward(c);
+
                     isbackforward= 1;
                     return TRUE;
 
@@ -809,6 +822,56 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
     }
     return FALSE;
 }
+
+void
+goback(Client *c){
+ 
+    const gchar *back_uri;
+    WebKitBackForwardList *history;
+    WebKitBackForwardListItem *back_item;
+
+   if(webkit_web_view_can_go_back(c->webView)){
+   //webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
+
+    history = webkit_web_view_get_back_forward_list(c->webView);
+    back_item = webkit_back_forward_list_get_back_item(history);
+    //back_uri = webkit_back_forward_list_item_get_original_uri(back_item);	
+      
+    webkit_web_view_go_to_back_forward_list_item(c->webView,back_item);             
+    //webkit_web_view_load_uri (c->webView, back_uri);
+
+   
+   // printf("%s\n",back_uri);
+    }
+    else;
+ 
+}
+
+
+
+void
+goforward(Client *c){
+ 
+    const gchar *forward_uri;
+    WebKitBackForwardList *history;
+    WebKitBackForwardListItem *forward_item;
+
+    if(webkit_web_view_can_go_forward(c->webView)){
+ // webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
+
+
+    history = webkit_web_view_get_back_forward_list (c->webView);
+    forward_item = webkit_back_forward_list_get_forward_item (history);
+    //forward_uri = webkit_back_forward_list_item_get_original_uri (forward_item);
+      
+    webkit_web_view_go_to_back_forward_list_item(c->webView,forward_item);     
+    //webkit_web_view_load_uri (c->webView, forward_uri);
+
+ }
+  else;
+}
+
+
 
 gboolean
 decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision, WebKitPolicyDecisionType type,Client *c) {
