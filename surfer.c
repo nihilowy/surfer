@@ -217,9 +217,10 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_open), c->button_dm,FALSE, FALSE, 0);
 
-    gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);
+    
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->vbox),GTK_WIDGET(c->webView), TRUE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);
 
     //gtk_container_add(GTK_CONTAINER(c->button_dm), GTK_WIDGET(menu));
 
