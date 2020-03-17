@@ -57,11 +57,11 @@ links: .fav in your home dir)
 
 `Ctrl + -` &mdash; zoom out
 
-`Ctrl + e` &mdash; scroll down
+`Down Arrow` &mdash; scroll down
 
-`Ctrl + d` &mdash; scroll up
+`Up arrow` &mdash; scroll up
 
-`Ctrl +  w` &mdash; page up
+`Ctrl +  w` &mdash; page up 
 
 `Ctrl +  s` &mdash; page down
 
