@@ -289,7 +289,7 @@ contentmanager = webkit_user_content_manager_new();
 
 //mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
 //wc = webkit_web_context_new_with_website_data_manager(mgr);
- wc= webkit_web_context_get_default();
+   wc= webkit_web_context_get_default();
 
    // view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
  //   char *value = "Mozilla/5.0";
@@ -316,7 +316,7 @@ webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_
 
 webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
-
+webkit_web_context_set_sandbox_enabled(wc,enabled);
 
  //tell webkit where to store cookies
     if (!g_file_test(cookies_path, G_FILE_TEST_EXISTS)) {
