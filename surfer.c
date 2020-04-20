@@ -316,7 +316,7 @@ webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_
 
 webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
-webkit_web_context_set_sandbox_enabled(wc,enabled);
+//webkit_web_context_set_sandbox_enabled(wc,enabled);
 
  //tell webkit where to store cookies
     if (!g_file_test(cookies_path, G_FILE_TEST_EXISTS)) {
