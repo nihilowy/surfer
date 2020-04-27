@@ -34,6 +34,9 @@
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
 #define HISTORY_ENABLE	0         //change to 1 for enable history 
+#define SURFER_DIR	".surfer"                 // upper directory(s) must exist
+#define SURFER_DOWNLOADS "downloads"
+
 
 typedef struct Client{
     GtkWidget *main_window;
@@ -82,6 +85,7 @@ const gchar *history;
 gchar *favpath;
 gchar *histpath;
 gchar *downloads_dir;
+gchar *surfer_dir;
 
 static gchar *fullname = "";
 
@@ -262,9 +266,11 @@ WebKitCookieManager *cookiemgr;
 WebKitWebContext *wc;
 
 gboolean enabled = 1;
-FILE *cookie_file_handler;
-gchar *cookies_path = g_build_filename(getenv("HOME"), ".cookies", NULL);
-gchar *cookie_file = g_build_filename(cookies_path, "cookie", NULL);
+FILE *File;
+
+//gchar *cookies_path = g_build_filename(getenv("HOME"), surfer_dir, NULL);
+gchar *cookie_file = g_build_filename(surfer_dir, "cookie", NULL);
+
 gchar *datadir  = g_build_filename(g_get_user_data_dir() , fullname, NULL);
 gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
 
@@ -319,11 +325,15 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 //webkit_web_context_set_sandbox_enabled(wc,enabled);
 
  //tell webkit where to store cookies
-    if (!g_file_test(cookies_path, G_FILE_TEST_EXISTS)) {
-        mkdir(cookies_path, 0700);
-        cookie_file_handler = fopen(cookie_file, "wb+");
-        fclose(cookie_file_handler);
+
+    if (!g_file_test(cookie_file, G_FILE_TEST_EXISTS)) {
+        //mkdir(cookies_path, 0700);
+        File = fopen(cookie_file, "wb+");
+        
+        fclose(File);
     }
+
+ 
 
 
  // cookiemgr = webkit_website_data_manager_get_cookie_manager(mgr);
@@ -1085,45 +1095,51 @@ WebKitWebView *create_request(WebKitWebView *rv,WebKitNavigationAction *navact, 
 gboolean setup(){
 
 
-    gchar *favfilename;
-    gchar *downloadsfilename;
-    gchar *histfilename;
+  
+    gchar *downloadsfilename,*surferdirfilename;
+
     FILE *File,*File1;
     char buffer[256] = "<!DOCTYPE html><html><head><meta charset=utf8><style>body {background-color: #000009;}p\
     {color: yellow;} a:link { color: #00e900; }</style></head><body><p>";
 
 
-    favfilename = g_strdup_printf("%s", ".fav");
-    favpath = g_build_filename(getenv("HOME"), favfilename, NULL);
-    g_free(favfilename);
+   
 
-    downloadsfilename = g_strdup_printf("%s", "downloads");
+    downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
 
     downloads_dir = g_build_filename(getenv("HOME"), downloadsfilename, NULL);
     g_free(downloadsfilename);
 
 
+    surferdirfilename = g_strdup_printf("%s", SURFER_DIR);
 
- if (!g_file_test(downloads_dir, G_FILE_TEST_EXISTS)) {
+    surfer_dir = g_build_filename(getenv("HOME"), surferdirfilename, NULL);
+    g_free(surferdirfilename);
+
+
+
+  if (!g_file_test(downloads_dir, G_FILE_TEST_EXISTS)) {
         mkdir(downloads_dir, 0700);
 
     }
 
+  if (!g_file_test(surfer_dir, G_FILE_TEST_EXISTS)) {
+        mkdir(surfer_dir, 0700);
 
-    histfilename = g_strdup_printf("%s", ".hist");
-    histpath = g_build_filename(getenv("HOME"), histfilename, NULL);
-    g_free(histfilename);
+    }    
+
+ 
+    favpath = g_build_filename(surfer_dir,"fav", NULL);
+ 
+    histpath = g_build_filename(surfer_dir, "hist", NULL);
+   
 
     if (!g_file_test(favpath, G_FILE_TEST_EXISTS)) {
         File = fopen(favpath, "wb+");
         fprintf(File, "%s", buffer);
         fclose(File);
-        //g_free(File);
-
-
-    return TRUE;
+            
     }
-
 
 
   //if (HISTORY_ENABLE == 1)
@@ -1132,10 +1148,8 @@ gboolean setup(){
         File1 = fopen(histpath, "wb+");
         fprintf(File1, "%s", buffer);
         fclose(File1);
-        //g_free(File1);
+        
     }
-
-    //home =  g_strdup(favpath);
 
 
     history = (gchar *) g_strdup_printf("file://%s", histpath);
@@ -1143,10 +1157,12 @@ gboolean setup(){
     home = (gchar *) g_strdup_printf("file://%s", favpath);
 
 
+return TRUE;
 }
 
 
 int main(int argc, char *argv[]) {
+ 
     Client *c;
     int i;
     FILE *File1;
@@ -1156,11 +1172,10 @@ int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
 
 
-
-menu =gtk_menu_new();
+    menu =gtk_menu_new();
     menuitem1 = gtk_menu_item_new_with_label("Click to cancel");
-gtk_menu_shell_append(GTK_MENU_SHELL(menu),menuitem1);
-//gtk_widget_show_all(menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu),menuitem1);
+    //gtk_widget_show_all(menu);
 
     setup();
     c = client_new(NULL);
@@ -1188,12 +1203,13 @@ gtk_menu_shell_append(GTK_MENU_SHELL(menu),menuitem1);
      File1 = fopen(histpath, "a");
      fprintf(File1, "%s",textdate);
      fclose(File1);
-//     g_free(File1);
+
 
      }
 
 
-   gtk_main();
+    gtk_main();
 
     return 0;
 }
+

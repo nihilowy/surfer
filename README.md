@@ -45,7 +45,7 @@ someonewhocares.org
 `Ctrl + h` &mdash; home (bookmarks list)
 
 `Ctrl + shift + b` &mdash; bookmark site (to remove just edit file with 
-links: .fav in your home dir)
+links: fav in your SURFER_DIR dir)
 
 `Ctrl + o` &mdash; toogle url bar
 
@@ -70,7 +70,7 @@ links: .fav in your home dir)
 `Ctrl + Shift + s` &mdash; toogle user style black theme 
 (/usr/share/surfer/black.css)
 
-`Ctrl + Shift + h` &mdash; show history (.hist file in HOME dir), to 
+`Ctrl + Shift + h` &mdash; show history (hist file in SURFER_DIR), to 
 enable history 
 change HISTORY_ENABLE to 1 in surfer.c
 
@@ -79,4 +79,4 @@ change HISTORY_ENABLE to 1 in surfer.c
 
 
 
-**Edit `surfer.c` to change hotkeys**
+**Edit `surfer.c` to change hotkeys and SURFER_DIR, SURFER_DOWNLOADS**
