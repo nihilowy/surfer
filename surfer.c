@@ -31,9 +31,13 @@
 #define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_w
 #define SURFER_STYLE_KEY            GDK_KEY_S
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
-#define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"
+
+#define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"  //change to your style file
+#define DEFAULT_STYLE_ENABLE 0 //change to 1 to enable default style
+
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
 #define HISTORY_ENABLE	0         //change to 1 for enable history 
+
 #define SURFER_DIR	".surfer"                 // upper directory(s) must exist
 #define SURFER_DOWNLOADS "downloads"
 
@@ -249,6 +253,11 @@ Client *client_new(Client *rc) {
 //    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
 
     display_webview(NULL, c);
+
+ if (DEFAULT_STYLE_ENABLE == 1){
+    user_style(c);
+ }
+ 
 
     clients++;
  return c;
