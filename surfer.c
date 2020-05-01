@@ -224,8 +224,10 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_find), c->entry_find, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_find), c->button_find_back, TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_find), c->button,TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(c->box_open), c->button_dm,FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(c->box_open), c->button_dm,FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
+    
 
     
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
