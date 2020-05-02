@@ -210,7 +210,7 @@ Client *client_new(Client *rc) {
     c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    c->button_dm = gtk_button_new_with_label("Downloads");
+    c->button_dm = gtk_button_new_with_label("[...]");
 
     gtk_widget_show_all (menuitem1);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem1);
