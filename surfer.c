@@ -31,6 +31,9 @@
 #define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_w
 #define SURFER_STYLE_KEY            GDK_KEY_S
 #define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
+//WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS -Accept all cookies unconditionally.
+//WEBKIT_COOKIE_POLICY_ACCEPT_NEVER -Reject all cookies unconditionally.
+//WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY -Accept only cookies set by the main document loaded
 
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"  //change to your style file
 #define DEFAULT_STYLE_ENABLE 0 //change to 1 to enable default style
@@ -50,8 +53,9 @@ typedef struct Client{
 
     GtkWidget *button;
     GtkWidget *button_dm;
+    GtkWidget *button_js;
     GtkWidget *button_find_back;
-
+    
 
     GtkWidget *box_open;
 
@@ -60,6 +64,7 @@ typedef struct Client{
     WebKitWebView *webView;
 //  WebKitPolicyDecision *decision1;
     WebKitFindController *fc;
+    WebKitSettings *settings;
 
     int f;
     int s;
@@ -91,8 +96,10 @@ gchar *histpath;
 gchar *downloads_dir;
 gchar *surfer_dir;
 
+
 static gchar *fullname = "";
 
+gboolean enablejs=1;
 static gboolean isbackforward= 0,dl_win_show=FALSE;
 static gboolean wc_setup_done = FALSE;
 
@@ -109,7 +116,7 @@ static gboolean close_request(WebKitWebView *view,Client *c);
 
 static void find_back(GtkWidget * widget,Client *c);
 
-
+static void enablejs_cb(GtkWidget * widget,Client *c);
 
 
 static Client *client_new(Client *rc);
@@ -205,12 +212,18 @@ Client *client_new(Client *rc) {
 
     c->fc= webkit_web_view_get_find_controller(c->webView);
 
+
+
+
+   
+
     c->vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
     c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     c->button_dm = gtk_button_new_with_label("[...]");
+    c->button_js = gtk_button_new_with_label("->js");
 
     gtk_widget_show_all (menuitem1);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem1);
@@ -226,8 +239,8 @@ Client *client_new(Client *rc) {
     gtk_box_pack_end(GTK_BOX(c->box_find), c->button,TRUE, TRUE, 0);
 
     gtk_box_pack_start(GTK_BOX(c->box_open), c->button_dm,FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
-    
+    gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(c->box_open),c->button_js, FALSE, FALSE, 0);
 
     
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
@@ -245,6 +258,7 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
     g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
     g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(button_press), c);
+    g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(enablejs_cb), c);
     g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c);
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
@@ -270,13 +284,16 @@ Client *client_new(Client *rc) {
 WebKitWebView *clientview(Client *c,WebKitWebView *rv)
 {
 WebKitWebView *view;
-WebKitSettings *settings;
+
 WebKitUserContentManager *contentmanager;
 WebKitWebsiteDataManager *mgr;
 WebKitCookieManager *cookiemgr;
 WebKitWebContext *wc;
 
-gboolean enabled = 1;
+//gboolean enabled = 1;
+
+
+
 FILE *File;
 
 //gchar *cookies_path = g_build_filename(getenv("HOME"), surfer_dir, NULL);
@@ -299,7 +316,7 @@ else {
 
 
 
-settings = webkit_settings_new();
+c->settings = webkit_settings_new();
 
 contentmanager = webkit_user_content_manager_new();
 
@@ -320,11 +337,11 @@ contentmanager = webkit_user_content_manager_new();
     }
 
 
-    g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
-    g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
+    g_object_set(G_OBJECT(c->settings), "enable-developer-extras", TRUE, NULL);
+    g_object_set(G_OBJECT(c->settings), "enable-webgl", TRUE, NULL);
 
-    g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
-
+    g_object_set(G_OBJECT(c->settings), "enable-mediasource", TRUE, NULL);
+   //_object_set(G_OBJECT(c->settings),"enable-javascript", FALSE, NULL);
 
 //allow_tls_cert(c,wc);
 
@@ -360,7 +377,7 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
 
 view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
-		    "settings", settings,
+		    "settings", c->settings,
 		    "user-content-manager", contentmanager,
 		    "web-context",wc );
 
@@ -1044,6 +1061,30 @@ find_back(GtkWidget * widget,Client *c){
 webkit_find_controller_search_previous(c->fc);
 
 
+}
+
+
+void
+enablejs_cb(GtkWidget * widget,Client *c){
+
+   //GdkColor color;
+
+   if (enablejs==1){
+   g_object_set(G_OBJECT(c->settings),"enable-javascript", FALSE, NULL);
+   enablejs=0;
+  // gdk_color_parse ("red", &color);
+  // gtk_widget_modify_bg ( GTK_WIDGET(c->button_js), GTK_STATE_NORMAL, &color);
+   
+
+   }
+   else{
+   //gdk_color_parse ("red", &color);
+   //gtk_widget_modify_bg ( GTK_WIDGET(c->button_js), GTK_STATE_NORMAL, &color);
+ 
+
+   g_object_set(G_OBJECT(c->settings),"enable-javascript", TRUE, NULL);
+   enablejs=1;
+   }
 }
 
 
