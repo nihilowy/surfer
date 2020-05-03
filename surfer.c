@@ -64,7 +64,6 @@ typedef struct Client{
     WebKitWebView *webView;
 //  WebKitPolicyDecision *decision1;
     WebKitFindController *fc;
-    WebKitSettings *settings;
 
     int f;
     int s;
@@ -83,6 +82,8 @@ typedef struct Client{
 
 
 } Client;
+
+static WebKitSettings *settings;
 
 static GtkWidget *menuitem1;
 static GtkWidget *menu;
@@ -316,7 +317,7 @@ else {
 
 
 
-c->settings = webkit_settings_new();
+settings = webkit_settings_new();
 
 contentmanager = webkit_user_content_manager_new();
 
@@ -337,11 +338,11 @@ contentmanager = webkit_user_content_manager_new();
     }
 
 
-    g_object_set(G_OBJECT(c->settings), "enable-developer-extras", TRUE, NULL);
-    g_object_set(G_OBJECT(c->settings), "enable-webgl", TRUE, NULL);
+    g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
+    g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
 
-    g_object_set(G_OBJECT(c->settings), "enable-mediasource", TRUE, NULL);
-   //_object_set(G_OBJECT(c->settings),"enable-javascript", FALSE, NULL);
+    g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
+   //_object_set(G_OBJECT(settings),"enable-javascript", FALSE, NULL);
 
 //allow_tls_cert(c,wc);
 
@@ -377,9 +378,9 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
 
 view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
-		    "settings", c->settings,
+		    "settings", settings,
 		    "user-content-manager", contentmanager,
-		    "web-context",wc );
+		    "web-context",wc,NULL );
 
  //printf("new\n");
 }
@@ -1070,7 +1071,7 @@ enablejs_cb(GtkWidget * widget,Client *c){
    //GdkColor color;
 
    if (enablejs==1){
-   g_object_set(G_OBJECT(c->settings),"enable-javascript", FALSE, NULL);
+   g_object_set(G_OBJECT(settings),"enable-javascript", FALSE, NULL);
    enablejs=0;
   // gdk_color_parse ("red", &color);
   // gtk_widget_modify_bg ( GTK_WIDGET(c->button_js), GTK_STATE_NORMAL, &color);
@@ -1082,7 +1083,7 @@ enablejs_cb(GtkWidget * widget,Client *c){
    //gtk_widget_modify_bg ( GTK_WIDGET(c->button_js), GTK_STATE_NORMAL, &color);
  
 
-   g_object_set(G_OBJECT(c->settings),"enable-javascript", TRUE, NULL);
+   g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
    enablejs=1;
    }
 }
