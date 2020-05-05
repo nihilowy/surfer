@@ -22,10 +22,10 @@ adblock.so: ext.c Makefile
 
 
 install:all
-	install -d $(INSTALLDIR)/usr/share/surfer
-	install -d $(INSTALLDIR)/usr/lib
-	install -d $(INSTALLDIR)/usr/lib/surfer
-#	install -m0644 ext.so $(INSTALLDIR)/usr/lib/surfer/
+	install -d $(DESTDIR)/usr/share/surfer
+	install -d $(DESTDIR)/usr/lib
+	install -d $(DESTDIR)/usr/lib/surfer
+#	install -m0644 ext.so $(DESTDIR)/usr/lib/surfer/
 	install -Dm755 surfer $(DESTDIR)/usr/bin/surfer
 	install -Dm644 surfer.desktop $(DESTDIR)/usr/share/applications/surfer.desktop
 	install -Dm644 surfer.1 $(DESTDIR)/usr/share/man/man1/surfer.1
