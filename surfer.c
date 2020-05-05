@@ -68,6 +68,8 @@ typedef struct Client{
     int f;
     int s;
     int o;
+    int progress;
+    const gchar *title;
 
 
   /* TLS information. */
@@ -134,7 +136,7 @@ static void decide_navaction(WebKitPolicyDecision *decision,Client *c);
 static void decide_newwindow(WebKitPolicyDecision *decision,Client *c);
 static void decide_response(WebKitPolicyDecision *decision,Client *c);
 
-static gboolean button_press( Client *c);
+static gboolean download_button_press( Client *c);
 static gboolean download_handle(WebKitDownload *, gchar *, gpointer);
 static void download_handle_start(WebKitWebView *, WebKitDownload *, gpointer);
 static void download_cancel( GtkWidget *,WebKitDownload *download);
@@ -146,9 +148,12 @@ static gboolean crashed(WebKitWebView *v, Client *c);
 
 static gboolean keyboard(GtkWidget *widget, GdkEvent *event, Client *c,  gpointer );
 
-static void changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c);
+static void changed_title(WebKitWebView *view, GParamSpec *ps, Client *c);
 static void changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c );
 static void changed_webload(WebKitWebView *webview,WebKitLoadEvent event, Client *c);
+static void changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c);
+
+static void update_ttle(Client *c);
 
 static void find(GtkWidget *widget,Client *c);
 static void openlink(GtkWidget *widget,Client *c);
@@ -258,7 +263,7 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
     g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
-    g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(button_press), c);
+    g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(download_button_press), c);
     g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(enablejs_cb), c);
     g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c);
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
@@ -389,6 +394,7 @@ g_object_connect(
         G_OBJECT(view),"signal::load-changed", G_CALLBACK(changed_webload),c,
                        "signal::notify::title", G_CALLBACK(changed_title),c ,
                        "signal::notify::url", G_CALLBACK(changed_url), c,
+                       "signal::notify::estimated-load-progress",G_CALLBACK(changed_estimated),c,
                        "signal::decide-policy", G_CALLBACK(decide_policy),c,
                        "signal::close", G_CALLBACK(close_request), c,
                        "signal::ready-to-show",G_CALLBACK(display_webview), c,
@@ -407,7 +413,7 @@ return view;
 
 
 gboolean
-button_press( Client *c )
+download_button_press( Client *c )
 {
 
     gtk_menu_popup_at_pointer (GTK_MENU (menu), NULL);
@@ -612,23 +618,47 @@ close_find(Client *c) {
 }
 
 
+void
+update_title(Client *c){
+
+   char *title;
+   const gchar *url;
+
+   url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+
+   title = g_strdup_printf("[%i%%] %s",
+			        c->progress, c->title);
+   gtk_window_set_title(GTK_WINDOW(c->main_window), title);
+
+
+
+
+}
+
+
+
+void
+changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c)
+{
+
+
+
+    c->progress = webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView))*100;
+
+  update_title(c);
+
+ //   gtk_entry_set_progress_fraction(GTK_ENTRY(c->entry_open), c->progress	);
+}
 
 
 
 
 void
-changed_title(GtkWidget *widget,WebKitWebView *rv,Client *c) {
-    const gchar *title;
-    const gchar *url;
-
-
-    title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
-    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-
-    gtk_window_set_title(GTK_WINDOW(c->main_window), title);
-    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-
-   gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
+changed_title(WebKitWebView *view, GParamSpec *ps, Client *c) {
+    
+   
+    c->title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
+    update_title(c); 
 
 
 }
