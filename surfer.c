@@ -153,7 +153,7 @@ static void changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c );
 static void changed_webload(WebKitWebView *webview,WebKitLoadEvent event, Client *c);
 static void changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c);
 
-static void update_ttle(Client *c);
+static void update_title(Client *c);
 
 static void find(GtkWidget *widget,Client *c);
 static void openlink(GtkWidget *widget,Client *c);
