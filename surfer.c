@@ -231,8 +231,8 @@ Client *client_new(Client *rc) {
     c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    c->button_goback = gtk_button_new_with_label("<-");
-    c->button_goforward = gtk_button_new_with_label("->");
+    c->button_goback = gtk_button_new_with_label("<");
+    c->button_goforward = gtk_button_new_with_label(">");
     c->button_dm = gtk_button_new_with_label("[...]");
     c->button_js = gtk_button_new_with_label("->js");
 
