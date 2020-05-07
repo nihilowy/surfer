@@ -913,10 +913,10 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 void
 goback(WebKitWebView *rv,Client *c){
  
-    const gchar *back_uri;
+/*    const gchar *back_uri;
     WebKitBackForwardList *history;
     WebKitBackForwardListItem *back_item;
-
+*/
   // if(webkit_web_view_can_go_back(WEBKIT_WEB_VIEW(c->webView)))
    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
 
@@ -939,11 +939,11 @@ goback(WebKitWebView *rv,Client *c){
 
 void
 goforward(WebKitWebView *rv,Client *c){
- 
+/* 
     const gchar *forward_uri;
     WebKitBackForwardList *history;
     WebKitBackForwardListItem *forward_item;
-
+*/
    // if(webkit_web_view_can_go_forward(c->webView)){
   webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
 
