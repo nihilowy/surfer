@@ -517,7 +517,7 @@ void
 download_handle_finished(WebKitDownload *download, gpointer data)
 {
     downloads--;
-    g_object_unref(download);
+//    g_object_unref(download);
 
 }
 
