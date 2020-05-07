@@ -51,10 +51,12 @@ typedef struct Client{
     GtkWidget *entry_open;
     GtkWidget *box_find;
 
-    GtkWidget *button;
+    GtkWidget *button_goback;
+    GtkWidget *button_goforward;
     GtkWidget *button_dm;
     GtkWidget *button_js;
     GtkWidget *button_find_back;
+    GtkWidget *button_find_close;
     
 
     GtkWidget *box_open;
@@ -117,9 +119,7 @@ static void display_webview( WebKitWebView *rc,Client *c);
 
 static gboolean close_request(WebKitWebView *view,Client *c);
 
-static void find_back(GtkWidget * widget,Client *c);
 
-static void enablejs_cb(GtkWidget * widget,Client *c);
 
 
 static Client *client_new(Client *rc);
@@ -155,12 +155,17 @@ static void changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *
 
 static void update_title(Client *c);
 
-static void find(GtkWidget *widget,Client *c);
+
 static void openlink(GtkWidget *widget,Client *c);
 static void user_style(Client *c);
-static void close_find( Client *c);
-static void goback(Client *c);
-static void goforward(Client *c);
+
+static void find(GtkWidget *widget,Client *c);
+static void find_close( Client *c);
+static void find_back(GtkWidget * widget,Client *c);
+static void enablejs_cb(GtkWidget * widget,Client *c);
+
+static void goback(WebKitWebView *rv,Client *c);
+static void goforward(WebKitWebView *rv,Client *c);
 
 static gboolean setup();
 
@@ -205,6 +210,7 @@ Client *client_new(Client *rc) {
 // c = malloc(sizeof(Client));
     c = calloc(1, sizeof(Client));
 
+
     c->o = 0;
     c->f = 0;
     c->s = 0;
@@ -220,21 +226,23 @@ Client *client_new(Client *rc) {
 
 
 
-
-   
-
     c->vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
     c->box_find = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     c->box_open = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
+    c->button_goback = gtk_button_new_with_label("<-");
+    c->button_goforward = gtk_button_new_with_label("->");
     c->button_dm = gtk_button_new_with_label("[...]");
     c->button_js = gtk_button_new_with_label("->js");
+
+    gtk_widget_set_tooltip_text(c->button_dm,"Downloads");
+    gtk_widget_set_tooltip_text(c->button_js,"JS toogle");
 
     gtk_widget_show_all (menuitem1);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem1);
 
-    c->button = gtk_button_new_with_label ("Close");
+    c->button_find_close = gtk_button_new_with_label ("Close");
     c->button_find_back = gtk_button_new_with_label ("Find Back");
     c->entry_find = gtk_entry_new();
     c->entry_open= gtk_entry_new();
@@ -242,8 +250,10 @@ Client *client_new(Client *rc) {
 
     gtk_box_pack_start(GTK_BOX(c->box_find), c->entry_find, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_find), c->button_find_back, TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(c->box_find), c->button,TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(c->box_find), c->button_find_close,TRUE, TRUE, 0);
 
+    gtk_box_pack_start(GTK_BOX(c->box_open), c->button_goback,FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(c->box_open), c->button_goforward,FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open), c->button_dm,FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_open),c->button_js, FALSE, FALSE, 0);
@@ -261,11 +271,17 @@ Client *client_new(Client *rc) {
 
     g_signal_connect(G_OBJECT(c->box_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
-    g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
-    g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
+    
+
+    g_signal_connect(G_OBJECT(c->button_goback), "clicked", G_CALLBACK(goback), c);
+    g_signal_connect(G_OBJECT(c->button_goforward), "clicked", G_CALLBACK(goforward), c);
     g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(download_button_press), c);
     g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(enablejs_cb), c);
-    g_signal_connect_swapped (G_OBJECT (c->button), "clicked",G_CALLBACK (close_find),c);
+
+    g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
+    g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
+    g_signal_connect_swapped (G_OBJECT (c->button_find_close), "clicked",G_CALLBACK (find_close),c);
+
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
 
@@ -610,7 +626,7 @@ user_style(Client *c){
 
 
 void
-close_find(Client *c) {
+find_close(Client *c) {
 
    gtk_entry_set_text(GTK_ENTRY(c->entry_find), "");
  find(c->entry_find,c);
@@ -780,13 +796,13 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                     return TRUE;
 
                 case SURFER_BACK_KEY:
-          	     goback(c);
+          	     goback(c->webView,c);
 
                     isbackforward= 1;
                     return TRUE;
 
                 case SURFER_FORWARD_KEY:
-                     goforward(c);
+                     goforward(c->webView,c);
 
                     isbackforward= 1;
                     return TRUE;
@@ -895,42 +911,43 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 }
 
 void
-goback(Client *c){
+goback(WebKitWebView *rv,Client *c){
  
     const gchar *back_uri;
     WebKitBackForwardList *history;
     WebKitBackForwardListItem *back_item;
 
-   if(webkit_web_view_can_go_back(c->webView)){
-   //webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
+  // if(webkit_web_view_can_go_back(WEBKIT_WEB_VIEW(c->webView)))
+   webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
 
-    history = webkit_web_view_get_back_forward_list(c->webView);
+/*    history = webkit_web_view_get_back_forward_list(WEBKIT_WEB_VIEW(c->webView));
     back_item = webkit_back_forward_list_get_back_item(history);
     //back_uri = webkit_back_forward_list_item_get_original_uri(back_item);	
       
-    webkit_web_view_go_to_back_forward_list_item(c->webView,back_item);             
+    webkit_web_view_go_to_back_forward_list_item(WEBKIT_WEB_VIEW(c->webView),back_item);             
     //webkit_web_view_load_uri (c->webView, back_uri);
 
    
    // printf("%s\n",back_uri);
     }
-    else;
+*/
+   // else;
  
 }
 
 
 
 void
-goforward(Client *c){
+goforward(WebKitWebView *rv,Client *c){
  
     const gchar *forward_uri;
     WebKitBackForwardList *history;
     WebKitBackForwardListItem *forward_item;
 
-    if(webkit_web_view_can_go_forward(c->webView)){
- // webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
+   // if(webkit_web_view_can_go_forward(c->webView)){
+  webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
 
-
+/*
     history = webkit_web_view_get_back_forward_list (c->webView);
     forward_item = webkit_back_forward_list_get_forward_item (history);
     //forward_uri = webkit_back_forward_list_item_get_original_uri (forward_item);
@@ -940,6 +957,7 @@ goforward(Client *c){
 
  }
   else;
+*/
 }
 
 
