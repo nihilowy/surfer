@@ -65,7 +65,7 @@ links: fav in your SURFER_DIR dir)
 
 `Ctrl +  s` &mdash; page down
 
-`Ctrl + i` &mdash; web inspector (page source)
+`Ctrl + Shift + i` &mdash; web inspector (page source)
 
 `Ctrl + Shift + s` &mdash; toogle user style black theme 
 (/usr/share/surfer/black.css)
