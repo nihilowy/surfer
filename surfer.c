@@ -647,7 +647,7 @@ update_title(Client *c){
    title = g_strdup_printf("[%i%%] %s",
 			        c->progress, c->title);
    gtk_window_set_title(GTK_WINDOW(c->main_window), title);
-
+   gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
 
 
 
@@ -684,11 +684,11 @@ changed_title(WebKitWebView *view, GParamSpec *ps, Client *c) {
 void
 changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c) {
 
-   const gchar *url;
+   //const gchar *url;
 
-   url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+   //url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
-   gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
+   update_title(c); 
 
 }
 
