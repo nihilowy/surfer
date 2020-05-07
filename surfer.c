@@ -20,7 +20,7 @@
 #define SURFER_FIND_KEY             GDK_KEY_slash
 #define SURFER_HOME_KEY             GDK_KEY_h
 #define SURFER_BOOKMARK_KEY         GDK_KEY_B
-#define SURFER_INSPECTOR_KEY        GDK_KEY_i
+#define SURFER_INSPECTOR_KEY        GDK_KEY_I
 #define SURFER_ZOOM_IN_KEY          GDK_KEY_equal
 #define SURFER_ZOOM_OUT_KEY         GDK_KEY_minus
 #define SURFER_FULLSCREEN_KEY       GDK_KEY_F11
