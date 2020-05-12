@@ -385,11 +385,11 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
     if (!g_file_test(cookie_file, G_FILE_TEST_EXISTS)) {
         //mkdir(cookies_path, 0700);
         File = fopen(cookie_file, "wb+");
-        
+
         fclose(File);
     }
 
- 
+
 
 
  // cookiemgr = webkit_website_data_manager_get_cookie_manager(mgr);
@@ -476,7 +476,7 @@ if (!suggested_filename || !*suggested_filename) {
 
     sug = g_strdup(suggested_filename);
 
-   
+
     for (i = 0; i < strlen(sug); i++)
         if (sug[i] == G_DIR_SEPARATOR )
             sug[i] = '_';
@@ -583,11 +583,11 @@ download_progress( WebKitDownload *download,GParamSpec *pspec,    GtkWidget *tb)
 void
 mpvhandler(Client *c)
 {
-    char* t;	
+    char* t;
     char* argv[2];
     pid_t child_pid;
     int child_status;
-    
+
     t = (char*)c->targeturi;
     argv[0] = SURFER_PLAYER;
     argv[1] = t;
@@ -615,13 +615,12 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
         webkit_context_menu_append(context_menu, menu_item);
 
         action = g_simple_action_new("mpv-handler", NULL);
-        
+
         g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(mpvhandler), c);
         menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
                 "Play in mpv (linux)", NULL);
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
-                                       
     }
     return FALSE;
 }
@@ -725,8 +724,8 @@ changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c)
 
 void
 changed_title(WebKitWebView *view, GParamSpec *ps, Client *c) {
-    
-   
+
+
     c->title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
     update_title(c); 
 
@@ -752,7 +751,6 @@ static void changed_webload(WebKitWebView *webview,
     const gchar *url =NULL;
     FILE *File;
 
-     
 
 
     title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
@@ -965,75 +963,40 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 void
 goback(WebKitWebView *rv,Client *c){
  
-/*    const gchar *back_uri;
-    WebKitBackForwardList *history;
-    WebKitBackForwardListItem *back_item;
-*/
-  // if(webkit_web_view_can_go_back(WEBKIT_WEB_VIEW(c->webView)))
    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
 
-/*    history = webkit_web_view_get_back_forward_list(WEBKIT_WEB_VIEW(c->webView));
-    back_item = webkit_back_forward_list_get_back_item(history);
-    //back_uri = webkit_back_forward_list_item_get_original_uri(back_item);	
-      
-    webkit_web_view_go_to_back_forward_list_item(WEBKIT_WEB_VIEW(c->webView),back_item);             
-    //webkit_web_view_load_uri (c->webView, back_uri);
-
-   
-   // printf("%s\n",back_uri);
-    }
-*/
-   // else;
- 
 }
 
 
 
 void
 goforward(WebKitWebView *rv,Client *c){
-/* 
-    const gchar *forward_uri;
-    WebKitBackForwardList *history;
-    WebKitBackForwardListItem *forward_item;
-*/
-   // if(webkit_web_view_can_go_forward(c->webView)){
+
   webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
 
-/*
-    history = webkit_web_view_get_back_forward_list (c->webView);
-    forward_item = webkit_back_forward_list_get_forward_item (history);
-    //forward_uri = webkit_back_forward_list_item_get_original_uri (forward_item);
-      
-    webkit_web_view_go_to_back_forward_list_item(c->webView,forward_item);     
-    //webkit_web_view_load_uri (c->webView, forward_uri);
-
- }
-  else;
-*/
 }
 
 
- void
-  mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h, guint modifiers,Client *c)
-  {
-  	WebKitHitTestResultContext hc = webkit_hit_test_result_get_context(h);
-  
-  	/* Keep the hit test to know where is the pointer on the next click */
-  	c->mousepos = h;
-  
-  	if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_LINK)
+void
+mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h, guint modifiers,Client *c)
+{
+   WebKitHitTestResultContext hc = webkit_hit_test_result_get_context(h);
+
+
+   c->mousepos = h;
+
+   if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_LINK)
  		c->targeturi = webkit_hit_test_result_get_link_uri(h);
-  	else if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_IMAGE)
+   else if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_IMAGE)
   		c->targeturi = webkit_hit_test_result_get_image_uri(h);
- 	else if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_MEDIA)
+   else if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_MEDIA)
   		c->targeturi = webkit_hit_test_result_get_media_uri(h);
- 	else
+   else
   		c->targeturi = NULL;
-  
-//  	c->overtitle = c->targeturi;
+
   //	update_title(c);
-  }
- 
+}
+
 
 
 
