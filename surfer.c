@@ -43,7 +43,7 @@
 
 #define SURFER_DIR	".surfer"                 // upper directory(s) must exist
 #define SURFER_DOWNLOADS "downloads"
-
+#define SURFER_PLAYER	"mpv"                     // best with youtube-dl on supported sites
 
 typedef struct Client{
     GtkWidget *main_window;
@@ -66,13 +66,14 @@ typedef struct Client{
     WebKitWebView *webView;
 //  WebKitPolicyDecision *decision1;
     WebKitFindController *fc;
-
+    WebKitHitTestResult *mousepos;
+    
     int f;
     int s;
     int o;
     int progress;
-    const gchar *title;
-
+    const gchar *title,*targeturi,*overtitle;
+    
 
   /* TLS information. */
   GTlsCertificate *certificate;
@@ -100,7 +101,7 @@ gchar *favpath;
 gchar *histpath;
 gchar *downloads_dir;
 gchar *surfer_dir;
-
+gchar *surferplayer;
 
 static gchar *fullname = "";
 
@@ -155,7 +156,10 @@ static void changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *
 
 static void update_title(Client *c);
 
+static gboolean menucreate_cb (WebKitWebView *web_view,WebKitContextMenu *context_menu,GdkEvent *event, WebKitHitTestResult *h,Client *c);
 
+static void mpvhandler(Client *c);
+static void mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h,guint modifiers, Client *c);
 static void openlink(GtkWidget *widget,Client *c);
 static void user_style(Client *c);
 
@@ -163,6 +167,8 @@ static void find(GtkWidget *widget,Client *c);
 static void find_close( Client *c);
 static void find_back(GtkWidget * widget,Client *c);
 static void enablejs_cb(GtkWidget * widget,Client *c);
+
+
 
 static void goback(WebKitWebView *rv,Client *c);
 static void goforward(WebKitWebView *rv,Client *c);
@@ -415,6 +421,8 @@ g_object_connect(
                        "signal::close", G_CALLBACK(close_request), c,
                        "signal::ready-to-show",G_CALLBACK(display_webview), c,
                        "signal::create",G_CALLBACK(create_request), c,
+                       "signal::context-menu",G_CALLBACK(menucreate_cb), c,
+                       "signal::mouse-target-changed",G_CALLBACK(mousetargetchanged), c,
                        "signal::web-process-crashed",G_CALLBACK(crashed), c,
 //                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,
     NULL
@@ -468,8 +476,7 @@ if (!suggested_filename || !*suggested_filename) {
 
     sug = g_strdup(suggested_filename);
 
-
-
+   
     for (i = 0; i < strlen(sug); i++)
         if (sug[i] == G_DIR_SEPARATOR )
             sug[i] = '_';
@@ -573,6 +580,51 @@ download_progress( WebKitDownload *download,GParamSpec *pspec,    GtkWidget *tb)
 
 }
 
+void
+mpvhandler(Client *c)
+{
+    char* t;	
+    char* argv[2];
+    pid_t child_pid;
+    int child_status;
+    
+    t = (char*)c->targeturi;
+    argv[0] = SURFER_PLAYER;
+    argv[1] = t;
+    child_pid = fork();
+    if(child_pid == 0) {
+
+    execvp(argv[0], argv);
+
+    printf("Unknown command\n");
+    exit(0);
+  }
+ 
+}
+
+
+gboolean
+menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent *event, WebKitHitTestResult *h,Client *c)
+{
+
+    WebKitContextMenuItem *menu_item;
+    GSimpleAction *action;
+
+    if (webkit_hit_test_result_context_is_link(h)) {
+        menu_item = webkit_context_menu_item_new_separator();
+        webkit_context_menu_append(context_menu, menu_item);
+
+        action = g_simple_action_new("mpv-handler", NULL);
+        
+        g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(mpvhandler), c);
+        menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
+                "Play in mpv (linux)", NULL);
+        webkit_context_menu_append(context_menu, menu_item);
+        g_object_unref(action);
+                                       
+    }
+    return FALSE;
+}
 
 
 
@@ -961,6 +1013,29 @@ goforward(WebKitWebView *rv,Client *c){
 }
 
 
+ void
+  mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h, guint modifiers,Client *c)
+  {
+  	WebKitHitTestResultContext hc = webkit_hit_test_result_get_context(h);
+  
+  	/* Keep the hit test to know where is the pointer on the next click */
+  	c->mousepos = h;
+  
+  	if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_LINK)
+ 		c->targeturi = webkit_hit_test_result_get_link_uri(h);
+  	else if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_IMAGE)
+  		c->targeturi = webkit_hit_test_result_get_image_uri(h);
+ 	else if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_MEDIA)
+  		c->targeturi = webkit_hit_test_result_get_media_uri(h);
+ 	else
+  		c->targeturi = NULL;
+  
+//  	c->overtitle = c->targeturi;
+  //	update_title(c);
+  }
+ 
+
+
 
 gboolean
 decide_policy( WebKitWebView *v,WebKitPolicyDecision *decision, WebKitPolicyDecisionType type,Client *c) {
@@ -1254,10 +1329,11 @@ gboolean setup(){
         
     }
 
-
+    
     history = (gchar *) g_strdup_printf("file://%s", histpath);
 
     home = (gchar *) g_strdup_printf("file://%s", favpath);
+
 
 
 return TRUE;
@@ -1315,4 +1391,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
