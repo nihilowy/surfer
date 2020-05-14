@@ -735,48 +735,33 @@ changed_title(WebKitWebView *view, GParamSpec *ps, Client *c) {
     update_title(c); 
 
 
+
 }
 
 void
 changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c) {
 
-   //const gchar *url;
+ 
 
-   //url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
-   update_title(c); 
+//   update_title(c); 
 
 }
 
 static void changed_webload(WebKitWebView *webview,
         WebKitLoadEvent event, Client *c)
 {
-    GTlsCertificateFlags tlsflags;
-    const gchar *title;
-    const gchar *url =NULL;
-    FILE *File;
-
-
-
-    title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
-    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-
+   FILE *File;
+   const gchar *url=NULL;
+   
     switch (event) {
        case WEBKIT_LOAD_STARTED:
              break;
 
 
        case WEBKIT_LOAD_REDIRECTED:
-         if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
 
-          File = fopen(histpath, "a");
-          fprintf(File, "<a href=\"%s\" >%.60s</a>\n",url,title );
-
-          fclose(File);
-
-          }
-          isbackforward= 0;
-            break;
+         break;
 
         case WEBKIT_LOAD_COMMITTED:
 
@@ -784,17 +769,21 @@ static void changed_webload(WebKitWebView *webview,
 
 
         case WEBKIT_LOAD_FINISHED:
-           if(HISTORY_ENABLE==1 && isbackforward==0 && title!=NULL){
+    
+    if(HISTORY_ENABLE==1 && isbackforward==0 && c->title!=NULL){
 
-            File = fopen(histpath, "a");
-            fprintf(File, "<a href=\"%s\" >%.60s</a>\n",url,title );
+    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
-            fclose(File);
 
-          }
+      File = fopen(histpath, "a");
+      fprintf(File, "<a href=\"%s\" >%.60s</a><br>",url,c->title );
 
-            
-            isbackforward= 0;
+     fclose(File);
+
+     }
+
+      isbackforward= 0;
+
 
             break;
     }
@@ -808,7 +797,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 
 
     WebKitWebInspector *inspector;
-    
+
     Client *rc;
     const gchar *url;
     gdouble z;
@@ -962,7 +951,7 @@ bookmark_cb(Client *c){
    char buffer[256] = "</body></html>";
    const gchar *tmp,*title;
    File = fopen(favpath, "a");
-                    
+
    tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
    title =  webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
    fprintf(File, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) title);
@@ -1293,7 +1282,7 @@ gboolean setup(){
         File = fopen(favpath, "wb+");
         fprintf(File, "%s", buffer);
         fclose(File);
-            
+
     }
 
 
@@ -1303,7 +1292,7 @@ gboolean setup(){
         File1 = fopen(histpath, "wb+");
         fprintf(File1, "%s", buffer);
         fclose(File1);
-        
+
     }
 
     
