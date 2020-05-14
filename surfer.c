@@ -7,7 +7,7 @@
 
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
-
+//#include <sys/wait.h>
 
 #define SURFER_META_MASK            GDK_CONTROL_MASK
 #define SURFER_NEW_WINDOW_KEY       GDK_KEY_n
@@ -172,7 +172,7 @@ static void enablejs_cb(GtkWidget * widget,Client *c);
 
 static void goback(WebKitWebView *rv,Client *c);
 static void goforward(WebKitWebView *rv,Client *c);
-
+static void bookmark_cb(Client *c);
 static gboolean setup();
 
 
@@ -599,7 +599,12 @@ mpvhandler(Client *c)
     printf("Unknown command\n");
     exit(0);
   }
- 
+/*   else
+   {
+
+    waitpid(child_pid, &child_status, 0);
+   }
+*/ 
 }
 
 
@@ -801,13 +806,11 @@ static void changed_webload(WebKitWebView *webview,
 gboolean
 keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 
- //   Client *c = (Client *)data;
+
     WebKitWebInspector *inspector;
-    FILE *File;
-    char buffer[256] = "</body></html>";
+    
     Client *rc;
     const gchar *url;
-    const gchar *tmp;
     gdouble z;
     guint meta_key_pressed;
     int key_pressed;
@@ -903,12 +906,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                     return TRUE;
 
                 case SURFER_BOOKMARK_KEY:
-                    File = fopen(favpath, "a");
-                    //if(File== NULL)
-                    tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-                    fprintf(File, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) tmp);
-                    fprintf(File, "%s\n", buffer);
-                    fclose(File);
+                    bookmark_cb(c);
                     return TRUE;
 
                 case SURFER_ZOOM_OUT_KEY:
@@ -959,6 +957,22 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
     }
     return FALSE;
 }
+
+void
+bookmark_cb(Client *c){
+   FILE *File;
+   char buffer[256] = "</body></html>";
+   const gchar *tmp,*title;
+   File = fopen(favpath, "a");
+                    
+   tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+   title =  webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
+   fprintf(File, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) title);
+   fprintf(File, "%s\n", buffer);
+   fclose(File);
+
+}
+
 
 void
 goback(WebKitWebView *rv,Client *c){
