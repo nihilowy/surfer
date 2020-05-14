@@ -1357,7 +1357,7 @@ int main(int argc, char *argv[]) {
      strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
 
      File1 = fopen(histpath, "a");
-     fprintf(File1, "%s",textdate);
+     fprintf(File1, "<br>%s<br>",textdate);
      fclose(File1);
 
 
