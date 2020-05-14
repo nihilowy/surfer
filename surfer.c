@@ -851,13 +851,11 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                 case SURFER_BACK_KEY:
           	     goback(c->webView,c);
 
-                    isbackforward= 1;
                     return TRUE;
 
                 case SURFER_FORWARD_KEY:
                      goforward(c->webView,c);
 
-                    isbackforward= 1;
                     return TRUE;
 
                 case SURFER_INSPECTOR_KEY:
@@ -978,6 +976,7 @@ void
 goback(WebKitWebView *rv,Client *c){
  
    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
+   isbackforward= 1;
 
 }
 
@@ -987,6 +986,7 @@ void
 goforward(WebKitWebView *rv,Client *c){
 
   webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
+  isbackforward= 1;
 
 }
 
