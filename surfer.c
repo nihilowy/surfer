@@ -623,7 +623,7 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
 
         g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(mpvhandler), c);
         menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
-                "Play in mpv (linux)", NULL);
+                "Play in mpv (if supported)", NULL);
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
     }
