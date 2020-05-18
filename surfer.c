@@ -43,6 +43,7 @@
 
 #define SURFER_DIR	".surfer"                 // upper directory(s) must exist
 #define SURFER_DOWNLOADS "downloads"
+#define SURFER_TMPDOWNLOADS "/tmp"
 #define SURFER_PLAYER	"mpv"                     // best with youtube-dl on supported sites
 
 typedef struct Client{
@@ -88,6 +89,7 @@ typedef struct Client{
 
 } Client;
 
+static WebKitWebContext *wc;
 static WebKitSettings *settings;
 
 static GtkWidget *menuitem1;
@@ -101,14 +103,14 @@ gchar *favpath;
 gchar *histpath;
 gchar *downloads_dir;
 gchar *surfer_dir;
-gchar *surferplayer;
+
 
 static gchar *fullname = "";
 
-gboolean enablejs=1;
+static gboolean enablejs=1;
 static gboolean isbackforward= 0,dl_win_show=FALSE;
 static gboolean wc_setup_done = FALSE;
-
+static gboolean istmpdownload =FALSE;
 
 static void destroy_window(GtkWidget* w,Client *rc);
 
@@ -158,6 +160,7 @@ static void update_title(Client *c);
 
 static gboolean menucreate_cb (WebKitWebView *web_view,WebKitContextMenu *context_menu,GdkEvent *event, WebKitHitTestResult *h,Client *c);
 
+static void downloadtmphandler(Client *c);
 static void mpvhandler(Client *c);
 static void mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h,guint modifiers, Client *c);
 static void openlink(GtkWidget *widget,Client *c);
@@ -316,7 +319,7 @@ WebKitWebView *view;
 WebKitUserContentManager *contentmanager;
 WebKitWebsiteDataManager *mgr;
 WebKitCookieManager *cookiemgr;
-WebKitWebContext *wc;
+
 
 //gboolean enabled = 1;
 
@@ -534,6 +537,9 @@ download_cancel( GtkWidget *tb,WebKitDownload *download)
     g_object_unref(download);
 
     gtk_widget_destroy(GTK_WIDGET(tb));
+    
+    if (istmpdownload == TRUE)
+     setup();
 }
 
 void
@@ -541,7 +547,8 @@ download_handle_finished(WebKitDownload *download, gpointer data)
 {
     downloads--;
 //    g_object_unref(download);
-
+   if (istmpdownload == TRUE)
+     setup();
 }
 
 
@@ -607,10 +614,27 @@ mpvhandler(Client *c)
 */ 
 }
 
+void
+downloadtmphandler(Client *c)
+{
+
+   gchar *downloadsfilename;
+
+   downloadsfilename = g_strdup_printf("%s", SURFER_TMPDOWNLOADS);
+   downloads_dir = g_build_filename(downloadsfilename, NULL);
+
+   istmpdownload = TRUE;
+   g_free(downloadsfilename);
+
+   webkit_web_context_download_uri(wc,c->targeturi);
+
+
+}
 
 gboolean
 menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent *event, WebKitHitTestResult *h,Client *c)
 {
+
 
     WebKitContextMenuItem *menu_item;
     GSimpleAction *action;
@@ -626,6 +650,15 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
                 "Play in mpv (if supported)", NULL);
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
+
+        action = g_simple_action_new("downloadtmp-handler", NULL);
+
+        g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(downloadtmphandler), c);
+        menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
+                "Download to /tmp", NULL);
+        webkit_context_menu_append(context_menu, menu_item);
+        g_object_unref(action);
+
     }
     return FALSE;
 }
@@ -1295,12 +1328,12 @@ gboolean setup(){
 
     }
 
-    
+
     history = (gchar *) g_strdup_printf("file://%s", histpath);
 
     home = (gchar *) g_strdup_printf("file://%s", favpath);
 
-
+    istmpdownload == FALSE;
 
 return TRUE;
 }
