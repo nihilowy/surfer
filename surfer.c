@@ -521,6 +521,9 @@ if (!suggested_filename || !*suggested_filename) {
 
 
     }
+    
+    if (istmpdownload == TRUE)
+     setup();
 
     g_free(sug);
     g_free(path);
@@ -538,8 +541,7 @@ download_cancel( GtkWidget *tb,WebKitDownload *download)
 
     gtk_widget_destroy(GTK_WIDGET(tb));
     
-    if (istmpdownload == TRUE)
-     setup();
+   
 }
 
 void
@@ -547,8 +549,7 @@ download_handle_finished(WebKitDownload *download, gpointer data)
 {
     downloads--;
 //    g_object_unref(download);
-   if (istmpdownload == TRUE)
-     setup();
+   
 }
 
 
