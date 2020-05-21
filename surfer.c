@@ -535,11 +535,11 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
 
     sug = g_strdup(suggested_filename);
 
-    path = g_build_filename(downloads_dir, sug, NULL);
-    path2 = g_strdup(path);
+    //path = g_build_filename(downloads_dir, sug, NULL);
+    //path2 = g_strdup(path);
 
     dialog = gtk_file_chooser_dialog_new ("Save File",
-                                      NULL/*GTK_WINDOW_TOPLEVEL*/,
+                                      GTK_WINDOW_TOPLEVEL,
                                       action,
                                       ("Cancel"),
                                       GTK_RESPONSE_CANCEL,
@@ -549,9 +549,10 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
     chooser = GTK_FILE_CHOOSER (dialog);
 
     gtk_file_chooser_set_do_overwrite_confirmation (chooser, TRUE);
-
+    webkit_download_set_allow_overwrite (download,TRUE);
+    
     gtk_file_chooser_set_current_folder(chooser,downloads_dir);
-    gtk_file_chooser_set_current_name (chooser,path2);
+    gtk_file_chooser_set_current_name (chooser,sug);
 
     res = gtk_dialog_run (GTK_DIALOG (dialog));
 
@@ -559,7 +560,7 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
    {
    char *filename;
 
-
+ 
    filename = gtk_file_chooser_get_filename (chooser);
    uri = g_filename_to_uri(filename, NULL, NULL);
    webkit_download_set_destination(download, uri);
@@ -583,16 +584,17 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
 
    }
    else if (res == GTK_RESPONSE_CANCEL)
+   {
    gtk_widget_destroy (dialog);
-
-
+   webkit_download_cancel(download);
+   }
 
     if (istmpdownload == TRUE)
      setup();
 
     g_free(sug);
-    g_free(path);
-    g_free(path2);
+    //g_free(path);
+    //g_free(path2);
 
     return FALSE;
 }
