@@ -168,7 +168,7 @@ static void download_progress( WebKitDownload *download,GParamSpec *pspec,    Gt
 
 
 static gboolean crashed(WebKitWebView *v, Client *c);
-
+static gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest *request,Client *c);
 static gboolean keyboard(GtkWidget *widget, GdkEvent *event, Client *c,  gpointer );
 
 static void changed_title(WebKitWebView *view, GParamSpec *ps, Client *c);
@@ -447,6 +447,7 @@ g_object_connect(
                        "signal::context-menu",G_CALLBACK(menucreate_cb), c,
                        "signal::mouse-target-changed",G_CALLBACK(mousetargetchanged), c,
                        "signal::web-process-crashed",G_CALLBACK(crashed), c,
+                       "signal::permission-request",G_CALLBACK(permission_request_cb), c,
 //                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,
     NULL
     );
@@ -457,6 +458,34 @@ g_object_connect(
 
 return view;
 }
+
+
+gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest *request,Client *c)
+{
+
+  
+
+    GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(c->main_window),
+                                                GTK_DIALOG_MODAL,
+                                                GTK_MESSAGE_QUESTION,
+                                                GTK_BUTTONS_YES_NO,
+                                                "Allow Permission Request?");
+    gtk_widget_show (dialog);
+    gint result = gtk_dialog_run (GTK_DIALOG (dialog));
+
+    switch (result) {
+    case GTK_RESPONSE_YES:
+        webkit_permission_request_allow (request);
+        break;
+    default:
+        webkit_permission_request_deny (request);
+        break;
+    }
+    gtk_widget_destroy (dialog);
+
+    return TRUE;
+}
+
 
 
 gboolean
@@ -488,60 +517,76 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
     gchar *uri = NULL;
     const gchar *download_uri;
 
-if (!suggested_filename || !*suggested_filename) {
+    GtkWidget *dialog;
+    GtkFileChooser *chooser;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
+    gint res;
+
+
+
+   if (!suggested_filename || !*suggested_filename) {
         download_uri = webkit_uri_request_get_uri(webkit_download_get_request(download));
         uri  = soup_uri_decode(download_uri);
         basename     = g_filename_display_basename(uri);
         g_free(uri);
 
         suggested_filename = basename;
-    }
+      }
 
     sug = g_strdup(suggested_filename);
-
-
-    for (i = 0; i < strlen(sug); i++)
-        if (sug[i] == G_DIR_SEPARATOR )
-            sug[i] = '_';
 
     path = g_build_filename(downloads_dir, sug, NULL);
     path2 = g_strdup(path);
 
-    while (g_file_test(path2, G_FILE_TEST_EXISTS) && suffix < 100)
-    {
-        g_free(path2);
+    dialog = gtk_file_chooser_dialog_new ("Save File",
+                                      NULL/*GTK_WINDOW_TOPLEVEL*/,
+                                      action,
+                                      ("Cancel"),
+                                      GTK_RESPONSE_CANCEL,
+                                      ("Save"),
+                                      GTK_RESPONSE_ACCEPT,
+                                      NULL);
+    chooser = GTK_FILE_CHOOSER (dialog);
 
-        path2 = g_strdup_printf("%s.%d", path, suffix);
-        suffix++;
-    }
+    gtk_file_chooser_set_do_overwrite_confirmation (chooser, TRUE);
 
-    if (suffix == 100)
-    {
-        fprintf(stderr, "Surfer : Suffix reached limit for download.\n");
-        webkit_download_cancel(download);
-    }
-    else
-    {
-        uri = g_filename_to_uri(path2, NULL, NULL);
-        webkit_download_set_destination(download, uri);
-        g_free(uri);
-        downloads++;
+    gtk_file_chooser_set_current_folder(chooser,downloads_dir);
+    gtk_file_chooser_set_current_name (chooser,path2);
 
-        tb = gtk_menu_item_new_with_label(sug);
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu),tb);
-        gtk_widget_show_all (GTK_WIDGET(menu));
+    res = gtk_dialog_run (GTK_DIALOG (dialog));
+
+   if (res == GTK_RESPONSE_ACCEPT)
+   {
+   char *filename;
 
 
-        g_signal_connect(G_OBJECT(download), "notify::estimated-progress",G_CALLBACK(download_progress), tb);
+   filename = gtk_file_chooser_get_filename (chooser);
+   uri = g_filename_to_uri(filename, NULL, NULL);
+   webkit_download_set_destination(download, uri);
+   g_free(uri);
+   downloads++;
 
-        g_signal_connect(G_OBJECT(download), "finished",G_CALLBACK(download_handle_finished), NULL);
+   tb = gtk_menu_item_new_with_label(sug);
+   gtk_menu_shell_append(GTK_MENU_SHELL(menu),tb);
+   gtk_widget_show_all (GTK_WIDGET(menu));
+   g_free (filename);
 
-        g_object_ref(download);
-        g_signal_connect(G_OBJECT(tb), "activate",G_CALLBACK(download_cancel), download);
+
+   gtk_widget_destroy (dialog);
+
+     g_signal_connect(G_OBJECT(download), "notify::estimated-progress",G_CALLBACK(download_progress), tb);
+
+     g_signal_connect(G_OBJECT(download), "finished",G_CALLBACK(download_handle_finished), NULL);
+
+     g_object_ref(download);
+     g_signal_connect(G_OBJECT(tb), "activate",G_CALLBACK(download_cancel), download);
+
+   }
+   else if (res == GTK_RESPONSE_CANCEL)
+   gtk_widget_destroy (dialog);
 
 
-    }
-    
+
     if (istmpdownload == TRUE)
      setup();
 
@@ -560,8 +605,7 @@ download_cancel( GtkWidget *tb,WebKitDownload *download)
     g_object_unref(download);
 
     gtk_widget_destroy(GTK_WIDGET(tb));
-    
-   
+
 }
 
 void
