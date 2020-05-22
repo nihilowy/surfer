@@ -55,6 +55,7 @@
 //WEBKIT_COOKIE_POLICY_ACCEPT_NEVER -Reject all cookies unconditionally.
 //WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY -Accept only cookies set by the main document loaded
 
+#define FONT_MIN_SIZE	15
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"  //change to your style file
 #define DEFAULT_STYLE_ENABLE 0 //change to 1 to enable default style
 
@@ -387,11 +388,11 @@ contentmanager = webkit_user_content_manager_new();
     wc_setup_done = TRUE;
     }
 
-
+    g_object_set(G_OBJECT(settings), "minimum-font-size", FONT_MIN_SIZE, NULL);
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
-    g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
+//    g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
 
-    g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
+//    g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
    //_object_set(G_OBJECT(settings),"enable-javascript", FALSE, NULL);
 
 //allow_tls_cert(c,wc);
