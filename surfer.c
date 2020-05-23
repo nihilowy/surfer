@@ -782,16 +782,6 @@ user_style(Client *c){
 }
 
 
-void
-find_close(Client *c) {
-
-   gtk_entry_set_text(GTK_ENTRY(c->entry_find), "");
- find(c->entry_find,c);
-    gtk_widget_hide(c->box_find);
-    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
-
-}
-
 
 void
 update_title(Client *c){
@@ -1243,6 +1233,16 @@ find(GtkWidget * widget,Client *c) {
     g_free(search_text);
 
     }
+
+}
+
+void
+find_close(Client *c) {
+
+   gtk_entry_set_text(GTK_ENTRY(c->entry_find), "");
+ find(c->entry_find,c);
+    gtk_widget_hide(c->box_find);
+    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
 
 }
 
