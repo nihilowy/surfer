@@ -129,7 +129,7 @@ gchar *surfer_dir;
 static gchar *fullname = "";
 
 static gboolean enablejs=1;
-static gboolean isbackforward= 0,dl_win_show=FALSE;
+static gboolean isbackforward= 0;
 static gboolean wc_setup_done = FALSE;
 static gboolean istmpdownload =FALSE;
 
@@ -342,7 +342,6 @@ WebKitWebsiteDataManager *mgr;
 WebKitCookieManager *cookiemgr;
 
 
-//gboolean enabled = 1;
 
 
 
@@ -1054,19 +1053,34 @@ bookmark_cb(Client *c){
 
 void
 goback(WebKitWebView *rv,Client *c){
- 
+
+  char *title;
+  if (webkit_web_view_can_go_back(c->webView)){ 
    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
    isbackforward= 1;
-
+   }
+  else {
+   title = g_strdup_printf(" %s", "Can't go back!");
+   gtk_window_set_title(GTK_WINDOW(c->main_window), title);
+  
+  }
 }
 
 
 
 void
 goforward(WebKitWebView *rv,Client *c){
-
+  
+  char *title;
+ if (webkit_web_view_can_go_forward(c->webView)){ 
   webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
   isbackforward= 1;
+  }
+   else {
+   title = g_strdup_printf(" %s", "Can't go forward!");
+   gtk_window_set_title(GTK_WINDOW(c->main_window), title);
+  
+  }
 
 }
 
