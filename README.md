@@ -6,6 +6,7 @@ Based on webkit2gtk and gtk3. Lariza and Epiphany, Surf inspired.
 
 No xlibs dependency &mdash; works on wayland, weston, sway.
 
+
 ## Adblock
 
 Install https://github.com/jun7/wyebadblock
@@ -19,6 +20,7 @@ someonewhocares.org
 
 
 ## Compile and install:
+
   
   git clone https://github.com/nihilowy/surfer.git
 
@@ -27,6 +29,8 @@ someonewhocares.org
   make &&  sudo make install
 
   on Arch: pacaur -S surfer-git
+  
+  Depends on webkit2gtk, gtk3 development files (install it on your distro)
 
 ## Hotkeys:
 
@@ -79,4 +83,4 @@ change HISTORY_ENABLE to 1 in surfer.c
 
 
 
-**Edit `surfer.c` to change hotkeys and SURFER_DIR, SURFER_DOWNLOADS**
+**Edit `config.h` to change hotkeys and SURFER_DIR, SURFER_DOWNLOADS, and other settings**

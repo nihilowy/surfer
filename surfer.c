@@ -18,6 +18,7 @@
  *
  */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -28,44 +29,8 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 //#include <sys/wait.h>
+#include "config.h"
 
-#define SURFER_META_MASK            GDK_CONTROL_MASK
-#define SURFER_NEW_WINDOW_KEY       GDK_KEY_n
-#define SURFER_OPEN_KEY             GDK_KEY_o
-#define SURFER_CLOSE_KEY            GDK_KEY_q
-#define SURFER_BACK_KEY             GDK_KEY_b
-#define SURFER_FORWARD_KEY          GDK_KEY_f
-#define SURFER_STOP_KEY             GDK_KEY_Escape
-#define SURFER_RELOAD_KEY           GDK_KEY_r
-#define SURFER_FIND_KEY             GDK_KEY_slash
-#define SURFER_HOME_KEY             GDK_KEY_h
-#define SURFER_BOOKMARK_KEY         GDK_KEY_B
-#define SURFER_INSPECTOR_KEY        GDK_KEY_I
-#define SURFER_ZOOM_IN_KEY          GDK_KEY_equal
-#define SURFER_ZOOM_OUT_KEY         GDK_KEY_minus
-#define SURFER_FULLSCREEN_KEY       GDK_KEY_F11
-#define SURFER_HISTORY_KEY          GDK_KEY_H
-#define SURFER_SCROLL_DOWN_KEY      GDK_KEY_Down
-#define SURFER_SCROLL_UP_KEY        GDK_KEY_Up
-#define SURFER_SCROLL_PAGE_DOWN_KEY GDK_KEY_s
-#define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_w
-#define SURFER_STYLE_KEY            GDK_KEY_S
-#define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
-//WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS -Accept all cookies unconditionally.
-//WEBKIT_COOKIE_POLICY_ACCEPT_NEVER -Reject all cookies unconditionally.
-//WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY -Accept only cookies set by the main document loaded
-
-#define FONT_MIN_SIZE	12
-#define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"  //change to your style file
-#define DEFAULT_STYLE_ENABLE 0 //change to 1 to enable default style
-
-#define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
-#define HISTORY_ENABLE	0         //change to 1 for enable history 
-
-#define SURFER_DIR	".surfer"                 // upper directory(s) must exist
-#define SURFER_DOWNLOADS "downloads"
-#define SURFER_TMPDOWNLOADS "/tmp"
-#define SURFER_PLAYER	"mpv"                     // best with youtube-dl on supported sites
 
 typedef struct Client{
     GtkWidget *main_window;
@@ -463,16 +428,32 @@ return view;
 gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest *request,Client *c)
 {
 
-  
+  char *msg= NULL;
 
+     if (WEBKIT_IS_GEOLOCATION_PERMISSION_REQUEST(request))
+        msg = "access your location";
+      else if (WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request)) {
+        if (webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request))) {
+            msg = "access the microphone";
+        } 
+        else if (webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request))) {
+            msg = "access you webcam";
+        }
+    } 
+     else
+        return FALSE;
+    
     GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(c->main_window),
                                                 GTK_DIALOG_MODAL,
                                                 GTK_MESSAGE_QUESTION,
                                                 GTK_BUTTONS_YES_NO,
-                                                "Allow Permission Request?");
+                                                msg);
     gtk_widget_show (dialog);
     gint result = gtk_dialog_run (GTK_DIALOG (dialog));
 
+
+
+   
     switch (result) {
     case GTK_RESPONSE_YES:
         webkit_permission_request_allow (request);
@@ -790,8 +771,11 @@ update_title(Client *c){
 
    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
-   title = g_strdup_printf("[%i%%] %s",
-			        c->progress, c->title);
+
+   if (c->progress != 100)
+   title = g_strdup_printf("[%i%%] %s",c->progress, c->title);
+   else
+   title = g_strdup_printf("%s", c->title);
    gtk_window_set_title(GTK_WINDOW(c->main_window), title);
    gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
 
@@ -804,14 +788,16 @@ update_title(Client *c){
 void
 changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c)
 {
-
-
-
+  
+    gdouble prog;
+    prog= webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView));
     c->progress = webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView))*100;
 
-  update_title(c);
+if (prog==1)
+prog=0;
 
- //   gtk_entry_set_progress_fraction(GTK_ENTRY(c->entry_open), c->progress	);
+update_title(c);
+   gtk_entry_set_progress_fraction(GTK_ENTRY(c->entry_open), prog	);
 }
 
 
