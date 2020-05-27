@@ -32,7 +32,7 @@
 #define DEFAULT_STYLE_ENABLE 0 					       //change to 1 to enable default style
 
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
-#define HISTORY_ENABLE	0         				       //change to 1 for enable history
+
 
 #define SURFER_DIR	".surfer"                                      // upper directory(s) must exist
 #define SURFER_DOWNLOADS "downloads"

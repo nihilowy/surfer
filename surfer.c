@@ -42,9 +42,10 @@ typedef struct Client{
     GtkWidget *button_goforward;
     GtkWidget *button_dm;
     GtkWidget *button_js;
+    GtkWidget *button_history;
     GtkWidget *button_find_back;
     GtkWidget *button_find_close;
-    
+
 
     GtkWidget *box_open;
 
@@ -80,21 +81,30 @@ static WebKitSettings *settings;
 
 static GtkWidget *menuitem1;
 static GtkWidget *menu;
+
+
+
 //static gchar *download_dir = "/var/tmp";
 
 static gint clients = 0,downloads = 0;
 gchar *home;
-const gchar *history;
+gchar *history;
 gchar *favpath;
 gchar *histpath;
 gchar *downloads_dir;
 gchar *surfer_dir;
 
 
+
+
+
 static gchar *fullname = "";
 
+static gboolean enablehist=0;
 static gboolean enablejs=1;
-static gboolean isbackforward= 0;
+
+
+static gboolean recordhistory= 0;
 static gboolean wc_setup_done = FALSE;
 static gboolean istmpdownload =FALSE;
 
@@ -155,8 +165,8 @@ static void user_style(Client *c);
 static void find(GtkWidget *widget,Client *c);
 static void find_close( Client *c);
 static void find_back(GtkWidget * widget,Client *c);
-static void enablejs_cb(GtkWidget * widget,Client *c);
-
+static void tooglejs_cb(GtkWidget * widget,Client *c);
+static void tooglehistory_cb(Client *c);
 
 
 static void goback(WebKitWebView *rv,Client *c);
@@ -230,9 +240,11 @@ Client *client_new(Client *rc) {
     c->button_goforward = gtk_button_new_with_label(">");
     c->button_dm = gtk_button_new_with_label("[...]");
     c->button_js = gtk_button_new_with_label("->js");
+    c->button_history = gtk_button_new_with_label("->hist");
 
     gtk_widget_set_tooltip_text(c->button_dm,"Downloads");
     gtk_widget_set_tooltip_text(c->button_js,"JS toogle");
+    gtk_widget_set_tooltip_text(c->button_history,"History toogle");
 
     gtk_widget_show_all (menuitem1);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem1);
@@ -251,6 +263,7 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_open), c->button_goforward,FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open), c->button_dm,FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(c->box_open),c->button_history, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_open),c->button_js, FALSE, FALSE, 0);
 
     
@@ -271,7 +284,8 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->button_goback), "clicked", G_CALLBACK(goback), c);
     g_signal_connect(G_OBJECT(c->button_goforward), "clicked", G_CALLBACK(goforward), c);
     g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(download_button_press), c);
-    g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(enablejs_cb), c);
+    g_signal_connect(G_OBJECT(c->button_history), "clicked", G_CALLBACK(tooglehistory_cb), c);
+    g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(tooglejs_cb), c);
 
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
     g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
@@ -829,7 +843,8 @@ static void changed_webload(WebKitWebView *webview,
 {
    FILE *File;
    const gchar *url=NULL;
-   
+   char textdate[100];
+      
     switch (event) {
        case WEBKIT_LOAD_STARTED:
              break;
@@ -846,22 +861,27 @@ static void changed_webload(WebKitWebView *webview,
 
         case WEBKIT_LOAD_FINISHED:
     
-    if(HISTORY_ENABLE==1 && isbackforward==0 && c->title!=NULL){
+    if( recordhistory==0  && enablehist==1 ){
 
-    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+
+     time_t now = time(NULL);
+     struct tm *t = localtime(&now);
+
+     strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
 
 
-      File = fopen(histpath, "a");
-      fprintf(File, "<a href=\"%s\" >%.60s</a><br>",url,c->title );
+     File = fopen(histpath, "a");
+     fprintf(File, "%s >%.100s<br>",textdate,url );
 
      fclose(File);
 
      }
 
-      isbackforward= 0;
+       recordhistory= 0;
 
 
-            break;
+        break;
     }
 }
 
@@ -947,19 +967,23 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                    return TRUE;
 
 		case SURFER_HISTORY_KEY:
-                    webkit_web_view_load_uri(c->webView, history);
+		    recordhistory=1;
+                    loadurl(c,history);
                     return TRUE;
 
                 case SURFER_NEW_WINDOW_KEY:
+                    recordhistory=1;
                     rc = client_new(c);
                     loadurl(rc,home);
                     return TRUE;
 
                 case SURFER_HOME_KEY:
-                    webkit_web_view_load_uri(c->webView, home);
+                    recordhistory=1;
+                    loadurl(c,home);
                     return TRUE;
 
                 case SURFER_RELOAD_KEY:
+                    recordhistory=1;
                     webkit_web_view_reload(c->webView);
                     return TRUE;
 
@@ -1021,6 +1045,9 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
     return FALSE;
 }
 
+
+
+
 void
 bookmark_cb(Client *c){
    FILE *File;
@@ -1043,7 +1070,7 @@ goback(WebKitWebView *rv,Client *c){
   char *title;
   if (webkit_web_view_can_go_back(c->webView)){ 
    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
-   isbackforward= 1;
+   recordhistory= 1;
    }
   else {
    title = g_strdup_printf(" %s", "Can't go back!");
@@ -1060,7 +1087,7 @@ goforward(WebKitWebView *rv,Client *c){
   char *title;
  if (webkit_web_view_can_go_forward(c->webView)){ 
   webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
-  isbackforward= 1;
+  recordhistory= 1;
   }
    else {
    title = g_strdup_printf(" %s", "Can't go forward!");
@@ -1258,7 +1285,7 @@ webkit_find_controller_search_previous(c->fc);
 
 
 void
-enablejs_cb(GtkWidget * widget,Client *c){
+tooglejs_cb(GtkWidget * widget,Client *c){
 
    //GdkColor color;
 
@@ -1278,6 +1305,22 @@ enablejs_cb(GtkWidget * widget,Client *c){
    g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
    enablejs=1;
    }
+}
+
+void
+tooglehistory_cb(Client *c)
+{
+   if (enablehist==0){
+      enablehist=1;
+
+   }
+   else
+   {
+ 
+   enablehist=0;
+   }
+
+
 }
 
 
@@ -1340,7 +1383,7 @@ WebKitWebView *create_request(WebKitWebView *rv,WebKitNavigationAction *navact, 
 gboolean setup(){
 
 
-  
+
     gchar *downloadsfilename,*surferdirfilename;
 
     FILE *File,*File1;
@@ -1348,7 +1391,7 @@ gboolean setup(){
     {color: yellow;} a:link { color: #00e900; } a:visited { color: green } a:clicked { color: red } </style></head><body><p>";
 
 
-   
+
 
     downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
 
@@ -1377,7 +1420,7 @@ gboolean setup(){
     favpath = g_build_filename(surfer_dir,"fav", NULL);
  
     histpath = g_build_filename(surfer_dir, "hist", NULL);
-   
+
 
     if (!g_file_test(favpath, G_FILE_TEST_EXISTS)) {
         File = fopen(favpath, "wb+");
@@ -1401,6 +1444,7 @@ gboolean setup(){
 
     home = (gchar *) g_strdup_printf("file://%s", favpath);
 
+
     istmpdownload == FALSE;
 
 return TRUE;
@@ -1413,7 +1457,7 @@ int main(int argc, char *argv[]) {
     int i;
     FILE *File1;
     gchar *link;
-    char textdate[100];
+    //char textdate[100];
 
     gtk_init(&argc, &argv);
 
@@ -1438,7 +1482,7 @@ int main(int argc, char *argv[]) {
 
      loadurl(c,home);
 
-
+/*
      if (HISTORY_ENABLE == 1){
 
      time_t now = time(NULL);
@@ -1452,7 +1496,7 @@ int main(int argc, char *argv[]) {
 
 
      }
-
+*/
 
     gtk_main();
 

@@ -74,9 +74,7 @@ links: fav in your SURFER_DIR dir)
 `Ctrl + Shift + s` &mdash; toogle user style black theme 
 (/usr/share/surfer/black.css)
 
-`Ctrl + Shift + h` &mdash; show history (hist file in SURFER_DIR), to 
-enable history 
-change HISTORY_ENABLE to 1 in surfer.c
+`Ctrl + Shift + h` &mdash; show history if enabled
 
 `F11` &mdash; toogle fullscreen
 
