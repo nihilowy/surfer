@@ -872,7 +872,7 @@ static void changed_webload(WebKitWebView *webview,
 
 
      File = fopen(histpath, "a");
-     fprintf(File, "%s >%.100s<br>",textdate,url );
+     fprintf(File, "%s >%.150s<br>",textdate,url );
 
      fclose(File);
 
