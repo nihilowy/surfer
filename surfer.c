@@ -878,10 +878,13 @@ static void changed_webload(WebKitWebView *webview,
 
      }
 
+
        recordhistory= 1;
 
 
         break;
+     default:
+      break;
     }
 }
 
