@@ -104,7 +104,7 @@ static gboolean enablehist=0;
 static gboolean enablejs=1;
 
 
-static gboolean recordhistory= 0;
+static gboolean recordhistory= 1;
 static gboolean wc_setup_done = FALSE;
 static gboolean istmpdownload =FALSE;
 
@@ -861,7 +861,7 @@ static void changed_webload(WebKitWebView *webview,
 
         case WEBKIT_LOAD_FINISHED:
     
-    if( recordhistory==0  && enablehist==1 ){
+    if( recordhistory==1  && enablehist==1 ){
 
      url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
@@ -878,7 +878,7 @@ static void changed_webload(WebKitWebView *webview,
 
      }
 
-       recordhistory= 0;
+       recordhistory= 1;
 
 
         break;
@@ -967,23 +967,23 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                    return TRUE;
 
 		case SURFER_HISTORY_KEY:
-		    recordhistory=1;
+		    recordhistory=0;
                     loadurl(c,history);
                     return TRUE;
 
                 case SURFER_NEW_WINDOW_KEY:
-                    recordhistory=1;
+                    recordhistory=0;
                     rc = client_new(c);
                     loadurl(rc,home);
                     return TRUE;
 
                 case SURFER_HOME_KEY:
-                    recordhistory=1;
+                    recordhistory=0;
                     loadurl(c,home);
                     return TRUE;
 
                 case SURFER_RELOAD_KEY:
-                    recordhistory=1;
+                    recordhistory=0;
                     webkit_web_view_reload(c->webView);
                     return TRUE;
 
@@ -1070,7 +1070,7 @@ goback(WebKitWebView *rv,Client *c){
   char *title;
   if (webkit_web_view_can_go_back(c->webView)){ 
    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
-   recordhistory= 1;
+   recordhistory= 0;
    }
   else {
    title = g_strdup_printf(" %s", "Can't go back!");
@@ -1087,7 +1087,7 @@ goforward(WebKitWebView *rv,Client *c){
   char *title;
  if (webkit_web_view_can_go_forward(c->webView)){ 
   webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
-  recordhistory= 1;
+  recordhistory= 0;
   }
    else {
    title = g_strdup_printf(" %s", "Can't go forward!");
