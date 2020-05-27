@@ -304,8 +304,10 @@ Client *client_new(Client *rc) {
  if (DEFAULT_STYLE_ENABLE == 1){
     user_style(c);
  }
- 
 
+ if (HISTORY_ENABLE == 1){
+ enablehist = 1;
+ }
     clients++;
  return c;
 }
