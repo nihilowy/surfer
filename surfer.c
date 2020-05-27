@@ -370,7 +370,7 @@ contentmanager = webkit_user_content_manager_new();
     g_object_set(G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
 //    g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
 
-//    g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
+    g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
    //_object_set(G_OBJECT(settings),"enable-javascript", FALSE, NULL);
 
 //allow_tls_cert(c,wc);
