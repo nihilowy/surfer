@@ -233,7 +233,7 @@ Client *client_new(Client *rc) {
     c->s = 0;
     c->main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-    gtk_window_set_default_size(GTK_WINDOW(c->main_window), 1100, 700);
+    gtk_window_set_default_size(GTK_WINDOW(c->main_window), SURFER_WINDOW_WIDTH, SURFER_WINDOW_HEIGHT);
 
  //   c->webView = clientview(c);
     c->webView = clientview(c, rc ? rc->webView : NULL);

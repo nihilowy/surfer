@@ -27,6 +27,9 @@
 //WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY -Accept only cookies set by the main document loaded
 
 
+#define SURFER_WINDOW_WIDTH	1100
+#define SURFER_WINDOW_HEIGHT	650
+
 #define FONT_MIN_SIZE	12
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"  //change to your style file
 #define DEFAULT_STYLE_ENABLE 0 					       //change to 1 to enable default style
