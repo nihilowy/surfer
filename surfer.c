@@ -1425,7 +1425,7 @@ gboolean setup(){
     gchar *downloadsfilename,*surferdirfilename;
 
     FILE *File,*File1;
-    char buffer[256] = "<!DOCTYPE html><html><head><meta charset=utf8><style>body {background-color: #000009;}p\
+    char buffer[256] = "<!DOCTYPE html><html><head><title>Surfer</title><meta charset=utf8><style>body {background-color: #000009;}p\
     {color: yellow;} a:link { color: #00e900; } a:visited { color: green } a:clicked { color: red } </style></head><body><p>";
 
 
