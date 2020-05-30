@@ -55,13 +55,13 @@ typedef struct Client{
 //  WebKitPolicyDecision *decision1;
     WebKitFindController *fc;
     WebKitHitTestResult *mousepos;
-    
+
     int f;
     int s;
     int o;
     int progress;
     const gchar *title,*targeturi,*overtitle;
-    
+
 
   /* TLS information. */
   GTlsCertificate *certificate;
@@ -161,8 +161,8 @@ static void togglefind_cb(Client *c);
 static void toggleopen_cb(Client *c);
 static void togglefullscreen_cb(Client *c);
 static void toggleuserstyle_cb(Client *c);
-static void goback(Client *c);
-static void goforward(Client *c);
+static void goback(WebKitWebView *rv,Client *c);
+static void goforward(WebKitWebView *rv,Client *c);
 static void bookmark_cb(Client *c);
 
 static gboolean setup();
@@ -278,7 +278,7 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_open),c->button_history, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_open),c->button_js, FALSE, FALSE, 0);
 
-    
+
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->vbox),GTK_WIDGET(c->webView), TRUE, TRUE, 0);
     gtk_box_pack_start (GTK_BOX(c->vbox),c->box_find, FALSE, FALSE, 0);
@@ -291,7 +291,7 @@ Client *client_new(Client *rc) {
 
     g_signal_connect(G_OBJECT(c->box_open), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(G_OBJECT(c->entry_open), "activate", G_CALLBACK(openlink), c);
-    
+
 
     g_signal_connect(G_OBJECT(c->button_goback), "clicked", G_CALLBACK(goback), c);
     g_signal_connect(G_OBJECT(c->button_goforward), "clicked", G_CALLBACK(goforward), c);
@@ -502,7 +502,7 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
     } 
      else
         return FALSE;
-    
+
     GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(c->main_window),
                                                 GTK_DIALOG_MODAL,
                                                 GTK_MESSAGE_QUESTION,
@@ -513,7 +513,6 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
 
 
 
-   
     switch (result) {
     case GTK_RESPONSE_YES:
         webkit_permission_request_allow (request);
@@ -591,7 +590,7 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
 
     gtk_file_chooser_set_do_overwrite_confirmation (chooser, TRUE);
     webkit_download_set_allow_overwrite (download,TRUE);
-    
+
     gtk_file_chooser_set_current_folder(chooser,downloads_dir);
     gtk_file_chooser_set_current_name (chooser,sug);
 
@@ -601,7 +600,7 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
    {
    char *filename;
 
- 
+
    filename = gtk_file_chooser_get_filename (chooser);
    uri = g_filename_to_uri(filename, NULL, NULL);
    webkit_download_set_destination(download, uri);
@@ -656,7 +655,7 @@ download_handle_finished(WebKitDownload *download, gpointer data)
 {
     downloads--;
 //    g_object_unref(download);
-   
+
 }
 
 
@@ -800,7 +799,7 @@ update_title(Client *c){
 void
 changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c)
 {
-  
+
     gdouble prog;
     prog= webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView));
     c->progress = webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView))*100;
@@ -820,7 +819,7 @@ changed_title(WebKitWebView *view, GParamSpec *ps, Client *c) {
 
 
     c->title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
-    update_title(c); 
+    update_title(c);
 
 
 
@@ -842,7 +841,7 @@ static void changed_webload(WebKitWebView *webview,
    FILE *File;
    const gchar *url=NULL;
    char textdate[100];
-      
+
     switch (event) {
        case WEBKIT_LOAD_STARTED:
              break;
@@ -858,7 +857,7 @@ static void changed_webload(WebKitWebView *webview,
 
 
         case WEBKIT_LOAD_FINISHED:
-    
+
     if( recordhistory==1  && enablehist==1 ){
 
      url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
@@ -1071,12 +1070,12 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                     return TRUE;
 
                 case SURFER_BACK_KEY:
-          	     goback(c);
+          	     goback(c->webView,c);
 
                     return TRUE;
 
                 case SURFER_FORWARD_KEY:
-                     goforward(c);
+                     goforward(c->webView,c);
 
                     return TRUE;
 
@@ -1224,7 +1223,7 @@ bookmark_cb(Client *c){
 
 
 void
-goback(Client *c){
+goback(WebKitWebView *rv,Client *c){
 
   char *title;
   if (webkit_web_view_can_go_back(c->webView)){ 
@@ -1234,15 +1233,15 @@ goback(Client *c){
   else {
    title = g_strdup_printf(" %s", "Can't go back!");
    gtk_window_set_title(GTK_WINDOW(c->main_window), title);
-  
+
   }
 }
 
 
 
 void
-goforward(Client *c){
-  
+goforward(WebKitWebView *rv,Client *c){
+
   char *title;
  if (webkit_web_view_can_go_forward(c->webView)){ 
   webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
@@ -1251,7 +1250,7 @@ goforward(Client *c){
    else {
    title = g_strdup_printf(" %s", "Can't go forward!");
    gtk_window_set_title(GTK_WINDOW(c->main_window), title);
-  
+
   }
 
 }
@@ -1263,8 +1262,6 @@ toggleuserstyle_cb(Client *c){
 
 	gchar *contents;
 
-	
-	
          if (c->s == 0) {
         g_file_get_contents(USER_STYLESHEET_FILENAME,&contents,NULL,NULL);
         webkit_user_content_manager_add_style_sheet(
@@ -1275,7 +1272,7 @@ toggleuserstyle_cb(Client *c){
 	    NULL, NULL));
 
 	g_free(contents);
-                
+
           c->s = 1;
                     }
            else {
@@ -1284,7 +1281,7 @@ toggleuserstyle_cb(Client *c){
                  c->s = 0;
                }
 
-   
+
 }
 
 
@@ -1298,7 +1295,7 @@ togglejs_cb(GtkWidget * widget,Client *c){
    enablejs=0;
   // gdk_color_parse ("red", &color);
   // gtk_widget_modify_bg ( GTK_WIDGET(c->button_js), GTK_STATE_NORMAL, &color);
-   
+
 
    }
    else{
@@ -1312,12 +1309,12 @@ togglejs_cb(GtkWidget * widget,Client *c){
 }
 void togglefind_cb(Client *c)
 {
-     
+
     if (c->f == 0) {
 
                    gtk_widget_show_all(c->box_find);
                    gtk_widget_grab_focus(c->entry_find);
-                  
+
                     c->f = 1;
                    }
     else {
@@ -1361,7 +1358,7 @@ togglehistory_cb(Client *c)
    }
    else
    {
- 
+
    enablehist=0;
    }
 
@@ -1452,11 +1449,11 @@ gboolean setup(){
   if (!g_file_test(surfer_dir, G_FILE_TEST_EXISTS)) {
         mkdir(surfer_dir, 0700);
 
-    }    
+    }
 
- 
+
     favpath = g_build_filename(surfer_dir,"fav", NULL);
- 
+
     histpath = g_build_filename(surfer_dir, "hist", NULL);
 
 
@@ -1490,7 +1487,7 @@ return TRUE;
 
 
 int main(int argc, char *argv[]) {
- 
+
     Client *c;
     int i;
     FILE *File1;

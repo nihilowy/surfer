@@ -28,7 +28,7 @@
 
 
 #define SURFER_WINDOW_WIDTH	1100
-#define SURFER_WINDOW_HEIGHT	650
+#define SURFER_WINDOW_HEIGHT	680
 
 #define FONT_MIN_SIZE	12
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"  //change to your style file
