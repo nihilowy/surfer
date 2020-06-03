@@ -56,9 +56,10 @@ typedef struct Client{
     WebKitFindController *fc;
     WebKitHitTestResult *mousepos;
 
-    int f;
-    int s;
-    int o;
+    gboolean f;
+    gboolean fs;
+    gboolean s;
+    gboolean o;
     int progress;
     const gchar *title,*targeturi,*overtitle;
 
@@ -231,6 +232,7 @@ Client *client_new(Client *rc) {
     c->o = 0;
     c->f = 0;
     c->s = 0;
+    c->fs = 0;
     c->main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_default_size(GTK_WINDOW(c->main_window), SURFER_WINDOW_WIDTH, SURFER_WINDOW_HEIGHT);
@@ -251,7 +253,12 @@ Client *client_new(Client *rc) {
     c->button_goback = gtk_button_new_with_label("<");
     c->button_goforward = gtk_button_new_with_label(">");
     c->button_dm = gtk_button_new_with_label("[...]");
-    c->button_js = gtk_button_new_with_label("->js");
+
+
+
+    c->button_js = gtk_button_new_with_label("JS+");
+
+
     c->button_history = gtk_button_new_with_label("->hist");
 
     gtk_widget_set_tooltip_text(c->button_dm,"Downloads");
@@ -799,16 +806,24 @@ update_title(Client *c){
 void
 changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c)
 {
-
     gdouble prog;
-    prog= webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView));
+
+ if (c->fs==0){
     c->progress = webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView))*100;
 
-if (prog==1)
-prog=0;
+   if (prog==1)
+     prog=0;
 
-update_title(c);
-   gtk_entry_set_progress_fraction(GTK_ENTRY(c->entry_open), prog	);
+ }
+ else {
+   prog= webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView));
+   if (prog==1)
+     prog=0;
+
+   gtk_entry_set_progress_fraction(GTK_ENTRY(c->entry_open), prog);
+ }
+ update_title(c);
+
 }
 
 
@@ -1293,15 +1308,13 @@ togglejs_cb(GtkWidget * widget,Client *c){
    if (enablejs==1){
    g_object_set(G_OBJECT(settings),"enable-javascript", FALSE, NULL);
    enablejs=0;
-  // gdk_color_parse ("red", &color);
-  // gtk_widget_modify_bg ( GTK_WIDGET(c->button_js), GTK_STATE_NORMAL, &color);
 
+ gtk_button_set_label(GTK_BUTTON(c->button_js), "JS-");
 
    }
    else{
-   //gdk_color_parse ("red", &color);
-   //gtk_widget_modify_bg ( GTK_WIDGET(c->button_js), GTK_STATE_NORMAL, &color);
- 
+ gtk_button_set_label(GTK_BUTTON(c->button_js), "JS+");
+
 
    g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
    enablejs=1;
@@ -1368,12 +1381,12 @@ togglehistory_cb(Client *c)
 void togglefullscreen_cb(Client *c)
 {
 
-                    if (c->f == 0) {
+                    if (c->fs == 0) {
                         gtk_window_fullscreen(GTK_WINDOW(c->main_window));
-                        c->f = 1;
+                        c->fs = 1;
                     } else {
                         gtk_window_unfullscreen(GTK_WINDOW(c->main_window));
-                        c->f = 0;
+                        c->fs = 0;
                     }
 
 }
