@@ -256,7 +256,7 @@ Client *client_new(Client *rc) {
 
 
 
-    c->button_js = gtk_button_new_with_label("JS+");
+    c->button_js = gtk_button_new_with_label("->js");
 
 
     c->button_history = gtk_button_new_with_label("->hist");
@@ -1309,11 +1309,11 @@ togglejs_cb(GtkWidget * widget,Client *c){
    g_object_set(G_OBJECT(settings),"enable-javascript", FALSE, NULL);
    enablejs=0;
 
- gtk_button_set_label(GTK_BUTTON(c->button_js), "JS-");
+// gtk_button_set_label(GTK_BUTTON(c->button_js), "JS-");
 
    }
    else{
- gtk_button_set_label(GTK_BUTTON(c->button_js), "JS+");
+ //gtk_button_set_label(GTK_BUTTON(c->button_js), "JS+");
 
 
    g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
