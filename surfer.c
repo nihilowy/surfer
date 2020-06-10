@@ -60,8 +60,11 @@ typedef struct Client{
     gboolean fs;
     gboolean s;
     gboolean o;
+    
+    gboolean enablejs;
+
     int progress;
-    const gchar *title,*targeturi,*overtitle;
+    const gchar *title,*targeturi,*overtitle,*url;
 
 
   /* TLS information. */
@@ -77,15 +80,13 @@ typedef struct Client{
 
 } Client;
 
-static WebKitWebContext *wc;
-static WebKitSettings *settings;
 
 static GtkWidget *menuitem1;
 static GtkWidget *menu;
 
+GHashTable *tablecss;
 
 
-//static gchar *download_dir = "/var/tmp";
 
 static gint clients = 0,downloads = 0;
 gchar *home;
@@ -99,12 +100,12 @@ gchar *surfer_dir;
 
 static gchar *fullname = "";
 
-static gboolean enablehist=0;
-static gboolean enablejs=1;
-static gboolean recordhistory= 1;
+static gboolean isrelated = TRUE;
+static gboolean recordhistory= TRUE;
 static gboolean wc_setup_done = FALSE;
 static gboolean istmpdownload =FALSE;
 
+static gboolean enablehist=FALSE;
 
 
 static void destroy_window(GtkWidget* w,Client *rc);
@@ -138,7 +139,7 @@ static void download_progress( WebKitDownload *download,GParamSpec *pspec,    Gt
 
 
 static void changed_title(WebKitWebView *view, GParamSpec *ps, Client *c);
-static void changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c );
+static void changed_url(WebKitWebView *rv,Client *c );
 static void changed_webload(WebKitWebView *webview,WebKitLoadEvent event, Client *c);
 static void changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c);
 
@@ -149,6 +150,8 @@ static void downloadtmphandler(Client *c);
 static void mpvhandler(Client *c);
 static void mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h,guint modifiers, Client *c);
 
+
+
 static gboolean keyboard(GtkWidget *widget, GdkEvent *event, Client *c,  gpointer );
 static void openlink(GtkWidget *widget,Client *c);
 
@@ -157,9 +160,9 @@ static void find_close( Client *c);
 static void find_back(GtkWidget * widget,Client *c);
 
 static void togglejs_cb(GtkWidget * widget,Client *c);
-static void togglehistory_cb(Client *c);
+static void togglehistory_cb(GtkWidget * widget,Client *c);
 static void togglefind_cb(Client *c);
-static void toggleopen_cb(Client *c);
+static void toggleopen_cb(GtkWidget *widget,Client *c);
 static void togglefullscreen_cb(Client *c);
 static void toggleuserstyle_cb(Client *c);
 static void goback(WebKitWebView *rv,Client *c);
@@ -167,6 +170,10 @@ static void goforward(WebKitWebView *rv,Client *c);
 static void bookmark_cb(Client *c);
 
 static gboolean setup();
+static GHashTable *create_hash_table_from_file (gchar *tablepath);
+static void remove_newline(char buffer[]);
+static void destroy_hash_table (GHashTable *table);
+
 
 
 static void
@@ -229,10 +236,10 @@ Client *client_new(Client *rc) {
     c = calloc(1, sizeof(Client));
 
 
-    c->o = 0;
-    c->f = 0;
-    c->s = 0;
-    c->fs = 0;
+    c->o = FALSE;
+    c->f = FALSE;
+    c->s = FALSE;
+    c->fs = FALSE;
     c->main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_default_size(GTK_WINDOW(c->main_window), SURFER_WINDOW_WIDTH, SURFER_WINDOW_HEIGHT);
@@ -256,10 +263,10 @@ Client *client_new(Client *rc) {
 
 
 
-    c->button_js = gtk_button_new_with_label("->js");
+    c->button_js = gtk_button_new_with_label("JS");
 
 
-    c->button_history = gtk_button_new_with_label("->hist");
+    c->button_history = gtk_button_new_with_label("H");
 
     gtk_widget_set_tooltip_text(c->button_dm,"Downloads");
     gtk_widget_set_tooltip_text(c->button_js,"JS toogle");
@@ -324,9 +331,13 @@ Client *client_new(Client *rc) {
     toggleuserstyle_cb(c);
  }
 
- if (HISTORY_ENABLE == 1){
- enablehist = 1;
- }
+
+ if (HISTORY_ENABLE == 1)
+ enablehist = TRUE;
+
+
+ c->enablejs =TRUE;
+ 
     clients++;
  return c;
 }
@@ -341,7 +352,8 @@ WebKitUserContentManager *contentmanager;
 WebKitWebsiteDataManager *mgr;
 WebKitCookieManager *cookiemgr;
 
-
+WebKitWebContext *wc;
+WebKitSettings *settings;
 
 
 
@@ -355,17 +367,20 @@ gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
 
 
 
-if (rv != NULL) {
-               //  c->webView=WEBKIT_WEB_VIEW(rv);
-		view = WEBKIT_WEB_VIEW(
-		    webkit_web_view_new_with_related_view(rv));
+if (rv) {
+		if(isrelated)
+		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(rv));
                  //  printf("related\n");
+		else{
+		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(webkit_web_view_get_context(rv)));
+		isrelated = TRUE;
+		}
 	}
 
 
 else {
 
-
+wc= webkit_web_context_new();
 
 settings = webkit_settings_new();
 
@@ -374,7 +389,6 @@ contentmanager = webkit_user_content_manager_new();
 
 //mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
 //wc = webkit_web_context_new_with_website_data_manager(mgr);
-   wc= webkit_web_context_get_default();
 
    // view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
  //   char *value = "Mozilla/5.0";
@@ -392,9 +406,8 @@ contentmanager = webkit_user_content_manager_new();
 //    g_object_set(G_OBJECT(settings), "enable-webgl", TRUE, NULL);
 
     g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
-   //_object_set(G_OBJECT(settings),"enable-javascript", FALSE, NULL);
+    g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
 
-//allow_tls_cert(c,wc);
 
 
 webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
@@ -403,10 +416,8 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
 //webkit_web_context_set_sandbox_enabled(wc,enabled);
 
- //tell webkit where to store cookies
 
     if (!g_file_test(cookie_file, G_FILE_TEST_EXISTS)) {
-        //mkdir(cookies_path, 0700);
         File = fopen(cookie_file, "wb+");
 
         fclose(File);
@@ -426,11 +437,7 @@ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
    webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
 
 
-
-view = g_object_new(WEBKIT_TYPE_WEB_VIEW,
-		    "settings", settings,
-		    "user-content-manager", contentmanager,
-		    "web-context",wc,NULL );
+view=g_object_new(WEBKIT_TYPE_WEB_VIEW,"settings",settings,"user-content-manager",contentmanager,"web-context",wc,NULL);
 
  //printf("new\n");
 }
@@ -498,15 +505,15 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
   char *msg= NULL;
 
      if (WEBKIT_IS_GEOLOCATION_PERMISSION_REQUEST(request))
-        msg = "access your location";
+        msg = "Allow access your location";
       else if (WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request)) {
         if (webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request))) {
-            msg = "access the microphone";
-        } 
-        else if (webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request))) {
-            msg = "access you webcam";
+            msg = "Allow access the microphone";
         }
-    } 
+        else if (webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request))) {
+            msg = "Alllow to access webcam";
+        }
+    }
      else
         return FALSE;
 
@@ -740,7 +747,7 @@ downloadtmphandler(Client *c)
    istmpdownload = TRUE;
    g_free(downloadsfilename);
 
-   webkit_web_context_download_uri(wc,c->targeturi);
+   webkit_web_context_download_uri(webkit_web_view_get_context(c->webView),c->targeturi);
 
 
 }
@@ -787,15 +794,18 @@ update_title(Client *c){
    char *title;
    const gchar *url;
 
-   url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+ //  url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
 
    if (c->progress != 100)
    title = g_strdup_printf("[%i%%] %s",c->progress, c->title);
    else
    title = g_strdup_printf("%s", c->title);
+
    gtk_window_set_title(GTK_WINDOW(c->main_window), title);
-   gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
+
+
+ //  gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
 
 
 
@@ -808,7 +818,7 @@ changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c)
 {
     gdouble prog;
 
- if (c->fs==0){
+ if (!c->fs){
     c->progress = webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView))*100;
 
    if (prog==1)
@@ -841,66 +851,75 @@ changed_title(WebKitWebView *view, GParamSpec *ps, Client *c) {
 }
 
 void
-changed_url(GtkWidget *widget,WebKitWebView *rv,Client *c) {
-
- 
+changed_url(WebKitWebView *rv,Client *c) {
 
 
 //   update_title(c); 
 
 }
 
-static void changed_webload(WebKitWebView *webview,
-        WebKitLoadEvent event, Client *c)
+
+static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client *c)
 {
    FILE *File;
-   const gchar *url=NULL;
+   const gchar *url;
+   char *path2,*path;
    char textdate[100];
+   const gchar *csspath;
 
     switch (event) {
        case WEBKIT_LOAD_STARTED:
-             break;
-
-
-       case WEBKIT_LOAD_REDIRECTED:
-
          break;
-
+       case WEBKIT_LOAD_REDIRECTED:
+         break;
         case WEBKIT_LOAD_COMMITTED:
+         url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
+         gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
+
+        if( recordhistory==TRUE  && enablehist==TRUE ){
+
+           time_t now = time(NULL);
+           struct tm *t = localtime(&now);
+           strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
+
+
+           File = fopen(histpath, "a");
+           fprintf(File, "%s	%.100s\n<br>",textdate,url );
+           fclose(File);
+
+          }
+          recordhistory= TRUE;
+
+  	if (url) {
+  	 path2 = strchr(url, '/');
+         path = strtok(path2, "/");
+         csspath = g_hash_table_lookup(tablecss,path);
+
+         gchar *contents;
+
+         if(csspath){
+           if(g_file_get_contents(csspath,&contents,NULL,NULL)){
+
+            webkit_user_content_manager_add_style_sheet(
+	     webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)),
+	     webkit_user_style_sheet_new(contents,WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,WEBKIT_USER_STYLE_LEVEL_USER,NULL, NULL));
+
+	   g_free(contents);
+	  }
+
+	 }
+	 else
+             webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
+	 }
             break;
 
-
         case WEBKIT_LOAD_FINISHED:
-
-    if( recordhistory==1  && enablehist==1 ){
-
-     url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-
-     time_t now = time(NULL);
-     struct tm *t = localtime(&now);
-
-     strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
-
-
-     File = fopen(histpath, "a");
-     fprintf(File, "%s >%.150s<br>",textdate,url );
-
-     fclose(File);
-
-     }
-
-
-       recordhistory= 1;
-
-
-        break;
-     default:
-      break;
-    }
+          break;
+        default:
+          break;
+        }
 }
-
-
 
 
 
@@ -977,8 +996,9 @@ void decide_navaction(WebKitPolicyDecision *decision,Client *c) {
 
        webkit_policy_decision_ignore(decision);
    //                 printf("new\n");
-       rc = client_new(c);
+       isrelated = FALSE;
 
+       rc = client_new(c);
        loadurl(rc,t);
       // g_free(t);
      }
@@ -1100,27 +1120,28 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                     return TRUE;
 
                 case SURFER_OPEN_KEY:
-                   toggleopen_cb(c);
+                   toggleopen_cb(c->box_open,c);
                    return TRUE;
 
 		case SURFER_HISTORY_KEY:
-		    recordhistory=0;
+		    recordhistory=FALSE;
                     loadurl(c,history);
                     return TRUE;
 
                 case SURFER_NEW_WINDOW_KEY:
-                    recordhistory=0;
+                    recordhistory=FALSE;
+		    isrelated = FALSE;
                     rc = client_new(c);
                     loadurl(rc,home);
                     return TRUE;
 
                 case SURFER_HOME_KEY:
-                    recordhistory=0;
+                    recordhistory=FALSE;
                     loadurl(c,home);
                     return TRUE;
 
                 case SURFER_RELOAD_KEY:
-                    recordhistory=0;
+                    recordhistory=FALSE;
                     webkit_web_view_reload(c->webView);
                     return TRUE;
 
@@ -1243,7 +1264,7 @@ goback(WebKitWebView *rv,Client *c){
   char *title;
   if (webkit_web_view_can_go_back(c->webView)){ 
    webkit_web_view_go_back(WEBKIT_WEB_VIEW(c->webView));
-   recordhistory= 0;
+   recordhistory= FALSE;
    }
   else {
    title = g_strdup_printf(" %s", "Can't go back!");
@@ -1260,7 +1281,7 @@ goforward(WebKitWebView *rv,Client *c){
   char *title;
  if (webkit_web_view_can_go_forward(c->webView)){ 
   webkit_web_view_go_forward(WEBKIT_WEB_VIEW(c->webView));
-  recordhistory= 0;
+  recordhistory= FALSE;
   }
    else {
    title = g_strdup_printf(" %s", "Can't go forward!");
@@ -1288,12 +1309,12 @@ toggleuserstyle_cb(Client *c){
 
 	g_free(contents);
 
-          c->s = 1;
+          c->s = TRUE;
                     }
            else {
                webkit_user_content_manager_remove_all_style_sheets(
 	    webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
-                 c->s = 0;
+                 c->s = FALSE;
                }
 
 
@@ -1305,57 +1326,62 @@ togglejs_cb(GtkWidget * widget,Client *c){
 
    //GdkColor color;
 
-   if (enablejs==1){
-   g_object_set(G_OBJECT(settings),"enable-javascript", FALSE, NULL);
-   enablejs=0;
+   WebKitSettings *ssettings;
 
-// gtk_button_set_label(GTK_BUTTON(c->button_js), "JS-");
+   ssettings=webkit_web_view_get_settings( WEBKIT_WEB_VIEW(c->webView));
+
+   if (c->enablejs){
+
+   g_object_set(G_OBJECT(ssettings),"enable-javascript", FALSE, NULL);
+   c->enablejs=FALSE;
+
+//  gtk_button_set_label(GTK_BUTTON(c->button_js), "JS-");
 
    }
    else{
- //gtk_button_set_label(GTK_BUTTON(c->button_js), "JS+");
+  //gtk_button_set_label(GTK_BUTTON(c->button_js), "JS+");
 
 
-   g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
-   enablejs=1;
+   g_object_set(G_OBJECT(ssettings),"enable-javascript", TRUE, NULL);
+   c->enablejs=TRUE;
    }
 }
 void togglefind_cb(Client *c)
 {
 
-    if (c->f == 0) {
+    if (!c->f) {
 
                    gtk_widget_show_all(c->box_find);
                    gtk_widget_grab_focus(c->entry_find);
 
-                    c->f = 1;
+                    c->f = TRUE;
                    }
     else {
 
                    gtk_widget_hide(c->box_find);
                    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
-                   c->f = 0;
+                   c->f = FALSE;
                    }
 
 
 }
 
-void toggleopen_cb(Client *c)
+void toggleopen_cb(GtkWidget *widget,Client *c)
 {
      const gchar *url;
-    if (c->o == 0) {
+    if (!c->o) {
 
                    gtk_widget_show_all(c->box_open);
                    gtk_widget_grab_focus(c->entry_open);
-                   url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-                   gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
-                    c->o = 1;
+                   //url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+                   //gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
+                    c->o = TRUE;
                    }
     else {
 
                    gtk_widget_hide(c->box_open);
                    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
-                   c->o = 0;
+                   c->o = FALSE;
                    }
 
 
@@ -1363,16 +1389,17 @@ void toggleopen_cb(Client *c)
 
 
 void
-togglehistory_cb(Client *c)
+togglehistory_cb(GtkWidget *widget,Client *c)
 {
-   if (enablehist==0){
-      enablehist=1;
-
+   if (!enablehist){
+      enablehist=TRUE;
+    //  gtk_button_set_label(GTK_BUTTON(c->button_history), "HIST+");
    }
    else
    {
 
-   enablehist=0;
+   enablehist=FALSE;
+   //gtk_button_set_label(GTK_BUTTON(c->button_history), "HIST-");
    }
 
 
@@ -1381,16 +1408,15 @@ togglehistory_cb(Client *c)
 void togglefullscreen_cb(Client *c)
 {
 
-                    if (c->fs == 0) {
+                    if (!c->fs ) {
                         gtk_window_fullscreen(GTK_WINDOW(c->main_window));
-                        c->fs = 1;
+                        c->fs = TRUE;
                     } else {
                         gtk_window_unfullscreen(GTK_WINDOW(c->main_window));
-                        c->fs = 0;
+                        c->fs = FALSE;
                     }
 
 }
-
 
 void
 allow_tls_cert(Client *c)
@@ -1399,33 +1425,80 @@ allow_tls_cert(Client *c)
   gchar *url;
   gchar *tls_message;
 
-  //if (webkit_web_view_get_page_id (WEBKIT_WEB_VIEW (c->webView)) != page_id)
-    //return;
-
- g_assert (G_IS_TLS_CERTIFICATE (c->certificate));
+  g_assert (G_IS_TLS_CERTIFICATE (c->certificate));
   g_assert (c->tls_error_failing_uri != NULL);
-
-
 
   uri = soup_uri_new (c->tls_error_failing_uri);
   webkit_web_context_allow_tls_certificate_for_host (webkit_web_view_get_context(c->webView),c->certificate,uri->host);
 
-//  url = (gchar *)webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-/*
-tls_message = g_strdup_printf("tls cert error for site ignored");
+}
 
+void remove_newline(char buffer[]) {
+    size_t slen;
 
-gtk_entry_set_text(GTK_ENTRY(c->entry_open), tls_message);
+    slen = strlen(buffer);
 
-gtk_widget_show_all(c->box_open);
-*/
-
-  //loadurl(c, url);
-//  soup_uri_free (uri);
-//  g_free(url);
+    /* safe way to remove '\n' and check for bufferoverflow */
+    if (slen > 0) {
+        if (buffer[slen-1] == '\n') {
+            buffer[slen-1] = '\0';
+        } else {
+            printf("Buffer overflow detected.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 
+GHashTable
+*create_hash_table_from_file (gchar *tablepath)
+{
+
+    FILE *fp;
+
+    char buf[1024];
+    GHashTable *table;
+    char *key;
+    char *value;
+
+    table = g_hash_table_new (g_str_hash, g_str_equal);
+
+    fp = fopen (tablepath, "r");
+
+    if (!fp)
+
+    {
+        exit (1);
+    }
+
+    while (fgets (buf, sizeof (buf), fp) !=NULL)
+    {
+	remove_newline(buf);
+        key = strtok (buf, "=");
+        if (!key) continue;
+        value = strtok (NULL, "=");
+        if (!value) continue;
+            g_hash_table_insert (table, g_strdup (key), g_strdup (value));
+    }
+
+
+
+
+    fclose (fp);
+
+    return table;
+
+}
+
+
+
+void
+destroy_hash_table (GHashTable *table)
+{
+
+    g_hash_table_destroy (table);
+
+}
 
 
 gboolean setup(){
@@ -1433,12 +1506,13 @@ gboolean setup(){
 
 
     gchar *downloadsfilename,*surferdirfilename;
+    gchar *tablecsspath;
 
-    FILE *File,*File1;
+    FILE *File,*File1,*File2;
     char buffer[256] = "<!DOCTYPE html><html><head><title>Surfer</title><meta charset=utf8><style>body {background-color: #000009;}p\
     {color: yellow;} a:link { color: #00e900; } a:visited { color: green } a:clicked { color: red } </style></head><body><p>";
 
-
+    char buffercss[40]= "example.com=/usr/share/surfer/black.css\n";
 
 
     downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
@@ -1469,6 +1543,7 @@ gboolean setup(){
 
     histpath = g_build_filename(surfer_dir, "hist", NULL);
 
+    tablecsspath = g_build_filename(surfer_dir, "tablecss.txt", NULL);
 
     if (!g_file_test(favpath, G_FILE_TEST_EXISTS)) {
         File = fopen(favpath, "wb+");
@@ -1483,15 +1558,21 @@ gboolean setup(){
     if (!g_file_test(histpath, G_FILE_TEST_EXISTS)) {
         File1 = fopen(histpath, "wb+");
         fprintf(File1, "%s", buffer);
-        fclose(File1);
+        fclose(File1);               
 
     }
 
+   if (!g_file_test(tablecsspath, G_FILE_TEST_EXISTS)) {
+        File2 = fopen(tablecsspath, "wb+");
+        fprintf(File2, "%s", buffercss);
+        fclose(File2);
+   }
 
     history = (gchar *) g_strdup_printf("file://%s", histpath);
 
     home = (gchar *) g_strdup_printf("file://%s", favpath);
 
+    tablecss = create_hash_table_from_file (tablecsspath);
 
     istmpdownload == FALSE;
 
@@ -1530,21 +1611,7 @@ int main(int argc, char *argv[]) {
 
      loadurl(c,home);
 
-/*
-     if (HISTORY_ENABLE == 1){
 
-     time_t now = time(NULL);
-     struct tm *t = localtime(&now);
-
-     strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
-
-     File1 = fopen(histpath, "a");
-     fprintf(File1, "<br>%s<br>",textdate);
-     fclose(File1);
-
-
-     }
-*/
 
     gtk_main();
 
