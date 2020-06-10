@@ -453,7 +453,7 @@ g_object_connect(
                        "signal::create",G_CALLBACK(create_request), c,
                        "signal::context-menu",G_CALLBACK(menucreate_cb), c,
                        "signal::mouse-target-changed",G_CALLBACK(mousetargetchanged), c,
-                       "signal::web-process-crashed",G_CALLBACK(crashed), c,
+//                       "signal::web-process-crashed",G_CALLBACK(crashed), c,
                        "signal::permission-request",G_CALLBACK(permission_request_cb), c,
 //                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,
     NULL
@@ -570,6 +570,8 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
     size_t i;
     gchar *uri = NULL;
     const gchar *download_uri;
+    gchar *downloadsfilename;
+
 
     GtkWidget *dialog;
     GtkFileChooser *chooser;
@@ -643,8 +645,16 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
    webkit_download_cancel(download);
    }
 
-    if (istmpdownload == TRUE)
-     setup();
+    if (istmpdownload){
+
+   downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
+   downloads_dir = g_build_filename(downloadsfilename, NULL);
+   g_free(downloadsfilename);
+
+
+   } 
+
+
 
     g_free(sug);
     //g_free(path);
@@ -1574,7 +1584,7 @@ gboolean setup(){
 
     tablecss = create_hash_table_from_file (tablecsspath);
 
-    istmpdownload = FALSE;
+    istmpdownload=FALSE;
 
 return TRUE;
 }
