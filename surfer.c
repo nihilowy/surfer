@@ -445,7 +445,7 @@ view=g_object_new(WEBKIT_TYPE_WEB_VIEW,"settings",settings,"user-content-manager
 g_object_connect(
         G_OBJECT(view),"signal::load-changed", G_CALLBACK(changed_webload),c,
                        "signal::notify::title", G_CALLBACK(changed_title),c ,
-                       "signal::notify::url", G_CALLBACK(changed_url), c,
+//                       "signal::notify::url", G_CALLBACK(changed_url), c,
                        "signal::notify::estimated-load-progress",G_CALLBACK(changed_estimated),c,
                        "signal::decide-policy", G_CALLBACK(decide_policy),c,
                        "signal::close", G_CALLBACK(close_request), c,
