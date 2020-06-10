@@ -1298,7 +1298,7 @@ toggleuserstyle_cb(Client *c){
 
 	gchar *contents;
 
-         if (c->s == 0) {
+         if (!c->s) {
         g_file_get_contents(USER_STYLESHEET_FILENAME,&contents,NULL,NULL);
         webkit_user_content_manager_add_style_sheet(
 	    webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)),
@@ -1558,7 +1558,7 @@ gboolean setup(){
     if (!g_file_test(histpath, G_FILE_TEST_EXISTS)) {
         File1 = fopen(histpath, "wb+");
         fprintf(File1, "%s", buffer);
-        fclose(File1);               
+        fclose(File1);
 
     }
 
@@ -1574,7 +1574,7 @@ gboolean setup(){
 
     tablecss = create_hash_table_from_file (tablecsspath);
 
-    istmpdownload == FALSE;
+    istmpdownload = FALSE;
 
 return TRUE;
 }
