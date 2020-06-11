@@ -919,9 +919,12 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
 	  }
 
 	 }
-	 else
+	 else{
+		if(c->s);
+		else
              webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
 	 }
+	}
             break;
 
         case WEBKIT_LOAD_FINISHED:
