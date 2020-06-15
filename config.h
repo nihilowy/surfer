@@ -32,6 +32,7 @@
 
 #define FONT_MIN_SIZE	12
 
+// tablecss.txt in SURFER_DIR for custom css per site
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"  //change to your style file
 #define DEFAULT_STYLE_ENABLE 0 					       //change to 1 to enable default style
 
