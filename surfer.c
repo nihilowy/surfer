@@ -414,7 +414,7 @@ webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_
 
 webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
-//webkit_web_context_set_sandbox_enabled(wc,enabled);
+//webkit_web_context_set_sandbox_enabled(wc,TRUE);
 
 
     if (!g_file_test(cookie_file, G_FILE_TEST_EXISTS)) {
@@ -804,7 +804,7 @@ update_title(Client *c){
    char *title;
    const gchar *url;
 
- //  url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+   url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
 
    if (c->progress != 100)
@@ -815,7 +815,7 @@ update_title(Client *c){
    gtk_window_set_title(GTK_WINDOW(c->main_window), title);
 
 
- //  gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
+   gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
 
 
 
@@ -883,10 +883,8 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
        case WEBKIT_LOAD_REDIRECTED:
          break;
         case WEBKIT_LOAD_COMMITTED:
-         url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-
-         gtk_entry_set_text(GTK_ENTRY(c->entry_open), url);
-
+        
+        
         if( recordhistory==TRUE  && enablehist==TRUE ){
 
            time_t now = time(NULL);
@@ -901,11 +899,12 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
           }
           recordhistory= TRUE;
 
-  	if (url) {
+        
+  	/*if (url) {
   	 path2 = strchr(url, '/');
          path = strtok(path2, "/");
          csspath = g_hash_table_lookup(tablecss,path);
-
+//printf("%s\n",c->url);
          gchar *contents;
 
          if(csspath){
@@ -924,10 +923,11 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
 		else
              webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
 	 }
-	}
+	}*/
             break;
 
         case WEBKIT_LOAD_FINISHED:
+        
           break;
         default:
           break;
