@@ -879,13 +879,13 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
    const gchar *csspath;
 
     switch (event) {
-       case WEBKIT_LOAD_STARTED:
+        case WEBKIT_LOAD_STARTED:
          break;
-       case WEBKIT_LOAD_REDIRECTED:
+        case WEBKIT_LOAD_REDIRECTED:
          break;
         case WEBKIT_LOAD_COMMITTED:
-        
-        url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));     
+
+        url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
         if( recordhistory==TRUE  && enablehist==TRUE ){
 
            time_t now = time(NULL);
@@ -898,14 +898,12 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
            fclose(File);
 
           }
-          recordhistory= TRUE;
-       
-        tmp = g_strdup(url);
-        
-        printf("%s\n", tmp);
+         recordhistory= TRUE;
+
+         tmp = g_strdup(url);
+
   	 if(tmp) {
   	 path2 = strchr(tmp, '/');
-  	 
          path = strtok(path2, "/");
          csspath = g_hash_table_lookup(tablecss,path);
          gchar *contents;
@@ -930,7 +928,7 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
             break;
 
         case WEBKIT_LOAD_FINISHED:
-        
+
           break;
         default:
           break;
