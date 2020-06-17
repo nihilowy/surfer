@@ -51,7 +51,7 @@ someonewhocares.org
 `Ctrl + shift + b` &mdash; bookmark site (to remove just edit file with 
 links: fav in your SURFER_DIR dir)
 
-`Ctrl + o` &mdash; toogle url bar
+`Ctrl + o` &mdash; toggle url bar
 
 `Ctrl + /` &mdash; find word
 
@@ -71,12 +71,12 @@ links: fav in your SURFER_DIR dir)
 
 `Ctrl + Shift + i` &mdash; web inspector (page source)
 
-`Ctrl + Shift + s` &mdash; toogle user style black theme 
+`Ctrl + Shift + s` &mdash; toggle user style black theme 
 (/usr/share/surfer/black.css)
 
 `Ctrl + Shift + h` &mdash; show history if enabled
 
-`F11` &mdash; toogle fullscreen
+`F11` &mdash; toggle fullscreen
 
 
 
