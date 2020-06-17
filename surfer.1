@@ -1,15 +1,66 @@
 .TH surfer 1 "2017-1-1" "surfer" "User Commands"
-.\" --------------------------------------------------------------------
+.\" ---------------------------------------------------------------------------
 .SH NAME
-surfer \- simple keyboard based  webkit2gtk browser
-.\" --------------------------------------------------------------------
+surfer \- simple keyboard based webkit browser
+.\" ---------------------------------------------------------------------------
 .SH DESCRIPTION
-\fBsurfer\fP is a simple web browser,keyboard based, using GTK+ 3 and WebKit2GTK+.
-.\" --------------------------------------------------------------------
+\fBsurfer\fP is a simple web browser,keyboard based.
+
+ It can also launch mpv( with help of youtube-dl on supported sites) on links,
+ but rememmber to pkill -9 mpv if it hogs your cpu, used on non supported sites.
+ 
+ Beside it can toggle JS and History. 
+ 
+ You can also set css for sites in tablecss.txt file. 
+
+.\" ---------------------------------------------------------------------------
 
 .SH SHORTCUTS
 
-For actual list of shortcuts/keys refer to page of project http://github.com/nihilowy/surfer
+`Ctrl + click` link &mdash; open link in new window
+
+`Ctrl + n`    new window
+
+`Ctrl + b`    go back
+
+`Ctrl + f`    go forward
+
+`Ctrl + q`    quit
+
+`Esc`         stop loading
+
+`Ctrl + h`    home (bookmarks list)
+
+`Ctrl + o`    toogle url bar
+
+`Ctrl + /`    find word
+
+`Ctrl + r`    reload page
+
+`Ctrl + =`    zoom in
+
+`Ctrl + -`    zoom out
+
+`Down Arrow`  scroll down
+
+`Up arrow`    scroll up
+
+`Ctrl +  w`   page up 
+
+`Ctrl +  s`   page down
+
+`F11`         toogle fullscreen
+
+`Ctrl + shift + b`  bookmark site (to remove just edit file with links: fav in your SURFER_DIR dir)
+
+`Ctrl + Shift + i`  web inspector (page source)
+
+`Ctrl + Shift + s`  toogle user style black theme (/usr/share/surfer/black.css)
+
+`Ctrl + Shift + h`  show history if enabled
+
+Also refer to page of project http://github.com/nihilowy/surfer
+
 .\" --------------------------------------------------------------------
 
 .SH FILES
@@ -19,11 +70,13 @@ Files created in your home dir:
 .TP
  SURFER_DIR/cookies - file for cookies
 .TP
- .cache - directory for cached content also localstorage and databases
+ .cache - directory for cached content, localstorage and databases are in .local/share/webkitgtk
 .TP
  SURFER_DIR/hist - file for history if enabled in surfer.c
+.TP
+ SURFER_DIR/tablecss.txt - file for setting css for site
 .TP
  SURFER_DOWNLOADS - dir for downloads with SURFER_DIR customizable in surfer.c
 .\" --------------------------------------------------------------------
 .SH LICENSE
-\fBsurfer\fP is on GPL license.
+\fBsurfer\fP is on GPL 3.0 license.
