@@ -2,9 +2,9 @@
 
 Simple keyboard based web browser. No tabs.
 
-Based on webkit2gtk and gtk3. Lariza and Epiphany, Surf inspired.
+Based on webkit2gtk and gtk3.
 
-No xlibs dependency &mdash; works on wayland, weston, sway( for now more stable is x11 )
+No xlibs dependency &mdash; works on wayland, weston etc. 
 
 Look also at manual ( man surfer). 
 
