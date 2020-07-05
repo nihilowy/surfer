@@ -62,8 +62,8 @@ typedef struct Client{
     gboolean s;
     gboolean o;
     
+    
     gboolean enablejs;
-    gboolean enablespatial;
     int progress;
     const gchar *title,*targeturi,*overtitle,*url;
 
@@ -107,7 +107,7 @@ static gboolean wc_setup_done = FALSE;
 static gboolean istmpdownload =FALSE;
 
 static gboolean enablehist=FALSE;
-
+static gboolean enablespatial;
 
 static void destroy_window(GtkWidget* w,Client *rc);
 //static void tls_certs(WebKitWebContext *wc);
@@ -340,7 +340,7 @@ Client *client_new(Client *rc) {
 
 
  if (SURFER_SPATIAL_NAVIGATION == 1)
- c->enablespatial = TRUE;
+ enablespatial = TRUE;
 
  c->enablejs =TRUE;
  
@@ -1355,10 +1355,10 @@ togglespatial_cb(GtkWidget * widget,Client *c){
 
    ssettings=webkit_web_view_get_settings( WEBKIT_WEB_VIEW(c->webView));
 
-   if (c->enablespatial){
+   if (enablespatial){
 
    g_object_set(G_OBJECT(ssettings),"enable-spatial-navigation", FALSE, NULL);
-   c->enablejs=FALSE;
+   enablespatial=FALSE;
 
 //  gtk_button_set_label(GTK_BUTTON(c->button_js), "JS-");
 
@@ -1368,7 +1368,7 @@ togglespatial_cb(GtkWidget * widget,Client *c){
 
 
    g_object_set(G_OBJECT(ssettings),"enable-spatial-navigation", TRUE, NULL);
-   c->enablespatial=TRUE;
+   enablespatial=TRUE;
    }
 }
 
