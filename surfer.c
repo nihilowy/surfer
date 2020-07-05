@@ -408,7 +408,10 @@ contentmanager = webkit_user_content_manager_new();
     g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
     g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
 
+webkit_settings_set_enable_accelerated_2d_canvas (settings,FALSE);
 
+webkit_settings_set_enable_spatial_navigation(settings,TRUE);
+webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
 
 webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 

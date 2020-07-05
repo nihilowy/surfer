@@ -27,6 +27,18 @@
 //WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY -Accept only cookies set by the main document loaded
 
 
+#define SURFER_ACCELERATION_POLICY WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER
+/*
+WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND
+Hardware acceleration is enabled/disabled as request by web contents.
+ 
+WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS
+Hardware acceleration is always enabled, even for websites not requesting it.
+ 
+WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER
+Hardware acceleration is always disabled, even for websites requesting it.
+*/
+
 #define SURFER_WINDOW_WIDTH	1100
 #define SURFER_WINDOW_HEIGHT	680
 
