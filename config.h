@@ -39,6 +39,7 @@ WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER
 Hardware acceleration is always disabled, even for websites requesting it.
 */
 
+#define SURFER_SPATIAL_NAVIGATION 	FALSE//TRUE to enable 
 #define SURFER_WINDOW_WIDTH	1100
 #define SURFER_WINDOW_HEIGHT	680
 
