@@ -414,11 +414,15 @@ contentmanager = webkit_user_content_manager_new();
     g_object_set(G_OBJECT(settings), "enable-mediasource", TRUE, NULL);
     g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
 
+
 webkit_settings_set_enable_accelerated_2d_canvas (settings,FALSE);
 
 
 
 webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
+ if (SURFER_SPATIAL_NAVIGATION == 1)
+ enablespatial = TRUE;
+
 
 webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
 
