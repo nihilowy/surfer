@@ -42,6 +42,7 @@ typedef struct Client{
     GtkWidget *button_goforward;
     GtkWidget *button_dm;
     GtkWidget *button_js;
+    GtkWidget *button_spatial;
     GtkWidget *button_history;
     GtkWidget *button_find_back;
     GtkWidget *button_find_close;
@@ -62,7 +63,7 @@ typedef struct Client{
     gboolean o;
     
     gboolean enablejs;
-
+    gboolean enablespatial;
     int progress;
     const gchar *title,*targeturi,*overtitle,*url;
 
@@ -160,6 +161,7 @@ static void find_close( Client *c);
 static void find_back(GtkWidget * widget,Client *c);
 
 static void togglejs_cb(GtkWidget * widget,Client *c);
+static void togglespatial_cb(GtkWidget * widget,Client *c);
 static void togglehistory_cb(GtkWidget * widget,Client *c);
 static void togglefind_cb(Client *c);
 static void toggleopen_cb(GtkWidget *widget,Client *c);
@@ -264,12 +266,13 @@ Client *client_new(Client *rc) {
 
 
     c->button_js = gtk_button_new_with_label("JS");
-
-
+    c->button_spatial = gtk_button_new_with_label("SP");
+    
     c->button_history = gtk_button_new_with_label("H");
 
     gtk_widget_set_tooltip_text(c->button_dm,"Downloads");
     gtk_widget_set_tooltip_text(c->button_js,"JS toogle");
+    gtk_widget_set_tooltip_text(c->button_spatial,"Spatial nav toogle");
     gtk_widget_set_tooltip_text(c->button_history,"History toogle");
 
     gtk_widget_show_all (menuitem1);
@@ -291,7 +294,7 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->button_history, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_open),c->button_js, FALSE, FALSE, 0);
-
+    gtk_box_pack_end(GTK_BOX(c->box_open),c->button_spatial, FALSE, FALSE, 0);
 
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->vbox),GTK_WIDGET(c->webView), TRUE, TRUE, 0);
@@ -312,7 +315,7 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(download_button_press), c);
     g_signal_connect(G_OBJECT(c->button_history), "clicked", G_CALLBACK(togglehistory_cb), c);
     g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(togglejs_cb), c);
-
+    g_signal_connect(G_OBJECT(c->button_spatial), "clicked", G_CALLBACK(togglespatial_cb), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
     g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
     g_signal_connect_swapped (G_OBJECT (c->button_find_close), "clicked",G_CALLBACK (find_close),c);
@@ -335,6 +338,9 @@ Client *client_new(Client *rc) {
  if (HISTORY_ENABLE == 1)
  enablehist = TRUE;
 
+
+ if (SURFER_SPATIAL_NAVIGATION == 1)
+ c->enablespatial = TRUE;
 
  c->enablejs =TRUE;
  
@@ -410,7 +416,10 @@ contentmanager = webkit_user_content_manager_new();
 
 webkit_settings_set_enable_accelerated_2d_canvas (settings,FALSE);
 
+
+
 webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
+
 webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
 
 webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
@@ -1335,6 +1344,32 @@ toggleuserstyle_cb(Client *c){
                }
 
 
+}
+
+void
+togglespatial_cb(GtkWidget * widget,Client *c){
+
+   //GdkColor color;
+
+   WebKitSettings *ssettings;
+
+   ssettings=webkit_web_view_get_settings( WEBKIT_WEB_VIEW(c->webView));
+
+   if (c->enablespatial){
+
+   g_object_set(G_OBJECT(ssettings),"enable-spatial-navigation", FALSE, NULL);
+   c->enablejs=FALSE;
+
+//  gtk_button_set_label(GTK_BUTTON(c->button_js), "JS-");
+
+   }
+   else{
+  //gtk_button_set_label(GTK_BUTTON(c->button_js), "JS+");
+
+
+   g_object_set(G_OBJECT(ssettings),"enable-spatial-navigation", TRUE, NULL);
+   c->enablespatial=TRUE;
+   }
 }
 
 
