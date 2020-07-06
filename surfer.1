@@ -6,17 +6,30 @@ surfer \- simple keyboard based webkit browser
 .SH DESCRIPTION
 \fBsurfer\fP is a simple web browser,keyboard based.
 
+ For videos install gstreamer packages. As reported gst-plugins-bad (no gst-plugins-bad-libs -in arch linux)
+ has some issues.
+
+ config.h - customize keys, dirs and some other settings before compile. 
+
  It can also launch mpv( with help of youtube-dl on supported sites) on links,
  but rememmber to pkill -9 mpv if it hogs your cpu, used on non supported sites.
  
  Beside it can toggle JS and History. 
  
- You can also set css for sites in tablecss.txt file.
- 
- For videos install gstreamer packages. As reported gst-plugins-bad (no gst-plugins-bad-libs)
- has some issues.
+ You can also set css for sites in .surfer/tablecss.txt file. 
 
- config.h - customize keys, dirs and some other settings before compile. 
+ For adblock:
+ Install https://github.com/jun7/wyebadblock
+ Then sudo ln -s /usr/lib/wyebrowser/adblock.so /usr/lib/surfer
+
+ Or block through /etc/hosts
+
+
+ For JS scripts:
+ git clone https://github.com/rliang/ephy-scripts.
+ Then cd ephy-scripts && make.
+ After compile sudo cp libephyscripts.so to /usr/lib/surfer.
+ Js scripts (i.e. from  greasefork site) place in .local/share/ephyphany/userscripts/
 
 .\" ---------------------------------------------------------------------------
 

@@ -8,17 +8,32 @@ No xlibs dependency &mdash; works on wayland, weston etc.
 
 Look also at manual ( man surfer). 
 
-## Adblock
+## Adblock, videos, other info
+ 
+ For videos install gstreamer packages. As reported gst-plugins-bad (no gst-plugins-bad-libs -in arch linux)
+ has some issues.
 
-Install https://github.com/jun7/wyebadblock
+ config.h - customize keys, dirs and some other settings before compile. 
 
-Then sudo ln -s /usr/lib/wyebrowser/adblock.so  /usr/lib/surfer
+ It can also launch mpv( with help of youtube-dl on supported sites) on links,
+ but rememmber to pkill -9 mpv if it hogs your cpu, used on non supported sites.
+ 
+ Beside it can toggle JS and History. 
+ 
+ You can also set css for sites in .surfer/tablecss.txt file. 
+
+ For adblock:
+ Install https://github.com/jun7/wyebadblock
+ Then sudo ln -s /usr/lib/wyebrowser/adblock.so /usr/lib/surfer
+
+ Or block through /etc/hosts
 
 
-
-Otherwise You can use `/etc/hosts block` list from  sites like 
-someonewhocares.org
-
+ For JS scripts:
+ git clone https://github.com/rliang/ephy-scripts.
+ Then cd ephy-scripts && make.
+ After compile sudo cp libephyscripts.so to /usr/lib/surfer.
+ Js scripts (i.e. from  greasefork site) place in .local/share/ephyphany/userscripts/
 
 ## Compile and install:
 
