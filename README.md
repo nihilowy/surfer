@@ -16,7 +16,7 @@ Look also at manual ( man surfer).
  config.h - customize keys, dirs and some other settings before compile. 
 
  It can also launch mpv( with help of youtube-dl on supported sites) on links,
- but rememmber to pkill -9 mpv if it hogs your cpu, used on non supported sites.
+ but remember to pkill -9 mpv if it hogs your cpu, used on non supported sites.
  
  Beside it can toggle JS and History. 
  
@@ -33,7 +33,7 @@ Look also at manual ( man surfer).
  git clone https://github.com/rliang/ephy-scripts.
  Then cd ephy-scripts && make.
  After compile sudo cp libephyscripts.so /usr/lib/surfer.
- Js scripts (i.e. from  greasefork site) place in .local/share/ephyphany/userscripts/
+ Js scripts (i.e. from  greasefork site) place in .local/share/epiphany/userscripts
 
 ## Compile and install:
 

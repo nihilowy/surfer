@@ -42,6 +42,7 @@ typedef struct Client{
     GtkWidget *button_goforward;
     GtkWidget *button_dm;
     GtkWidget *button_js;
+    GtkWidget *button_ab;
     GtkWidget *button_history;
     GtkWidget *button_find_back;
     GtkWidget *button_find_close;
@@ -160,7 +161,7 @@ static void find_close( Client *c);
 static void find_back(GtkWidget * widget,Client *c);
 
 static void togglejs_cb(GtkWidget * widget,Client *c);
-static void togglespatial_cb(GtkWidget * widget,Client *c);
+static void toggleab_cb(GtkWidget * widget,Client *c);
 static void togglehistory_cb(GtkWidget * widget,Client *c);
 static void togglefind_cb(Client *c);
 static void toggleopen_cb(GtkWidget *widget,Client *c);
@@ -265,7 +266,7 @@ Client *client_new(Client *rc) {
 
 
     c->button_js = gtk_button_new_with_label("JS");
-    
+    //c->button_ab = gtk_button_new_with_label("AB");
     c->button_history = gtk_button_new_with_label("H");
 
     gtk_widget_set_tooltip_text(c->button_dm,"Downloads");
@@ -291,6 +292,8 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->button_history, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_open),c->button_js, FALSE, FALSE, 0);
+  //  gtk_box_pack_end(GTK_BOX(c->box_open),c->button_ab, FALSE, FALSE, 0);
+
 
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->vbox),GTK_WIDGET(c->webView), TRUE, TRUE, 0);
@@ -311,6 +314,7 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(download_button_press), c);
     g_signal_connect(G_OBJECT(c->button_history), "clicked", G_CALLBACK(togglehistory_cb), c);
     g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(togglejs_cb), c);
+//    g_signal_connect(G_OBJECT(c->button_ab), "clicked", G_CALLBACK(toggleab_cb), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
     g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
     g_signal_connect_swapped (G_OBJECT (c->button_find_close), "clicked",G_CALLBACK (find_close),c);
@@ -1162,7 +1166,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 
                 case SURFER_RELOAD_KEY:
                     recordhistory=FALSE;
-                    webkit_web_view_reload(c->webView);
+                    webkit_web_view_reload_bypass_cache(c->webView);
                     return TRUE;
 
                 case SURFER_FIND_KEY:
@@ -1339,8 +1343,6 @@ toggleuserstyle_cb(Client *c){
 
 
 }
-
-
 
 void
 togglejs_cb(GtkWidget * widget,Client *c){
