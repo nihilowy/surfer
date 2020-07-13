@@ -106,8 +106,9 @@ static gboolean recordhistory= TRUE;
 static gboolean wc_setup_done = FALSE;
 static gboolean istmpdownload =FALSE;
 
+static gboolean priv=FALSE;
+
 static gboolean enablehist=FALSE;
-static gboolean enablespatial;
 
 static void destroy_window(GtkWidget* w,Client *rc);
 //static void tls_certs(WebKitWebContext *wc);
@@ -149,6 +150,7 @@ static void update_title(Client *c);
 static gboolean menucreate_cb (WebKitWebView *web_view,WebKitContextMenu *context_menu,GdkEvent *event, WebKitHitTestResult *h,Client *c);
 static void downloadtmphandler(Client *c);
 static void mpvhandler(Client *c);
+static void prvhandler(Client *c);
 static void mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h,guint modifiers, Client *c);
 
 
@@ -184,8 +186,10 @@ destroy_window(GtkWidget* w,Client *c) {
     free(c);
     clients--;
 
-    if (clients == 0)
+    if (clients == 0){
+        destroy_hash_table(tablecss);
         gtk_main_quit();
+	}
 }
 
 gboolean
@@ -247,6 +251,11 @@ Client *client_new(Client *rc) {
     gtk_window_set_default_size(GTK_WINDOW(c->main_window), SURFER_WINDOW_WIDTH, SURFER_WINDOW_HEIGHT);
 
  //   c->webView = clientview(c);
+   if(priv){
+   c->webView = clientview(c,NULL);
+   priv = FALSE;
+   }
+   else
     c->webView = clientview(c, rc ? rc->webView : NULL);
 
 
@@ -382,7 +391,12 @@ if (rv) {
 
 else {
 
+if(priv)
+wc = webkit_web_context_new_ephemeral();
+else
 wc= webkit_web_context_new();
+
+
 
 settings = webkit_settings_new();
 
@@ -772,6 +786,20 @@ downloadtmphandler(Client *c)
 
 }
 
+void
+prvhandler(Client *c)
+{
+     char* t;
+     Client *rc;
+
+     t = (char*)c->targeturi;
+     priv = TRUE;
+     recordhistory=FALSE;
+     rc = client_new(c);
+     loadurl(rc,t);
+
+
+}
 gboolean
 menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent *event, WebKitHitTestResult *h,Client *c)
 {
@@ -789,6 +817,14 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
         g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(mpvhandler), c);
         menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
                 "Play in mpv (if supported)", NULL);
+        webkit_context_menu_append(context_menu, menu_item);
+        g_object_unref(action);
+        
+        action = g_simple_action_new("ephemeral-handler", NULL);
+
+        g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(prvhandler), c);
+        menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
+                "Open in Priv mode", NULL);
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
 

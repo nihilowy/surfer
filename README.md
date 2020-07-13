@@ -4,7 +4,7 @@ Simple keyboard based web browser. No tabs.
 
 Based on webkit2gtk and gtk3.
 
-No xlibs dependency &mdash; works on wayland, weston etc. 
+No xlibs dependency &mdash; works on sway, weston etc. 
 
 Look also at manual ( man surfer). 
 
@@ -18,14 +18,14 @@ Look also at manual ( man surfer).
  It can also launch mpv( with help of youtube-dl on supported sites) on links,
  but remember to pkill -9 mpv if it hogs your cpu, used on non supported sites.
  
- Beside it can toggle JS and History. 
+ Beside it can toggle JS and History. Ephemeral (priv mode) on links.
  
  You can also set css for sites in .surfer/tablecss.txt file. 
 
  For adblock:
  Install https://github.com/jun7/wyebadblock
  Then sudo ln -s /usr/lib/wyebrowser/adblock.so /usr/lib/surfer
-
+ 
  Or block through /etc/hosts
 
 
