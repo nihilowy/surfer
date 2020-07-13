@@ -392,23 +392,24 @@ if (rv) {
 else {
 
 if(priv)
-wc = webkit_web_context_new_ephemeral();
+mgr = webkit_website_data_manager_new_ephemeral();
 else
-wc= webkit_web_context_new();
+mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
 
 
+
+
+wc = webkit_web_context_new_with_website_data_manager(mgr);
 
 settings = webkit_settings_new();
 
 contentmanager = webkit_user_content_manager_new();
 
 
-//mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
-//wc = webkit_web_context_new_with_website_data_manager(mgr);
 
-   // view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
- //   char *value = "Mozilla/5.0";
- //   g_object_set(settings, "user-agent", &value, NULL);
+ //view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
+ //char *value = "Mozilla/5.0";
+ //g_object_set(settings, "user-agent", &value, NULL);
 
     if (!wc_setup_done)
     {
