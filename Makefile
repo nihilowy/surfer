@@ -1,9 +1,15 @@
 EXTENSION_DIR=$(DESTDIR)/usr/lib/surfer/
+
+#CC=musl-gcc
+
+
 ifeq ($(DEBUG), 1)
-	CFLAGS += -Wall -ggdb
+	CFLAGS += -Wall -g
 else
 	DEBUG = 0
 	CFLAGS += -Wno-deprecated-declarations
+
+
 #CFLAGS   += -std=c99 -pipe -Wall -fPIC
 endif
 DDEBUG=-DDEBUG=${DEBUG}

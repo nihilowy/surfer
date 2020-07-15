@@ -878,8 +878,6 @@ changed_estimated(WebKitWebView *webview, GParamSpec *pspec,Client *c)
  if (!c->fs){
     c->progress = webkit_web_view_get_estimated_load_progress(WEBKIT_WEB_VIEW(c->webView))*100;
 
-   if (prog==1)
-     prog=0;
 
  }
  else {
