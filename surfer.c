@@ -1570,7 +1570,7 @@ gboolean setup(){
     char buffer[256] = "<!DOCTYPE html><html><head><title>Surfer</title><meta charset=utf8><style>body {background-color: #000009;}p\
     {color: yellow;} a:link { color: #00e900; } a:visited { color: green } a:clicked { color: red } </style></head><body><p>";
 
-    char buffercss[40]= "example.com=/usr/share/surfer/black.css\n";
+    char buffercss[80]= "example.com=/usr/share/surfer/black.css\n";
 
 
     downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
