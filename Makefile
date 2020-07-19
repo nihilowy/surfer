@@ -1,7 +1,5 @@
 EXTENSION_DIR=$(DESTDIR)/usr/lib/surfer/
 
-#CC=musl-gcc
-
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += -Wall -g

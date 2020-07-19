@@ -367,7 +367,6 @@ WebKitWebContext *wc;
 WebKitSettings *settings;
 
 
-
 FILE *File;
 
 //gchar *cookies_path = g_build_filename(getenv("HOME"), surfer_dir, NULL);
@@ -438,6 +437,8 @@ webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_P
 webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
 webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
+
+
 
 //webkit_web_context_set_sandbox_enabled(wc,TRUE);
 
@@ -750,8 +751,18 @@ mpvhandler(Client *c)
     char* argv[2];
     pid_t child_pid;
     int child_status;
-
+    char* cmd;
     t = (char*)c->targeturi;
+    GError *err = NULL;
+
+
+     cmd = g_strdup_printf("%s %s", SURFER_PLAYER, t);
+ if (!g_spawn_command_line_async (cmd,&err))
+    {
+      g_error_free (err);
+    }
+
+/*
     argv[0] = SURFER_PLAYER;
     argv[1] = t;
     child_pid = fork();
@@ -762,7 +773,7 @@ mpvhandler(Client *c)
     printf("Unknown command\n");
     exit(0);
   }
-/*   else
+   else
    {
 
     waitpid(child_pid, &child_status, 0);
