@@ -425,7 +425,7 @@ contentmanager = webkit_user_content_manager_new();
     g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
 
 
-webkit_settings_set_enable_accelerated_2d_canvas (settings,FALSE);
+webkit_settings_set_enable_accelerated_2d_canvas (settings,TRUE);
 
 
 
@@ -748,9 +748,6 @@ void
 mpvhandler(Client *c)
 {
     char* t;
-    char* argv[2];
-    pid_t child_pid;
-    int child_status;
     char* cmd;
     t = (char*)c->targeturi;
     GError *err = NULL;
@@ -759,26 +756,10 @@ mpvhandler(Client *c)
      cmd = g_strdup_printf("%s %s", SURFER_PLAYER, t);
  if (!g_spawn_command_line_async (cmd,&err))
     {
+      g_warning("Surfer cant't spawn '%s' %s",cmd,err->message);
       g_error_free (err);
     }
 
-/*
-    argv[0] = SURFER_PLAYER;
-    argv[1] = t;
-    child_pid = fork();
-    if(child_pid == 0) {
-
-    execvp(argv[0], argv);
-
-    printf("Unknown command\n");
-    exit(0);
-  }
-   else
-   {
-
-    waitpid(child_pid, &child_status, 0);
-   }
-*/ 
 }
 
 void
@@ -927,7 +908,7 @@ changed_url(WebKitWebView *rv,Client *c) {
 
 static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client *c)
 {
-   FILE *File;
+   FILE *fp;
    const gchar *url;
     gchar *tmp;
    char *path2,*path;
@@ -949,9 +930,14 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
            strftime(textdate, sizeof(textdate)-1, "%d %m %Y %H:%M", t);
 
 
-           File = fopen(histpath, "a");
-           fprintf(File, "%s	%.100s\n<br>",textdate,url );
-           fclose(File);
+           fp = fopen(histpath, "a");
+           if (!fp)
+           {
+	    g_warning("Surfer: can't open %s",histpath);
+            exit (1);
+           }
+           fprintf(fp, "\n%s	%.100s\n<br>",textdate,url );
+           fclose(fp);
 
           }
          recordhistory= TRUE;
@@ -1314,16 +1300,25 @@ webkit_find_controller_search_previous(c->fc);
 
 void
 bookmark_cb(Client *c){
-   FILE *File;
+   FILE *fp;
    char buffer[256] = "</body></html>";
    const gchar *tmp,*title;
-   File = fopen(favpath, "a");
+   fp = fopen(favpath, "a");
+
+
+     if (!fp)
+
+    {
+	g_warning("Surfer: can't open %s",favpath);
+        exit (1);
+    }
+
 
    tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
    title =  webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
-   fprintf(File, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) title);
-   fprintf(File, "%s\n", buffer);
-   fclose(File);
+   fprintf(fp, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) title);
+   fprintf(fp, "%s\n", buffer);
+   fclose(fp);
 
 }
 
@@ -1537,6 +1532,7 @@ GHashTable
     if (!fp)
 
     {
+	g_warning("Surfer: can't open %s",tablepath);
         exit (1);
     }
 
