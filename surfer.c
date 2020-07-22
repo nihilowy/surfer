@@ -28,7 +28,7 @@
 
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
-//#include <sys/wait.h>
+#include <libnotify/notify.h>
 #include "config.h"
 
 
@@ -61,8 +61,7 @@ typedef struct Client{
     gboolean fs;
     gboolean s;
     gboolean o;
-    
-    
+
     gboolean enablejs;
     int progress;
     const gchar *title,*targeturi,*overtitle,*url;
@@ -122,6 +121,8 @@ static WebKitWebView *clientview(Client *c, WebKitWebView *rv);
 
 static gboolean crashed(WebKitWebView *v, Client *c);
 static gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest *request,Client *c);
+
+static gboolean shownotification (WebKitWebView*web_view,WebKitNotification *notification,Client *c);
 
 static void loadurl(Client *rc, gchar *url);
 
@@ -437,7 +438,16 @@ webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_P
 webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
 webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
+/*
+WebKitSecurityOrigin *sorigin;
+GList *permited=NULL;
 
+uri =g_strdup_printf("https://www.bennish.net");
+sorigin = webkit_security_origin_new_for_uri (uri); 
+permited = g_list_append(permited,sorigin);
+
+webkit_web_context_initialize_notification_permissions(wc,permited,NULL);
+*/
 
 
 //webkit_web_context_set_sandbox_enabled(wc,TRUE);
@@ -479,6 +489,7 @@ g_object_connect(
                        "signal::create",G_CALLBACK(create_request), c,
                        "signal::context-menu",G_CALLBACK(menucreate_cb), c,
                        "signal::mouse-target-changed",G_CALLBACK(mousetargetchanged), c,
+                       "signal::show-notification", G_CALLBACK (shownotification), c,
 //                       "signal::web-process-crashed",G_CALLBACK(crashed), c,
                        "signal::permission-request",G_CALLBACK(permission_request_cb), c,
 //                       "signal::load-failed-with-tls-errors", G_CALLBACK(allow_tls_cert), c,
@@ -525,14 +536,41 @@ loadurl(Client *c,  gchar *url)
 }
 
 
+
+gboolean
+shownotification (WebKitWebView *web_view,WebKitNotification *notification,Client *c)
+{
+  
+
+   const char *notifytitle = webkit_notification_get_title (notification);
+   const char *notify = webkit_notification_get_body (notification);
+
+
+   NotifyNotification *not;
+   notify_init("test");
+   not = notify_notification_new (notifytitle,notify, NULL);
+   notify_notification_set_timeout (not, 3000);
+
+   if (!notify_notification_show (not, NULL)) {
+            g_warning("Failed to send notification.\n");
+
+   }
+   g_object_unref(G_OBJECT(not));
+ 
+   return TRUE;
+}
+
 gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest *request,Client *c)
 {
 
   char *msg= NULL;
 
-     if (WEBKIT_IS_GEOLOCATION_PERMISSION_REQUEST(request))
+   if (WEBKIT_IS_GEOLOCATION_PERMISSION_REQUEST(request))
         msg = "Allow access your location";
-      else if (WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request)) {
+   if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request))
+        msg = "Allow desktop notifications";
+
+   else if (WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request)) {
         if (webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request))) {
             msg = "Allow access the microphone";
         }
@@ -540,7 +578,7 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
             msg = "Alllow to access webcam";
         }
     }
-     else
+   else
         return FALSE;
 
     GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(c->main_window),
@@ -556,6 +594,8 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
     switch (result) {
     case GTK_RESPONSE_YES:
         webkit_permission_request_allow (request);
+        //webkit_security_origin_new_for_uri (const gchar *uri);
+
         break;
     default:
         webkit_permission_request_deny (request);
@@ -703,7 +743,22 @@ download_cancel( GtkWidget *tb,WebKitDownload *download)
 void
 download_handle_finished(WebKitDownload *download, gpointer data)
 {
-    downloads--;
+
+   const char *notifytitle = g_strdup_printf("Surfer: download finished");
+   const char *notify = webkit_download_get_destination (download);
+
+   NotifyNotification *not;
+   notify_init("Test");
+   not = notify_notification_new (notifytitle,notify, NULL);
+   notify_notification_set_timeout (not, 3000);
+
+   if (!notify_notification_show (not, NULL)) {
+            g_warning("Failed to send notification.\n");
+
+   }
+   g_object_unref(G_OBJECT(not));
+
+   downloads--;
 //    g_object_unref(download);
 
 }
@@ -782,14 +837,14 @@ downloadtmphandler(Client *c)
 void
 prvhandler(Client *c)
 {
-     char* t;
-     Client *rc;
+    char* t;
+    Client *rc;
 
-     t = (char*)c->targeturi;
-     priv = TRUE;
-     recordhistory=FALSE;
-     rc = client_new(c);
-     loadurl(rc,t);
+    t = (char*)c->targeturi;
+    priv = TRUE;
+    recordhistory=FALSE;
+    rc = client_new(c);
+    loadurl(rc,t);
 
 
 }
@@ -812,7 +867,7 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
                 "Play in mpv (if supported)", NULL);
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
-        
+
         action = g_simple_action_new("ephemeral-handler", NULL);
 
         g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(prvhandler), c);

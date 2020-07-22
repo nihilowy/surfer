@@ -16,13 +16,13 @@ all: surfer adblock.so
 
 surfer: surfer.c Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< \
-		`pkg-config --cflags --libs gtk+-3.0 glib-2.0 webkit2gtk-4.0` \
+		`pkg-config --cflags --libs libnotify gtk+-3.0 glib-2.0 webkit2gtk-4.0` \
 		-DEXTENSION_DIR=\"$(EXTENSION_DIR)\" \
 		$(DDEBUG) -lm
 
 adblock.so: ext.c Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -shared -fPIC \
-		`pkg-config --cflags --libs gtk+-3.0 glib-2.0 webkit2gtk-4.0` \
+		`pkg-config --cflags --libs libnotify gtk+-3.0 glib-2.0 webkit2gtk-4.0` \
 		$(DDEBUG)
 
 
