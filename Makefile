@@ -41,9 +41,9 @@ install:all
 	install -Dm644 icons/72x72/surfer.png $(DESTDIR)/usr/share/icons/hicolor/72x72/surfer.png
 	install -Dm644 icons/96x96/surfer.png $(DESTDIR)/usr/share/icons/hicolor/96x96/surfer.png
 	install -Dm644 icons/144x144/surfer.png $(DESTDIR)/usr/share/icons/hicolor/144x144/surfer.png
-#	install -Dm644 icons/256x256/surfer.png $(DESTDIR)/usr/share/icons/hicolor/256x256/surfer.png
-#	install -Dm644 icons/512x512/surfer.png $(DESTDIR)/usr/share/icons/hicolor/512x512/surfer.png
-#	install -Dm644 icons/1024x1024/surfer.png $(DESTDIR)/usr/share/icons/hicolor/1024x1024/surfer.png
+	install -Dm644 icons/256x256/surfer.png $(DESTDIR)/usr/share/icons/hicolor/256x256/surfer.png
+	install -Dm644 icons/512x512/surfer.png $(DESTDIR)/usr/share/icons/hicolor/512x512/surfer.png
+	install -Dm644 icons/1024x1024/surfer.png $(DESTDIR)/usr/share/icons/hicolor/1024x1024/surfer.png
 
 uninstall:
 	$(RM) $(DESTDIR)/usr/bin/surfer
