@@ -555,6 +555,7 @@ shownotification (WebKitWebView *web_view,WebKitNotification *notification,Clien
             g_warning("Failed to send notification.\n");
 
    }
+   notify_uninit();
    g_object_unref(G_OBJECT(not));
  
    return TRUE;
@@ -756,6 +757,7 @@ download_handle_finished(WebKitDownload *download, gpointer data)
             g_warning("Failed to send notification.\n");
 
    }
+   notify_uninit();
    g_object_unref(G_OBJECT(not));
 
    downloads--;
