@@ -85,14 +85,16 @@ static GtkWidget *menuitem1;
 static GtkWidget *menu;
 
 GHashTable *tablecss;
-
-
+GList *permited;
+GList *denied;
 
 static gint clients = 0,downloads = 0;
 gchar *home;
 gchar *history;
 gchar *favpath;
 gchar *histpath;
+gchar *permitedpath;
+gchar *deniedpath;
 gchar *downloads_dir;
 gchar *surfer_dir;
 
@@ -176,6 +178,7 @@ static void bookmark_cb(Client *c);
 
 static gboolean setup();
 static GHashTable *create_hash_table_from_file (gchar *tablepath);
+static GList *create_glist_from_file (gchar *listpath);
 static void remove_newline(char buffer[]);
 static void destroy_hash_table (GHashTable *table);
 
@@ -438,16 +441,11 @@ webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_P
 webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
 webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
-/*
-WebKitSecurityOrigin *sorigin;
-GList *permited=NULL;
 
-uri =g_strdup_printf("https://www.bennish.net");
-sorigin = webkit_security_origin_new_for_uri (uri); 
-permited = g_list_append(permited,sorigin);
 
-webkit_web_context_initialize_notification_permissions(wc,permited,NULL);
-*/
+
+webkit_web_context_initialize_notification_permissions(wc,permited,denied);
+
 
 
 //webkit_web_context_set_sandbox_enabled(wc,TRUE);
@@ -547,7 +545,7 @@ shownotification (WebKitWebView *web_view,WebKitNotification *notification,Clien
 
 
    NotifyNotification *not;
-   notify_init("test");
+   notify_init("surfer");
    not = notify_notification_new (notifytitle,notify, NULL);
    notify_notification_set_timeout (not, 3000);
 
@@ -564,8 +562,13 @@ shownotification (WebKitWebView *web_view,WebKitNotification *notification,Clien
 gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest *request,Client *c)
 {
 
-  char *msg= NULL;
 
+   WebKitSecurityOrigin *sorigin;
+   char *msg= NULL;
+   FILE *fp;
+   const gchar *tmp;
+   gchar *tmp2;
+      
    if (WEBKIT_IS_GEOLOCATION_PERMISSION_REQUEST(request))
         msg = "Allow access your location";
    if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request))
@@ -594,13 +597,37 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
 
     switch (result) {
     case GTK_RESPONSE_YES:
-        webkit_permission_request_allow (request);
-        //webkit_security_origin_new_for_uri (const gchar *uri);
-
-        break;
+      webkit_permission_request_allow (request);
+      if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request)){
+      fp = fopen(permitedpath, "a");
+      if (!fp)
+      {
+	g_warning("Surfer: can't open %s",permitedpath);
+        exit (1);
+      }
+      tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+      sorigin =webkit_security_origin_new_for_uri (tmp);
+      tmp2 = webkit_security_origin_to_string (sorigin);
+      fprintf(fp, "\n%s", tmp2);
+      fclose(fp);
+      }
+      break;
     default:
-        webkit_permission_request_deny (request);
-        break;
+      webkit_permission_request_deny (request);
+      if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request)){
+      fp = fopen(deniedpath, "a");
+      if (!fp)
+      {
+	g_warning("Surfer: can't open %s",deniedpath);
+        exit (1);
+      }
+      tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
+      sorigin =webkit_security_origin_new_for_uri (tmp);
+      tmp2 = webkit_security_origin_to_string (sorigin);
+      fprintf(fp, "\n%s", tmp2);
+      fclose(fp);
+      }
+      break;
     }
     gtk_widget_destroy (dialog);
 
@@ -749,7 +776,7 @@ download_handle_finished(WebKitDownload *download, gpointer data)
    const char *notify = webkit_download_get_destination (download);
 
    NotifyNotification *not;
-   notify_init("Test");
+   notify_init("surfer");
    not = notify_notification_new (notifytitle,notify, NULL);
    notify_notification_set_timeout (not, 3000);
 
@@ -1574,9 +1601,7 @@ void remove_newline(char buffer[]) {
 GHashTable
 *create_hash_table_from_file (gchar *tablepath)
 {
-
     FILE *fp;
-
     char buf[1024];
     GHashTable *table;
     char *key;
@@ -1602,18 +1627,37 @@ GHashTable
         if (!value) continue;
             g_hash_table_insert (table, g_strdup (key), g_strdup (value));
     }
-
-
-
-
     fclose (fp);
-
     return table;
-
 }
 
+GList *create_glist_from_file (gchar *listpath)
+{
+    FILE *fp;
+    char buf[1024];
+    GList *list = NULL;
+    WebKitSecurityOrigin *sorigin;
 
+    fp = fopen (listpath, "r");
 
+    if (!fp)
+
+    {
+	g_warning("Surfer: can't open %s",listpath);
+        exit (1);
+    }
+
+    while (fgets (buf, sizeof (buf), fp) !=NULL)
+    {
+
+        sorigin = webkit_security_origin_new_for_uri(buf);
+        list = g_list_append(list,sorigin);
+
+    }
+    fclose (fp);
+    return list;
+
+}
 void
 destroy_hash_table (GHashTable *table)
 {
@@ -1629,7 +1673,6 @@ gboolean setup(){
 
     gchar *downloadsfilename,*surferdirfilename;
     gchar *tablecsspath;
-
     FILE *File,*File1,*File2;
     char buffer[256] = "<!DOCTYPE html><html><head><title>Surfer</title><meta charset=utf8><style>body {background-color: #000009;}p\
     {color: yellow;} a:link { color: #00e900; } a:visited { color: green } a:clicked { color: red } </style></head><body><p>";
@@ -1667,6 +1710,10 @@ gboolean setup(){
 
     tablecsspath = g_build_filename(surfer_dir, "tablecss.txt", NULL);
 
+    permitedpath = g_build_filename(surfer_dir,"permited", NULL);
+
+    deniedpath = g_build_filename(surfer_dir,"denied", NULL);
+
     if (!g_file_test(favpath, G_FILE_TEST_EXISTS)) {
         File = fopen(favpath, "wb+");
         fprintf(File, "%s", buffer);
@@ -1689,6 +1736,16 @@ gboolean setup(){
         fprintf(File2, "%s", buffercss);
         fclose(File2);
    }
+     
+   if (!g_file_test(permitedpath, G_FILE_TEST_EXISTS)) {
+        File2 = fopen(permitedpath, "wb+");
+        fclose(File2);
+   }
+
+      if (!g_file_test(deniedpath, G_FILE_TEST_EXISTS)) {
+        File2 = fopen(deniedpath, "wb+");
+        fclose(File2);
+   }
 
     history = (gchar *) g_strdup_printf("file://%s", histpath);
 
@@ -1697,6 +1754,9 @@ gboolean setup(){
     tablecss = create_hash_table_from_file (tablecsspath);
 
     istmpdownload=FALSE;
+
+    permited = create_glist_from_file(permitedpath);
+    denied = create_glist_from_file(deniedpath);
 
 return TRUE;
 }
