@@ -30,10 +30,11 @@ Look also at manual ( man surfer).
 
 
  For JS scripts:
- git clone https://github.com/rliang/ephy-scripts.
+ git clone https://github.com/rliang/ephy-scripts. (or use my version in ephy-scripts subdir)
  Then cd ephy-scripts && make.
  After compile sudo cp libephyscripts.so /usr/lib/surfer.
  Js scripts (i.e. from  greasefork site) place in .local/share/epiphany/userscripts
+
 
 ## Compile and install:
 
