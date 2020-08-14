@@ -1,3 +1,5 @@
+//most code form ephy-scripts on github.com + my fixes
+
 #include <jsc/jsc.h>
 #include <webkit2/webkit-web-extension.h>
 #include <libgen.h>
@@ -25,7 +27,7 @@ static void add_file(const gchar *dirname, const gchar *filename)
 
 static void add_path(const gchar *path)
 {
-	gchar *dirname = g_build_filename(path, "epiphany", "userscripts", NULL);
+	gchar *dirname = g_build_filename(path, "surfer", NULL);
 	GDir *dir = g_dir_open(dirname, 0, NULL);
 	if (dir != NULL) {
 		const gchar *filename;

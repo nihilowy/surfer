@@ -14,7 +14,7 @@ surfer \- simple keyboard based webkit browser
  It can also launch mpv( with help of youtube-dl on supported sites) on links,
  but remember to pkill -9 mpv if it hogs your cpu, used on non supported sites.
  
- Beside it can toggle JS and History. 
+ Beside it can toggle JS and History. Priv mode.
  
  You can also set css for sites in .surfer/tablecss.txt file. 
 
@@ -25,11 +25,13 @@ surfer \- simple keyboard based webkit browser
  Or block through /etc/hosts
 
 
- For JS scripts:
- git clone https://github.com/rliang/ephy-scripts.
- Then cd ephy-scripts && make.
- After compile sudo cp libephyscripts.so /usr/lib/surfer.
- Js scripts (i.e. from  greasefork site) place in .local/share/epiphany/userscripts
+For JS scripts:
+
+ Js scripts (i.e. from  greasefork site) place in .local/share/surfer/
+
+ name them in following way:
+-i.e. for run scripts on www.youtube.com name script file identically.
+-if you want script to run on all sites, name it universal.js
 
 .\" ---------------------------------------------------------------------------
 

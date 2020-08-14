@@ -12,7 +12,7 @@ else
 endif
 DDEBUG=-DDEBUG=${DEBUG}
 
-all: surfer adblock.so
+all: surfer ephy-scripts.so adblock.so
 
 surfer: surfer.c Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< \
@@ -26,11 +26,18 @@ adblock.so: ext.c Makefile
 		$(DDEBUG)
 
 
+
+ephy-scripts.so: ephy-scripts.c Makefile
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -shared -fPIC \
+		`pkg-config --cflags --libs libnotify gtk+-3.0 glib-2.0 webkit2gtk-4.0` \
+		$(DDEBUG)
+
+
 install:all
 	install -d $(DESTDIR)/usr/share/surfer
 	install -d $(DESTDIR)/usr/lib
 	install -d $(DESTDIR)/usr/lib/surfer
-#	install -m0644 ext.so $(DESTDIR)/usr/lib/surfer/
+	install -Dm644 ephy-scripts.so $(DESTDIR)/usr/lib/surfer/
 	install -Dm755 surfer $(DESTDIR)/usr/bin/surfer
 	install -Dm644 surfer.desktop $(DESTDIR)/usr/share/applications/surfer.desktop
 	install -Dm644 surfer.1 $(DESTDIR)/usr/share/man/man1/surfer.1

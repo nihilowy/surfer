@@ -30,11 +30,12 @@ Look also at manual ( man surfer).
 
 
  For JS scripts:
- git clone https://github.com/rliang/ephy-scripts. (or use my version in ephy-scripts subdir)
- Then cd ephy-scripts && make.
- After compile sudo cp libephyscripts.so /usr/lib/surfer.
- Js scripts (i.e. from  greasefork site) place in .local/share/epiphany/userscripts
 
+ Js scripts (i.e. from  greasefork site) place in .local/share/surfer/
+
+ name them in following way:
+-i.e. for run scripts on www.youtube.com name script file identically.
+-if you want script to run on all sites, name it universal.js
 
 ## Compile and install:
 
