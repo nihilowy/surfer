@@ -38,6 +38,7 @@ install:all
 	install -d $(DESTDIR)/usr/lib
 	install -d $(DESTDIR)/usr/lib/surfer
 	install -Dm644 ephy-scripts.so $(DESTDIR)/usr/lib/surfer/
+#	install -Dm644 adblock.so $(DESTDIR)/usr/lib/surfer/
 	install -Dm755 surfer $(DESTDIR)/usr/bin/surfer
 	install -Dm644 surfer.desktop $(DESTDIR)/usr/share/applications/surfer.desktop
 	install -Dm644 surfer.1 $(DESTDIR)/usr/share/man/man1/surfer.1

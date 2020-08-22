@@ -64,7 +64,7 @@ typedef struct Client{
 
     gboolean enablejs;
     int progress;
-    const gchar *title,*targeturi,*overtitle,*url;
+    const gchar *title,*overtitle,*url,*targeturi;
 
 
   /* TLS information. */
@@ -429,26 +429,28 @@ contentmanager = webkit_user_content_manager_new();
     g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
 
 
-webkit_settings_set_enable_accelerated_2d_canvas (settings,TRUE);
+ webkit_settings_set_enable_accelerated_2d_canvas (settings,TRUE);
 
 
 
-webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
+ webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
 
 
-webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
+ webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
 
-webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+ webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
-webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
-
-
-
-webkit_web_context_initialize_notification_permissions(wc,permited,denied);
+ webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
 
 
-//webkit_web_context_set_sandbox_enabled(wc,TRUE);
+ webkit_web_context_initialize_notification_permissions(wc,permited,denied);
+
+
+
+ webkit_web_context_set_sandbox_enabled(wc, TRUE);
+
+ webkit_web_context_add_path_to_sandbox(wc, WEB_EXTENSIONS_DIRECTORY, TRUE);
 
 
     if (!g_file_test(cookie_file, G_FILE_TEST_EXISTS)) {
