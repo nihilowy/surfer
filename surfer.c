@@ -97,6 +97,7 @@ gchar *permitedpath;
 gchar *deniedpath;
 gchar *downloads_dir;
 gchar *surfer_dir;
+gchar *js_dir;
 
 
 
@@ -381,6 +382,7 @@ gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
 
 
 
+
 if (rv) {
 		if(isrelated)
 		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(rv));
@@ -451,6 +453,8 @@ contentmanager = webkit_user_content_manager_new();
  webkit_web_context_set_sandbox_enabled(wc, TRUE);
 
  webkit_web_context_add_path_to_sandbox(wc, WEB_EXTENSIONS_DIRECTORY, TRUE);
+ webkit_web_context_add_path_to_sandbox(wc, js_dir, TRUE);
+
 
 
     if (!g_file_test(cookie_file, G_FILE_TEST_EXISTS)) {
@@ -1673,7 +1677,7 @@ gboolean setup(){
 
 
 
-    gchar *downloadsfilename,*surferdirfilename;
+    gchar *downloadsfilename,*surferdirfilename,*jsdirfilename;
     gchar *tablecsspath;
     FILE *File,*File1,*File2;
     char buffer[256] = "<!DOCTYPE html><html><head><title>Surfer</title><meta charset=utf8><style>body {background-color: #000009;}p\
@@ -1683,15 +1687,18 @@ gboolean setup(){
 
 
     downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
-
     downloads_dir = g_build_filename(getenv("HOME"), downloadsfilename, NULL);
     g_free(downloadsfilename);
 
 
     surferdirfilename = g_strdup_printf("%s", SURFER_DIR);
-
     surfer_dir = g_build_filename(getenv("HOME"), surferdirfilename, NULL);
     g_free(surferdirfilename);
+
+
+    jsdirfilename = g_strdup_printf("%s", ".local/share/surfer");
+    js_dir = g_build_filename(getenv("HOME"), jsdirfilename, NULL);
+    g_free(jsdirfilename);
 
 
 
