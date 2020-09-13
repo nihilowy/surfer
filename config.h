@@ -57,4 +57,7 @@ Hardware acceleration is always disabled, even for websites requesting it.
 #define SURFER_DIR	".surfer"                                      // upper directory(s) must exist
 #define SURFER_DOWNLOADS "downloads"
 #define SURFER_TMPDOWNLOADS "/tmp"
+#define SURFER_BIN	"/usr/bin"                                      // upper directory(s) must exist
+
 #define SURFER_PLAYER	"mpv"                                          // best with youtube-dl on supported sites
+

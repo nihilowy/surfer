@@ -98,7 +98,7 @@ gchar *deniedpath;
 gchar *downloads_dir;
 gchar *surfer_dir;
 gchar *js_dir;
-
+gchar *bin_dir;
 
 
 static gchar *fullname = "";
@@ -154,6 +154,7 @@ static void update_title(Client *c);
 static gboolean menucreate_cb (WebKitWebView *web_view,WebKitContextMenu *context_menu,GdkEvent *event, WebKitHitTestResult *h,Client *c);
 static void downloadtmphandler(Client *c);
 static void mpvhandler(Client *c);
+static void openhandler(Client *c);
 static void prvhandler(Client *c);
 static void mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h,guint modifiers, Client *c);
 
@@ -280,7 +281,6 @@ Client *client_new(Client *rc) {
 
 
     c->button_js = gtk_button_new_with_label("JS");
-    //c->button_ab = gtk_button_new_with_label("AB");
     c->button_history = gtk_button_new_with_label("H");
 
     gtk_widget_set_tooltip_text(c->button_dm,"Downloads");
@@ -306,7 +306,6 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->button_history, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_open),c->button_js, FALSE, FALSE, 0);
-  //  gtk_box_pack_end(GTK_BOX(c->box_open),c->button_ab, FALSE, FALSE, 0);
 
 
     gtk_box_pack_start(GTK_BOX (c->vbox),  c->box_open, FALSE, FALSE, 0);
@@ -328,7 +327,6 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(download_button_press), c);
     g_signal_connect(G_OBJECT(c->button_history), "clicked", G_CALLBACK(togglehistory_cb), c);
     g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(togglejs_cb), c);
-//    g_signal_connect(G_OBJECT(c->button_ab), "clicked", G_CALLBACK(toggleab_cb), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
     g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
     g_signal_connect_swapped (G_OBJECT (c->button_find_close), "clicked",G_CALLBACK (find_close),c);
@@ -336,7 +334,6 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->main_window), "key-press-event", G_CALLBACK(keyboard),c);
     g_signal_connect(G_OBJECT(c->main_window), "destroy", G_CALLBACK(destroy_window), c);
 
-   // g_signal_connect_object (G_OBJECT(c->main_window), "allow-tls-certificate",G_CALLBACK (allow_tls_cert),c);
 
     gtk_widget_show_all(c->main_window);
 //    gtk_widget_grab_focus(GTK_WIDGET(c->webView));
@@ -374,7 +371,6 @@ WebKitSettings *settings;
 
 FILE *File;
 
-//gchar *cookies_path = g_build_filename(getenv("HOME"), surfer_dir, NULL);
 gchar *cookie_file = g_build_filename(surfer_dir, "cookie", NULL);
 
 gchar *datadir  = g_build_filename(g_get_user_data_dir() , fullname, NULL);
@@ -396,10 +392,10 @@ if (rv) {
 
 else {
 
-if(priv)
-mgr = webkit_website_data_manager_new_ephemeral();
-else
-mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
+  if(priv)
+   mgr = webkit_website_data_manager_new_ephemeral();
+  else
+   mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
 
 
 
@@ -431,29 +427,26 @@ contentmanager = webkit_user_content_manager_new();
     g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
 
 
- webkit_settings_set_enable_accelerated_2d_canvas (settings,TRUE);
+    webkit_settings_set_enable_accelerated_2d_canvas (settings,TRUE);
 
 
-
- webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
-
-
- webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
-
- webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
-
- webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
+    webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
 
 
+    webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
 
- webkit_web_context_initialize_notification_permissions(wc,permited,denied);
+    webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+
+    webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
 
 
+    webkit_web_context_initialize_notification_permissions(wc,permited,denied);
 
- webkit_web_context_set_sandbox_enabled(wc, TRUE);
 
- webkit_web_context_add_path_to_sandbox(wc, WEB_EXTENSIONS_DIRECTORY, TRUE);
- webkit_web_context_add_path_to_sandbox(wc, js_dir, TRUE);
+    webkit_web_context_set_sandbox_enabled(wc, TRUE);
+
+    webkit_web_context_add_path_to_sandbox(wc, WEB_EXTENSIONS_DIRECTORY, TRUE);
+    webkit_web_context_add_path_to_sandbox(wc, js_dir, TRUE);
 
 
 
@@ -574,11 +567,11 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
    FILE *fp;
    const gchar *tmp;
    gchar *tmp2;
-      
+
    if (WEBKIT_IS_GEOLOCATION_PERMISSION_REQUEST(request))
         msg = "Allow access your location";
-   if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request))
-        msg = "Allow desktop notifications";
+//   if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request))
+//        msg = "Allow desktop notifications";
 
    else if (WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request)) {
         if (webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request))) {
@@ -604,7 +597,7 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
     switch (result) {
     case GTK_RESPONSE_YES:
       webkit_permission_request_allow (request);
-      if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request)){
+/*      if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request)){
       fp = fopen(permitedpath, "a");
       if (!fp)
       {
@@ -616,11 +609,11 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
       tmp2 = webkit_security_origin_to_string (sorigin);
       fprintf(fp, "\n%s", tmp2);
       fclose(fp);
-      }
+      }*/
       break;
     default:
       webkit_permission_request_deny (request);
-      if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request)){
+  /*    if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request)){
       fp = fopen(deniedpath, "a");
       if (!fp)
       {
@@ -632,7 +625,7 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
       tmp2 = webkit_security_origin_to_string (sorigin);
       fprintf(fp, "\n%s", tmp2);
       fclose(fp);
-      }
+      }*/
       break;
     }
     gtk_widget_destroy (dialog);
@@ -835,6 +828,64 @@ download_progress( WebKitDownload *download,GParamSpec *pspec,    GtkWidget *tb)
 }
 
 void
+openhandler(Client *c)
+{
+    char* t;
+    char* cmd;
+    t = (char*)c->targeturi;
+    GError *err = NULL;
+
+
+
+    GtkWidget *dialog;
+    GtkFileChooser *chooser;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    gint res;
+
+
+    dialog = gtk_file_chooser_dialog_new ("Open File",
+                                      GTK_WINDOW_TOPLEVEL,
+                                      action,
+                                      ("_Cancel"),
+                                      GTK_RESPONSE_CANCEL,
+                                      ("_Open"),
+                                      GTK_RESPONSE_ACCEPT,
+                                      NULL);
+
+    chooser = GTK_FILE_CHOOSER (dialog);
+    gtk_file_chooser_set_current_folder(chooser,bin_dir);
+
+
+    res = gtk_dialog_run (GTK_DIALOG (dialog));
+
+   if (res == GTK_RESPONSE_ACCEPT)
+   {
+      char *filename;
+      filename = gtk_file_chooser_get_filename (chooser);
+
+      cmd = g_strdup_printf("%s %s", filename, t);
+
+      if (!g_spawn_command_line_async (cmd,&err))
+      {
+      g_warning("Surfer cant't spawn '%s' %s",cmd,err->message);
+      g_error_free (err);
+      }
+      g_free (filename);
+      gtk_widget_destroy (dialog);
+   }
+   else if (res == GTK_RESPONSE_CANCEL)
+   {
+      gtk_widget_destroy (dialog);
+   }
+
+
+
+}
+
+
+
+
+void
 mpvhandler(Client *c)
 {
     char* t;
@@ -900,6 +951,14 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
         g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(mpvhandler), c);
         menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
                 "Play in mpv (if supported)", NULL);
+        webkit_context_menu_append(context_menu, menu_item);
+        g_object_unref(action);
+        
+        action = g_simple_action_new("open-handler", NULL);
+
+        g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(openhandler), c);
+        menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
+                "Open with", NULL);
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
 
@@ -1677,7 +1736,7 @@ gboolean setup(){
 
 
 
-    gchar *downloadsfilename,*surferdirfilename,*jsdirfilename;
+    gchar *binfilename,*downloadsfilename,*surferdirfilename,*jsdirfilename;
     gchar *tablecsspath;
     FILE *File,*File1,*File2;
     char buffer[256] = "<!DOCTYPE html><html><head><title>Surfer</title><meta charset=utf8><style>body {background-color: #000009;}p\
@@ -1685,6 +1744,9 @@ gboolean setup(){
 
     char buffercss[80]= "example.com=/usr/share/surfer/black.css\n";
 
+    binfilename = g_strdup_printf("%s", SURFER_BIN);
+    bin_dir = g_build_filename( binfilename, NULL);
+    g_free(binfilename);
 
     downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
     downloads_dir = g_build_filename(getenv("HOME"), downloadsfilename, NULL);
@@ -1745,7 +1807,7 @@ gboolean setup(){
         fprintf(File2, "%s", buffercss);
         fclose(File2);
    }
-     
+
    if (!g_file_test(permitedpath, G_FILE_TEST_EXISTS)) {
         File2 = fopen(permitedpath, "wb+");
         fclose(File2);
@@ -1764,8 +1826,8 @@ gboolean setup(){
 
     istmpdownload=FALSE;
 
-    permited = create_glist_from_file(permitedpath);
-    denied = create_glist_from_file(deniedpath);
+//    permited = create_glist_from_file(permitedpath);
+//    denied = create_glist_from_file(deniedpath);
 
 return TRUE;
 }
