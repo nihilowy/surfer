@@ -17,6 +17,8 @@ Look also at manual ( man surfer).
 
  It can also launch mpv( with help of youtube-dl on supported sites) on links,
  but remember to pkill -9 mpv if it hogs your cpu, used on non supported sites.
+
+ Also possible to use other binaries/scripts - location of dirctory of that settable in config.h
  
  Beside it can toggle JS and History. Ephemeral (priv mode) on links.
  
