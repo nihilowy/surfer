@@ -919,6 +919,59 @@ downloadtmphandler(Client *c)
 
 
 }
+static void
+search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data)
+{
+
+  struct Client *c = (struct Client *)user_data;
+
+  char* t;
+    Client *rc;
+  //WebKitWebView *web_view = WEBKIT_WEB_VIEW (source_object);
+  g_autoptr (GError) error = NULL;
+  WebKitJavascriptResult *js_result;
+  JSCValue *value = NULL;
+
+  js_result = webkit_web_view_run_javascript_finish (c->webView, res, &error);
+  if (!js_result) {
+    g_warning ("Error running javascript: %s", error->message);
+    return;
+  }
+
+  value = webkit_javascript_result_get_js_value (js_result);
+  if (jsc_value_is_string (value)) {
+    JSCException *exception;
+    g_autofree gchar *str_value = NULL;
+
+    str_value = jsc_value_to_string (value);
+    exception = jsc_context_get_exception (jsc_value_get_context (value));
+    if (exception)
+      g_warning ("Error running javascript: %s", jsc_exception_get_message (exception));
+    else if (strlen (str_value))
+      
+    t = g_strdup_printf("%s %s", SURFER_SEARCH_SITE,str_value);
+    
+    recordhistory=FALSE;
+    rc = client_new(c);
+    loadurl(rc,t);
+      
+  } else {
+    g_warning ("Error running javascript: unexpected return value");
+  }
+  webkit_javascript_result_unref (js_result);
+}
+
+
+
+void
+searchhandler(Client *c)
+{
+    
+   webkit_web_view_run_javascript(WEBKIT_WEB_VIEW(c->webView),"window.getSelection().toString();", NULL, search_finished , c);
+
+
+}
+
 
 void
 prvhandler(Client *c)
@@ -962,6 +1015,9 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
 
+        
+
+
         action = g_simple_action_new("ephemeral-handler", NULL);
 
         g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(prvhandler), c);
@@ -979,6 +1035,18 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
         g_object_unref(action);
 
     }
+    if (webkit_hit_test_result_context_is_selection(h)){
+    
+        action = g_simple_action_new("search-handler", NULL);
+
+        g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(searchhandler), c);
+        menu_item = webkit_context_menu_item_new_from_gaction(G_ACTION(action),
+                "Search with", NULL);
+        webkit_context_menu_append(context_menu, menu_item);
+        g_object_unref(action);
+
+    }
+    
     return FALSE;
 }
 

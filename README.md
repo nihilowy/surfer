@@ -21,7 +21,9 @@ Look also at manual ( man surfer).
  Also possible to use other binaries/scripts - location of dirctory of that settable in config.h
  
  Beside it can toggle JS and History. Ephemeral (priv mode) on links.
- 
+
+ Search or translate for selected text, settable in config.h 
+  
  You can also set css for sites in .surfer/tablecss.txt file. 
 
  For adblock:

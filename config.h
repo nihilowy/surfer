@@ -60,4 +60,7 @@ Hardware acceleration is always disabled, even for websites requesting it.
 #define SURFER_BIN	"/usr/bin"                                      // upper directory(s) must exist
 
 #define SURFER_PLAYER	"/usr/bin/mpv"                                          // best with youtube-dl on supported sites
+#define SURFER_SEARCH_SITE  "https://translate.google.com/#auto/en/"
+
+//"https://www.google.com/search?q="
 
