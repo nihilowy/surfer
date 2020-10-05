@@ -924,10 +924,8 @@ search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data)
 {
 
   struct Client *c = (struct Client *)user_data;
-
   char* t;
-    Client *rc;
-  //WebKitWebView *web_view = WEBKIT_WEB_VIEW (source_object);
+  Client *rc;
   g_autoptr (GError) error = NULL;
   WebKitJavascriptResult *js_result;
   JSCValue *value = NULL;
@@ -947,14 +945,12 @@ search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data)
     exception = jsc_context_get_exception (jsc_value_get_context (value));
     if (exception)
       g_warning ("Error running javascript: %s", jsc_exception_get_message (exception));
-    else if (strlen (str_value))
-      
+    else if (strlen (str_value)){
     t = g_strdup_printf("%s %s", SURFER_SEARCH_SITE,str_value);
-    
     recordhistory=FALSE;
     rc = client_new(c);
     loadurl(rc,t);
-      
+    }
   } else {
     g_warning ("Error running javascript: unexpected return value");
   }
@@ -966,7 +962,7 @@ search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data)
 void
 searchhandler(Client *c)
 {
-    
+
    webkit_web_view_run_javascript(WEBKIT_WEB_VIEW(c->webView),"window.getSelection().toString();", NULL, search_finished , c);
 
 
@@ -1006,7 +1002,6 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
                 "Play in mpv (if supported)", NULL);
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
-        
         action = g_simple_action_new("open-handler", NULL);
 
         g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(openhandler), c);
@@ -1014,9 +1009,6 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
                 "Open with", NULL);
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
-
-        
-
 
         action = g_simple_action_new("ephemeral-handler", NULL);
 
@@ -1036,7 +1028,7 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
 
     }
     if (webkit_hit_test_result_context_is_selection(h)){
-    
+
         action = g_simple_action_new("search-handler", NULL);
 
         g_signal_connect_swapped(G_OBJECT(action), "activate",G_CALLBACK(searchhandler), c);
@@ -1046,7 +1038,7 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
         g_object_unref(action);
 
     }
-    
+
     return FALSE;
 }
 
