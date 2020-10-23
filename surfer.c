@@ -42,7 +42,7 @@ typedef struct Client{
     GtkWidget *button_goforward;
     GtkWidget *button_dm;
     GtkWidget *button_js;
-    GtkWidget *button_ab;
+    GtkWidget *button_bookmark;
     GtkWidget *button_history;
     GtkWidget *button_find_back;
     GtkWidget *button_find_close;
@@ -177,7 +177,7 @@ static void togglefullscreen_cb(Client *c);
 static void toggleuserstyle_cb(Client *c);
 static void goback(WebKitWebView *rv,Client *c);
 static void goforward(WebKitWebView *rv,Client *c);
-static void bookmark_cb(Client *c);
+static void bookmark_cb(WebKitWebView *webview,Client *c);
 
 static gboolean setup();
 static GHashTable *create_hash_table_from_file (gchar *tablepath);
@@ -280,12 +280,13 @@ Client *client_new(Client *rc) {
     c->button_dm = gtk_button_new_with_label("[...]");
 
 
-
+    c->button_bookmark = gtk_button_new_with_label("B");
     c->button_js = gtk_button_new_with_label("JS");
     c->button_history = gtk_button_new_with_label("H");
 
     gtk_widget_set_tooltip_text(c->button_dm,"Downloads");
     gtk_widget_set_tooltip_text(c->button_js,"JS toogle");
+    gtk_widget_set_tooltip_text(c->button_bookmark,"Bookmark site");
     gtk_widget_set_tooltip_text(c->button_history,"History toogle");
 
     gtk_widget_show_all (menuitem1);
@@ -305,6 +306,7 @@ Client *client_new(Client *rc) {
     gtk_box_pack_start(GTK_BOX(c->box_open), c->button_goforward,FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open), c->button_dm,FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->entry_open, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(c->box_open),c->button_bookmark, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(c->box_open),c->button_history, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(c->box_open),c->button_js, FALSE, FALSE, 0);
 
@@ -326,6 +328,7 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->button_goback), "clicked", G_CALLBACK(goback), c);
     g_signal_connect(G_OBJECT(c->button_goforward), "clicked", G_CALLBACK(goforward), c);
     g_signal_connect(G_OBJECT(c->button_dm), "clicked", G_CALLBACK(download_button_press), c);
+    g_signal_connect(G_OBJECT(c->button_bookmark), "clicked", G_CALLBACK(bookmark_cb), c);
     g_signal_connect(G_OBJECT(c->button_history), "clicked", G_CALLBACK(togglehistory_cb), c);
     g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(togglejs_cb), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
@@ -1422,7 +1425,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
                     return TRUE;
 
                 case SURFER_BOOKMARK_KEY:
-                    bookmark_cb(c);
+                    bookmark_cb(c->webView,c);
                     return TRUE;
 
                 case SURFER_ZOOM_OUT_KEY:
@@ -1584,7 +1587,7 @@ static void png_finished(GObject *object, GAsyncResult *result, gpointer user_da
 
 
 void
-bookmark_cb(Client *c){
+bookmark_cb(WebKitWebView *webview,Client *c){
    
 
 
