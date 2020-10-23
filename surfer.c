@@ -97,6 +97,7 @@ gchar *permitedpath;
 gchar *deniedpath;
 gchar *downloads_dir;
 gchar *surfer_dir;
+gchar *surfer_img_dir;
 gchar *js_dir;
 gchar *bin_dir;
 
@@ -831,7 +832,8 @@ void
 openhandler(Client *c)
 {
     char* t;
-    char* cmd;
+    g_autofree gchar *cmd = NULL;
+
     t = (char*)c->targeturi;
     GError *err = NULL;
 
@@ -888,9 +890,10 @@ openhandler(Client *c)
 void
 mpvhandler(Client *c)
 {
+    g_autofree gchar *cmd = NULL;
     char* t;
-    char* cmd;
-    t = (char*)c->targeturi;
+
+    t = (gchar*)c->targeturi;
     GError *err = NULL;
 
 
@@ -924,7 +927,7 @@ search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data)
 {
 
   struct Client *c = (struct Client *)user_data;
-  char* t;
+//  char* t;
   Client *rc;
   g_autoptr (GError) error = NULL;
   WebKitJavascriptResult *js_result;
@@ -946,6 +949,7 @@ search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data)
     if (exception)
       g_warning ("Error running javascript: %s", jsc_exception_get_message (exception));
     else if (strlen (str_value)){
+    g_autofree gchar *t = NULL;
     t = g_strdup_printf("%s %s", SURFER_SEARCH_SITE,str_value);
     recordhistory=FALSE;
     rc = client_new(c);
@@ -1049,8 +1053,9 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
 void
 update_title(Client *c){
 
-   char *title;
-   const gchar *url;
+//   char *title;
+    const gchar *url;
+    g_autofree gchar *title = NULL;
 
    url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
 
@@ -1118,6 +1123,8 @@ changed_url(WebKitWebView *rv,Client *c) {
 static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client *c)
 {
    FILE *fp;
+//    g_autofree gchar *tmp,*path2,*path = NULL;
+
    const gchar *url;
     gchar *tmp;
    char *path2,*path;
@@ -1507,13 +1514,60 @@ webkit_find_controller_search_previous(c->fc);
 }
 
 
-void
-bookmark_cb(Client *c){
-   FILE *fp;
-   char buffer[256] = "</body></html>";
-   const gchar *tmp,*title;
-   fp = fopen(favpath, "a");
+static void png_finished(GObject *object, GAsyncResult *result, gpointer user_data) {
 
+  const gchar *tmp,*title,*url;
+  gchar *path,*path2,*pngpath;
+  static char *png_file = NULL;
+  FILE *fp;
+
+  GdkPixbuf *snapshot, *scaled;
+  int orig_width, orig_height;
+  cairo_surface_t *surface;
+ 
+
+
+  WebKitWebView *web_view = WEBKIT_WEB_VIEW(object);
+  url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(web_view));
+  title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(web_view));
+
+   tmp = g_strdup(url);
+
+   
+   if(tmp) {
+      path2 = strchr(tmp, '/');
+      path = strtok(path2, "/");
+      }
+    
+    pngpath = (gchar *) g_strdup_printf("%s.png",path);
+
+    png_file = g_build_filename(surfer_img_dir,pngpath, NULL);
+
+
+    GError *error = NULL;
+    surface = webkit_web_view_get_snapshot_finish(web_view, result, &error);
+    if (surface == NULL) {
+        g_error( "error creating snapshot: %s",error );
+    }
+
+
+  orig_width = cairo_image_surface_get_width (surface);
+  orig_height = cairo_image_surface_get_height (surface);
+
+
+  snapshot = gdk_pixbuf_get_from_surface (surface,0, 0,orig_width, orig_height);
+  scaled = gdk_pixbuf_scale_simple (snapshot,SURFER_THUMBNAIL_WIDTH,SURFER_THUMBNAIL_HEIGHT,GDK_INTERP_TILES);
+    
+  cairo_surface_destroy(surface);
+ //   cairo_surface_write_to_png(scaled, png_file);
+ 
+  gdk_pixbuf_save(scaled, png_file, "png", &error, NULL);
+ 
+  g_object_unref (snapshot);
+  g_object_unref (scaled);
+
+
+  fp = fopen(favpath, "a");
 
      if (!fp)
 
@@ -1523,12 +1577,20 @@ bookmark_cb(Client *c){
     }
 
 
-   tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-   title =  webkit_web_view_get_title(WEBKIT_WEB_VIEW(c->webView));
-   fprintf(fp, "<a href=\"%s\" >%.110s</a><br>", (char *) tmp, (char *) title);
-   fprintf(fp, "%s\n", buffer);
+   fprintf(fp, "<a href=\"%s\" ><img src=\"%s\" title=\"%s\"> </a>&nbsp", (char *) url, (char *) png_file, (char *) title);
    fclose(fp);
 
+}
+
+
+void
+bookmark_cb(Client *c){
+   
+
+
+  webkit_web_view_get_snapshot(c->webView,WEBKIT_SNAPSHOT_REGION_FULL_DOCUMENT,WEBKIT_SNAPSHOT_OPTIONS_NONE,NULL,png_finished,NULL);
+
+   
 }
 
 
@@ -1796,13 +1858,15 @@ gboolean setup(){
 
 
 
-    gchar *binfilename,*downloadsfilename,*surferdirfilename,*jsdirfilename;
+    gchar *binfilename,*downloadsfilename,*surferdirfilename,*jsdirfilename,*surferimgdirfilename;
     gchar *tablecsspath;
     FILE *File,*File1,*File2;
     char buffer[256] = "<!DOCTYPE html><html><head><title>Surfer</title><meta charset=utf8><style>body {background-color: #000009;}p\
-    {color: yellow;} a:link { color: #00e900; } a:visited { color: green } a:clicked { color: red } </style></head><body><p>";
+    {color: yellow;} a:link { color: #00e900; } a:visited { color: green } a:clicked { color: red } </style></head><body> <p align=\"center\">";
 
     char buffercss[80]= "example.com=/usr/share/surfer/black.css\n";
+    char bufferhome[256]= "<br><center><h2 style=\"color:white;\">surfer</h2><p><form action=\"http://www.google.com/search\" method=\"get\"><input type=\"text\" name=\"q\"/><input type=\"submit\" value=\"search\"/></form></center><br>";
+
 
     binfilename = g_strdup_printf("%s", SURFER_BIN);
     bin_dir = g_build_filename( binfilename, NULL);
@@ -1814,8 +1878,12 @@ gboolean setup(){
 
 
     surferdirfilename = g_strdup_printf("%s", SURFER_DIR);
+    surferimgdirfilename = g_strdup_printf("%s", "img");
     surfer_dir = g_build_filename(getenv("HOME"), surferdirfilename, NULL);
+    surfer_img_dir = g_build_filename(getenv("HOME"), surferdirfilename,surferimgdirfilename, NULL);
+
     g_free(surferdirfilename);
+    g_free(surferimgdirfilename);
 
 
     jsdirfilename = g_strdup_printf("%s", ".local/share/surfer");
@@ -1834,8 +1902,12 @@ gboolean setup(){
 
     }
 
+  if (!g_file_test(surfer_img_dir, G_FILE_TEST_EXISTS)) {
 
-    favpath = g_build_filename(surfer_dir,"fav", NULL);
+        mkdir(surfer_img_dir, 0700);
+   }
+
+    favpath = g_build_filename(surfer_dir,"bookmarks", NULL);
 
     histpath = g_build_filename(surfer_dir, "hist", NULL);
 
@@ -1847,6 +1919,7 @@ gboolean setup(){
 
     if (!g_file_test(favpath, G_FILE_TEST_EXISTS)) {
         File = fopen(favpath, "wb+");
+        fprintf(File, "%s", bufferhome);
         fprintf(File, "%s", buffer);
         fclose(File);
 

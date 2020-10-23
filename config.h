@@ -43,6 +43,10 @@ Hardware acceleration is always disabled, even for websites requesting it.
 #define SURFER_WINDOW_WIDTH	1100
 #define SURFER_WINDOW_HEIGHT	680
 
+#define SURFER_THUMBNAIL_WIDTH 60
+#define SURFER_THUMBNAIL_HEIGHT 60
+
+
 #define FONT_MIN_SIZE	12
 
 // tablecss.txt in SURFER_DIR for custom css per site

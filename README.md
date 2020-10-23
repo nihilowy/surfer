@@ -71,7 +71,7 @@ Look also at manual ( man surfer).
 `Ctrl + h` &mdash; home (bookmarks list)
 
 `Ctrl + shift + b` &mdash; bookmark site (to remove just edit file with 
-links: fav in your SURFER_DIR dir)
+links: bookmarks in your SURFER_DIR dir)
 
 `Ctrl + o` &mdash; toggle url bar
 
