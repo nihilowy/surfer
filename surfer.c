@@ -158,6 +158,8 @@ static void mpvhandler(Client *c);
 static void openhandler(Client *c);
 static void prvhandler(Client *c);
 static void mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h,guint modifiers, Client *c);
+static void searchhandler(Client *c);
+static void search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data);
 
 
 
@@ -178,6 +180,9 @@ static void toggleuserstyle_cb(Client *c);
 static void goback(WebKitWebView *rv,Client *c);
 static void goforward(WebKitWebView *rv,Client *c);
 static void bookmark_cb(WebKitWebView *webview,Client *c);
+static void png_finished(GObject *object, GAsyncResult *result, gpointer user_data);
+
+
 
 static gboolean setup();
 static GHashTable *create_hash_table_from_file (gchar *tablepath);
@@ -688,8 +693,6 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
 
     sug = g_strdup(suggested_filename);
 
-    //path = g_build_filename(downloads_dir, sug, NULL);
-    //path2 = g_strdup(path);
 
     dialog = gtk_file_chooser_dialog_new ("Save File",
                                       GTK_WINDOW_TOPLEVEL,
@@ -742,6 +745,7 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
    webkit_download_cancel(download);
    }
 
+// if  download_tmp_handler  was proceded, then restet downloads_dir onto SURFER_DOWNLOADS, default dir
     if (istmpdownload){
 
    downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
@@ -752,10 +756,7 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
    } 
 
 
-
     g_free(sug);
-    //g_free(path);
-    //g_free(path2);
 
     return FALSE;
 }
@@ -925,7 +926,7 @@ downloadtmphandler(Client *c)
 
 
 }
-static void
+void
 search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data)
 {
 
@@ -1118,7 +1119,7 @@ void
 changed_url(WebKitWebView *rv,Client *c) {
 
 
-//   update_title(c); 
+//   update_title(c);
 
 }
 
@@ -1517,7 +1518,8 @@ webkit_find_controller_search_previous(c->fc);
 }
 
 
-static void png_finished(GObject *object, GAsyncResult *result, gpointer user_data) {
+void
+png_finished(GObject *object, GAsyncResult *result, gpointer user_data) {
 
   const gchar *tmp,*title,*url;
   gchar *path,*path2,*pngpath;
@@ -1527,7 +1529,6 @@ static void png_finished(GObject *object, GAsyncResult *result, gpointer user_da
   GdkPixbuf *snapshot, *scaled;
   int orig_width, orig_height;
   cairo_surface_t *surface;
- 
 
 
   WebKitWebView *web_view = WEBKIT_WEB_VIEW(object);
@@ -1536,12 +1537,12 @@ static void png_finished(GObject *object, GAsyncResult *result, gpointer user_da
 
    tmp = g_strdup(url);
 
-   
+
    if(tmp) {
       path2 = strchr(tmp, '/');
       path = strtok(path2, "/");
       }
-    
+
     pngpath = (gchar *) g_strdup_printf("%s.png",path);
 
     png_file = g_build_filename(surfer_img_dir,pngpath, NULL);
@@ -1560,12 +1561,12 @@ static void png_finished(GObject *object, GAsyncResult *result, gpointer user_da
 
   snapshot = gdk_pixbuf_get_from_surface (surface,0, 0,orig_width, orig_height);
   scaled = gdk_pixbuf_scale_simple (snapshot,SURFER_THUMBNAIL_WIDTH,SURFER_THUMBNAIL_HEIGHT,GDK_INTERP_TILES);
-    
+
   cairo_surface_destroy(surface);
  //   cairo_surface_write_to_png(scaled, png_file);
- 
+
   gdk_pixbuf_save(scaled, png_file, "png", &error, NULL);
- 
+
   g_object_unref (snapshot);
   g_object_unref (scaled);
 
@@ -1588,12 +1589,11 @@ static void png_finished(GObject *object, GAsyncResult *result, gpointer user_da
 
 void
 bookmark_cb(WebKitWebView *webview,Client *c){
-   
+
 
 
   webkit_web_view_get_snapshot(c->webView,WEBKIT_SNAPSHOT_REGION_FULL_DOCUMENT,WEBKIT_SNAPSHOT_OPTIONS_NONE,NULL,png_finished,NULL);
 
-   
 }
 
 

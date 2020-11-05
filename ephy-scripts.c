@@ -48,7 +48,7 @@ static void on_document_loaded(WebKitWebPage *page, gpointer user_data)
 	for (gsize i = 0; i < script_infos->len; i++) {
 		const struct script_info *s = &g_array_index(script_infos, struct script_info, i);
 
-        gchar *tmp  =  g_strdup(s->src);
+        gchar *tmp = g_strdup(s->src);
         gchar *last = basename(tmp);
 
 		if( g_strcmp0(url,last) == 0 || g_strcmp0(universal,last) == 0){
