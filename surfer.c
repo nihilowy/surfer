@@ -682,6 +682,7 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
 
 
 
+
    if (!suggested_filename || !*suggested_filename) {
         download_uri = webkit_uri_request_get_uri(webkit_download_get_request(download));
         uri  = soup_uri_decode(download_uri);
@@ -706,6 +707,7 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
 
     gtk_file_chooser_set_do_overwrite_confirmation (chooser, TRUE);
     webkit_download_set_allow_overwrite (download,TRUE);
+
 
     gtk_file_chooser_set_current_folder(chooser,downloads_dir);
     gtk_file_chooser_set_current_name (chooser,sug);
@@ -745,15 +747,16 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
    webkit_download_cancel(download);
    }
 
-// if  download_tmp_handler  was proceded, then restet downloads_dir onto SURFER_DOWNLOADS, default dir
+// if  downloadtmphandler  was proceded, then reset downloads_dir onto SURFER_DOWNLOADS, default dir
     if (istmpdownload){
 
    downloadsfilename = g_strdup_printf("%s", SURFER_DOWNLOADS);
    downloads_dir = g_build_filename(downloadsfilename, NULL);
    g_free(downloadsfilename);
+   istmpdownload = FALSE;
 
+   }
 
-   } 
 
 
     g_free(sug);
