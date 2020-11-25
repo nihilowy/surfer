@@ -10,8 +10,7 @@ Look also at manual ( man surfer).
 
 ## Adblock, videos, other info
  
- For videos install gstreamer packages. As reported gst-plugins-bad (no gst-plugins-bad-libs -in arch linux)
- has some issues.
+ For videos install gstreamer packages (Please dont install xf86-video-intel, it causes problems).
 
  config.h - customize keys, dirs and some other settings before compile. 
 
