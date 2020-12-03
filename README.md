@@ -10,7 +10,7 @@ Look also at manual ( man surfer).
 
 ## Adblock, videos, other info
  
- For videos install gstreamer packages (Please dont install xf86-video-intel, it causes problems).
+ For videos install gstreamer packages.
 
  config.h - customize keys, dirs and some other settings before compile. 
 
