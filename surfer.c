@@ -1175,7 +1175,7 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
 
          if(csspath){
            if(g_file_get_contents(csspath,&contents,NULL,NULL)){
-
+            webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
             webkit_user_content_manager_add_style_sheet(
 	     webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)),
 	     webkit_user_style_sheet_new(contents,WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,WEBKIT_USER_STYLE_LEVEL_USER,NULL, NULL));
