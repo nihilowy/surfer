@@ -1136,7 +1136,7 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
     gchar *tmp;
    char *path2,*path;
    char textdate[100];
-   const gchar *csspath;
+   const gchar *csspath = NULL;
 
     switch (event) {
         case WEBKIT_LOAD_STARTED:
@@ -1184,11 +1184,13 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
 	  }
 
 	 }
-	 else{
-		if(c->s);
-		else
-             webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
+	/* else;
+          {
+		if(!c->s)
+                  webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
+		else;
 	 }
+	*/
 	}
             break;
 
