@@ -113,5 +113,105 @@ body hr {
 * body a, body a * { color: #B6AA7B!important; }
 
 
+body a:hover, body a:hover * {
+
+	color: #D9C077!important;
+
+	text-decoration: underline!important
+
+}
 
 
+body img,a[href] img, a[href] button, input[type="image"],*[onclick]:empty, body
+
+a:empty {
+
+	opacity:.5!important
+
+}
+
+
+body img:hover,a[href]:hover img, a[href]:hover button, *[onclick]:empty:hover,
+
+body a:empty:hover {
+
+	opacity:1!important
+
+}
+
+
+body input[type], body textarea[name], body input[name], body input[id], body
+
+select[name]{
+
+	-moz-appearance:none!important;
+
+	color: #bbb!important;
+
+	-moz-border-radius:4px !important;
+
+	border-width: 1px!important;
+
+	border-color: #778!important;
+
+	border-style:solid!important;
+
+	background:#555 none  !important
+
+}
+
+
+body select[name] {
+
+	-moz-appearance:none!important;
+
+	color: #bbb!important;
+
+	-moz-border-radius:4px !important;
+
+	border-width: 1px!important;
+
+	border-color: #778!important;
+
+	border-style:solid!important;
+
+	background-color:#555!important
+
+}
+
+
+body input>*, body textarea>* {
+
+	background:transparent none !important;
+
+	color: #bbb!important;
+
+	border-style:solid!important;
+
+	border-width: 0px!important;
+
+}
+
+
+body select * {
+
+	background-color:transparent !important;
+
+	color: #bbb!important;
+
+	border-style:solid!important;
+
+	border-width: 0px!important;
+
+}
+
+
+pre:not(:empty), code:not(:empty) , cite:not(:empty), pre:not(:empty) *,
+
+code:not(:empty) *, cite:not(:empty)
+
+* {
+
+	background-image:url(data:image/gif;base64,R0lGODlhBAAEAIAAABERESIiIiH5BAAAAAAALAAAAAAEAAQAAAIGTACXaHkFADs=)!important;
+
+	color: #bcc8dc!important;}
