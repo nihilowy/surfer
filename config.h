@@ -20,12 +20,13 @@
 #define SURFER_SCROLL_PAGE_UP_KEY   GDK_KEY_w
 #define SURFER_STYLE_KEY            GDK_KEY_S
 
-#define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS
+#define SURFER_COOKIE_POLICY        WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY
 
 //WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS -Accept all cookies unconditionally.
 //WEBKIT_COOKIE_POLICY_ACCEPT_NEVER -Reject all cookies unconditionally.
 //WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY -Accept only cookies set by the main document loaded
 
+#define SURFER_ACCELERATION_2DCANVAS FALSE
 
 #define SURFER_ACCELERATION_POLICY WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND
 /*
@@ -52,7 +53,7 @@ Hardware acceleration is always disabled, even for websites requesting it.
 // tablecss.txt in SURFER_DIR for custom css per site
 #define USER_STYLESHEET_FILENAME	"/usr/share/surfer/black.css"  //change to your style file
 #define DEFAULT_STYLE_ENABLE 0 					       //change to 1 to enable default style
-
+#define ADBLOCK_JSON_FILE		"adblock.json"
 
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
 

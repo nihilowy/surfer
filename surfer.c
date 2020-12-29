@@ -81,6 +81,8 @@ typedef struct Client{
 } Client;
 
 
+static GMainContext* context;
+
 static GtkWidget *menuitem1;
 static GtkWidget *menu;
 
@@ -92,6 +94,7 @@ static gint clients = 0,downloads = 0;
 gchar *home;
 gchar *history;
 gchar *favpath;
+gchar *contentpath;
 gchar *histpath;
 gchar *permitedpath;
 gchar *deniedpath;
@@ -254,6 +257,7 @@ Client *client_new(Client *rc) {
     c = calloc(1, sizeof(Client));
 
 
+
     c->o = FALSE;
     c->f = FALSE;
     c->s = FALSE;
@@ -364,6 +368,19 @@ Client *client_new(Client *rc) {
  return c;
 }
 
+typedef struct {
+    GMainLoop* mainLoop; //{ nullptr };
+    WebKitUserContentFilter* filter; // { nullptr };
+    GError* error; // { nullptr };
+} FilterSaveData;
+
+
+static void filterSavedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data)
+{
+    data->filter = webkit_user_content_filter_store_save_finish(store, result, &data->error);
+    g_main_loop_quit(data->mainLoop);
+}
+
 
 
 WebKitWebView *clientview(Client *c,WebKitWebView *rv)
@@ -417,6 +434,31 @@ contentmanager = webkit_user_content_manager_new();
 
 
 
+
+if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
+     GFile* contentFilterFile = g_file_new_for_path(contentpath);
+
+        FilterSaveData saveData;
+        gchar* filtersPath = g_build_filename(g_get_user_cache_dir(), g_get_prgname(), "filters", NULL);
+        WebKitUserContentFilterStore* store = webkit_user_content_filter_store_new(filtersPath);
+        g_free(filtersPath);
+
+        webkit_user_content_filter_store_save_from_file(store, "BrowserFilter", contentFilterFile, NULL, (GAsyncReadyCallback)filterSavedCallback, &saveData);
+        saveData.mainLoop = g_main_loop_new(context, FALSE);
+        g_main_loop_run(saveData.mainLoop);
+        g_object_unref(store);
+
+        if (saveData.filter) {
+            webkit_user_content_manager_add_filter(contentmanager, saveData.filter);
+        } else
+            g_printerr("Cannot save filter '%s': %s\n", contentpath, saveData.error->message);
+
+        g_clear_pointer(&saveData.error, g_error_free);
+        g_clear_pointer(&saveData.filter, webkit_user_content_filter_unref);
+        g_main_loop_unref(saveData.mainLoop);
+        g_object_unref(contentFilterFile);
+   }
+
  //view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
  //char *value = "Mozilla/5.0";
  //g_object_set(settings, "user-agent", &value, NULL);
@@ -436,7 +478,7 @@ contentmanager = webkit_user_content_manager_new();
     g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
 
 
-    webkit_settings_set_enable_accelerated_2d_canvas (settings,TRUE);
+    webkit_settings_set_enable_accelerated_2d_canvas (settings,SURFER_ACCELERATION_2DCANVAS);
 
 
     webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
@@ -508,6 +550,8 @@ g_object_connect(
 
 return view;
 }
+
+
 
 
 void
@@ -1915,6 +1959,8 @@ gboolean setup(){
         mkdir(surfer_img_dir, 0700);
    }
 
+    contentpath = g_build_filename(surfer_dir,ADBLOCK_JSON_FILE, NULL);
+
     favpath = g_build_filename(surfer_dir,"bookmarks", NULL);
 
     histpath = g_build_filename(surfer_dir, "hist", NULL);
@@ -1983,12 +2029,13 @@ int main(int argc, char *argv[]) {
     //char textdate[100];
 
     gtk_init(&argc, &argv);
-
+GOptionContext* context = g_option_context_new(NULL);
 
     menu =gtk_menu_new();
     menuitem1 = gtk_menu_item_new_with_label("Click to cancel");
     gtk_menu_shell_append(GTK_MENU_SHELL(menu),menuitem1);
     //gtk_widget_show_all(menu);
+
 
     setup();
     c = client_new(NULL);

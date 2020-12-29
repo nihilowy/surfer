@@ -31,6 +31,7 @@ Look also at manual ( man surfer).
  
  Or block through /etc/hosts
 
+ Or save to .surfer/adblock.json file (ie from https://easylist-downloads.adblockplus.org/easylist_min_content_blocker.json )
 
  For JS scripts:
 
