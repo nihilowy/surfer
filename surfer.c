@@ -480,7 +480,8 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
 
     webkit_settings_set_enable_accelerated_2d_canvas (settings,SURFER_ACCELERATION_2DCANVAS);
 
-
+    webkit_settings_set_enable_smooth_scrolling(settings,SURFER_SMOOTH_SCROLLING);
+    webkit_settings_set_enable_resizable_text_areas (settings,SURFER_RESIZABLE_TEXT);
     webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
 
 
