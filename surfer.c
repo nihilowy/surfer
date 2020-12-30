@@ -274,7 +274,7 @@ Client *client_new(Client *rc) {
    else
     c->webView = clientview(c, rc ? rc->webView : NULL);
 
-
+ 
     c->fc= webkit_web_view_get_find_controller(c->webView);
 
 
@@ -374,14 +374,21 @@ typedef struct {
     GError* error; // { nullptr };
 } FilterSaveData;
 
-
 static void filterSavedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data)
 {
+	
     data->filter = webkit_user_content_filter_store_save_finish(store, result, &data->error);
     g_main_loop_quit(data->mainLoop);
 }
 
 
+static void filterLoadedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data)
+{
+    data->filter = webkit_user_content_filter_store_load_finish(store, result, &data->error);
+    g_main_loop_quit(data->mainLoop);
+
+
+}
 
 WebKitWebView *clientview(Client *c,WebKitWebView *rv)
 {
@@ -401,8 +408,6 @@ gchar *cookie_file = g_build_filename(surfer_dir, "cookie", NULL);
 
 gchar *datadir  = g_build_filename(g_get_user_data_dir() , fullname, NULL);
 gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
-
-
 
 
 if (rv) {
@@ -443,9 +448,18 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
         WebKitUserContentFilterStore* store = webkit_user_content_filter_store_new(filtersPath);
         g_free(filtersPath);
 
-        webkit_user_content_filter_store_save_from_file(store, "BrowserFilter", contentFilterFile, NULL, (GAsyncReadyCallback)filterSavedCallback, &saveData);
+	
+
+        webkit_user_content_filter_store_load(store, "BrowserFilter", NULL, (GAsyncReadyCallback)filterLoadedCallback, &saveData);      
         saveData.mainLoop = g_main_loop_new(context, FALSE);
         g_main_loop_run(saveData.mainLoop);
+
+        if (!saveData.filter){
+           webkit_user_content_filter_store_save_from_file(store, "BrowserFilter", contentFilterFile, NULL, (GAsyncReadyCallback)filterSavedCallback, &saveData);
+           saveData.mainLoop = g_main_loop_new(context, FALSE);
+           g_main_loop_run(saveData.mainLoop);
+        
+        }
         g_object_unref(store);
 
         if (saveData.filter) {
