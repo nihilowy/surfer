@@ -81,6 +81,12 @@ typedef struct Client{
 } Client;
 
 
+typedef struct {
+    GMainLoop* mainLoop; //{ nullptr };
+    WebKitUserContentFilter* filter; // { nullptr };
+    GError* error; // { nullptr };
+} FilterSaveData;
+
 static GMainContext* context;
 
 static GtkWidget *menuitem1;
@@ -185,6 +191,8 @@ static void goforward(WebKitWebView *rv,Client *c);
 static void bookmark_cb(WebKitWebView *webview,Client *c);
 static void png_finished(GObject *object, GAsyncResult *result, gpointer user_data);
 
+static void filterSavedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data);
+static void filterLoadedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data);
 
 
 static gboolean setup();
@@ -368,27 +376,7 @@ Client *client_new(Client *rc) {
  return c;
 }
 
-typedef struct {
-    GMainLoop* mainLoop; //{ nullptr };
-    WebKitUserContentFilter* filter; // { nullptr };
-    GError* error; // { nullptr };
-} FilterSaveData;
 
-static void filterSavedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data)
-{
-	
-    data->filter = webkit_user_content_filter_store_save_finish(store, result, &data->error);
-    g_main_loop_quit(data->mainLoop);
-}
-
-
-static void filterLoadedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data)
-{
-    data->filter = webkit_user_content_filter_store_load_finish(store, result, &data->error);
-    g_main_loop_quit(data->mainLoop);
-
-
-}
 
 WebKitWebView *clientview(Client *c,WebKitWebView *rv)
 {
@@ -1919,6 +1907,22 @@ destroy_hash_table (GHashTable *table)
     g_hash_table_destroy (table);
 
 }
+
+void filterSavedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data)
+{
+    data->filter = webkit_user_content_filter_store_save_finish(store, result, &data->error);
+    g_main_loop_quit(data->mainLoop);
+}
+
+void filterLoadedCallback(WebKitUserContentFilterStore *store, GAsyncResult *result, FilterSaveData *data)
+{
+    data->filter = webkit_user_content_filter_store_load_finish(store, result, &data->error);
+    g_main_loop_quit(data->mainLoop);
+}
+
+
+
+
 
 
 gboolean setup(){
