@@ -426,7 +426,7 @@ settings = webkit_settings_new();
 contentmanager = webkit_user_content_manager_new();
 
 
-/*
+
 
 if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
      GFile* contentFilterFile = g_file_new_for_path(contentpath);
@@ -436,7 +436,6 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
         WebKitUserContentFilterStore* store = webkit_user_content_filter_store_new(filtersPath);
         g_free(filtersPath);
 
-	
 
         webkit_user_content_filter_store_load(store, "BrowserFilter", NULL, (GAsyncReadyCallback)filterLoadedCallback, &saveData);      
         saveData.mainLoop = g_main_loop_new(context, FALSE);
@@ -446,7 +445,6 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
            webkit_user_content_filter_store_save_from_file(store, "BrowserFilter", contentFilterFile, NULL, (GAsyncReadyCallback)filterSavedCallback, &saveData);
            saveData.mainLoop = g_main_loop_new(context, FALSE);
            g_main_loop_run(saveData.mainLoop);
-        
         }
         g_object_unref(store);
 
@@ -460,7 +458,7 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
         g_main_loop_unref(saveData.mainLoop);
         g_object_unref(contentFilterFile);
    }
-*/
+
 
  //view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
  //char *value = "Mozilla/5.0";
@@ -1218,7 +1216,7 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
   	 if(tmp) {
   	 path2 = strchr(tmp, '/');
          path = strtok(path2, "/");
-         csspath = g_hash_table_lookup(tablecss,path);
+//         csspath = g_hash_table_lookup(tablecss,path);
          gchar *contents;
 
          if(csspath){

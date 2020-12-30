@@ -23,14 +23,15 @@ Look also at manual ( man surfer).
 
  Search or translate for selected text, settable in config.h 
   
- You can also set css for sites in .surfer/tablecss.txt file. 
 
  For adblock:
+
  Install https://github.com/jun7/wyebadblock
  Then sudo ln -s /usr/lib/wyebrowser/adblock.so /usr/lib/surfer
  
  Or block through /etc/hosts
 
+ Or save to .surfer/adblock.json file (ie from https://easylist-downloads.adblockplus.org/easylist_min_content_blocker.json )
  
 
  For JS scripts:
