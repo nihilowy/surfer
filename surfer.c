@@ -394,8 +394,8 @@ FILE *File;
 
 gchar *cookie_file = g_build_filename(surfer_dir, "cookie", NULL);
 
-gchar *datadir  = g_build_filename(g_get_user_data_dir() , fullname, NULL);
-gchar *cachedir = g_build_filename(g_get_user_cache_dir(), fullname, NULL);
+gchar *datadir  = g_build_filename(g_get_user_data_dir() , g_get_prgname(), NULL);
+gchar *cachedir = g_build_filename(g_get_user_cache_dir(), g_get_prgname(), NULL);
 
 
 if (rv) {
