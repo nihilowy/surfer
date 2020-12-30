@@ -426,7 +426,7 @@ settings = webkit_settings_new();
 contentmanager = webkit_user_content_manager_new();
 
 
-
+/*
 
 if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
      GFile* contentFilterFile = g_file_new_for_path(contentpath);
@@ -460,6 +460,7 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
         g_main_loop_unref(saveData.mainLoop);
         g_object_unref(contentFilterFile);
    }
+*/
 
  //view= WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(wc));
  //char *value = "Mozilla/5.0";
