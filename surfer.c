@@ -651,35 +651,9 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
     switch (result) {
     case GTK_RESPONSE_YES:
       webkit_permission_request_allow (request);
-/*      if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request)){
-      fp = fopen(permitedpath, "a");
-      if (!fp)
-      {
-	g_warning("Surfer: can't open %s",permitedpath);
-        exit (1);
-      }
-      tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-      sorigin =webkit_security_origin_new_for_uri (tmp);
-      tmp2 = webkit_security_origin_to_string (sorigin);
-      fprintf(fp, "\n%s", tmp2);
-      fclose(fp);
-      }*/
       break;
     default:
       webkit_permission_request_deny (request);
-  /*    if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request)){
-      fp = fopen(deniedpath, "a");
-      if (!fp)
-      {
-	g_warning("Surfer: can't open %s",deniedpath);
-        exit (1);
-      }
-      tmp = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(c->webView));
-      sorigin =webkit_security_origin_new_for_uri (tmp);
-      tmp2 = webkit_security_origin_to_string (sorigin);
-      fprintf(fp, "\n%s", tmp2);
-      fclose(fp);
-      }*/
       break;
     }
     gtk_widget_destroy (dialog);
@@ -1211,17 +1185,16 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
          recordhistory= TRUE;
 
          tmp = g_strdup(url);
-       
-         
-	 
+
   	 if(tmp) {
          sorigin =webkit_security_origin_new_for_uri (tmp);
          tmp2 = webkit_security_origin_to_string (sorigin);
 	 path  = basename(tmp2);
    //  printf("%s\n",path);
-	
+
          csspath = g_hash_table_lookup(tablecss,path);
 	 gchar *contents;
+
          if(csspath){
            if(g_file_get_contents(csspath,&contents,NULL,NULL)){
             webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
@@ -1231,9 +1204,6 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
 
 	   g_free(contents);
 
-
- 
-	  
 	  }
 
 	 }
