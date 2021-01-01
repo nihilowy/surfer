@@ -749,7 +749,6 @@ download_handle(WebKitDownload *download, gchar *suggested_filename, gpointer da
    gtk_widget_show_all (GTK_WIDGET(menu));
    g_free (filename);
 
-
    gtk_widget_destroy (dialog);
 
      g_signal_connect(G_OBJECT(download), "notify::estimated-progress",G_CALLBACK(download_progress), tb);
@@ -899,6 +898,8 @@ openhandler(Client *c)
       g_error_free (err);
       }
       g_free (filename);
+      g_free (cmd);
+
       gtk_widget_destroy (dialog);
    }
    else if (res == GTK_RESPONSE_CANCEL)
@@ -929,6 +930,7 @@ mpvhandler(Client *c)
       g_warning("Surfer cant't spawn '%s' %s",cmd,err->message);
       g_error_free (err);
     }
+    g_free (cmd);
 
 }
 
@@ -985,6 +987,7 @@ search_finished (GObject *source_object,GAsyncResult *res,gpointer user_data)
     g_warning ("Error running javascript: unexpected return value");
   }
   webkit_javascript_result_unref (js_result);
+
 }
 
 
@@ -1206,7 +1209,12 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
 
 	  }
 
+
+	g_free(tmp2);
+	g_free(tmp);
 	 }
+
+
 /* else
           {
 		if(!c->s)
