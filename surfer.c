@@ -898,7 +898,6 @@ openhandler(Client *c)
       g_error_free (err);
       }
       g_free (filename);
-      g_free (cmd);
 
       gtk_widget_destroy (dialog);
    }
@@ -930,7 +929,6 @@ mpvhandler(Client *c)
       g_warning("Surfer cant't spawn '%s' %s",cmd,err->message);
       g_error_free (err);
     }
-    g_free (cmd);
 
 }
 
