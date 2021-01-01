@@ -23,7 +23,8 @@ Look also at manual ( man surfer).
  You can also set css for sites in .surfer/tablecss.txt file. 
 
  Search or translate for selected text, settable in config.h 
-  
+
+ You can also set css for sites in .surfer/tablecss.txt file. 
 
  For adblock:
 

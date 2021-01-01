@@ -616,7 +616,7 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
 {
 
 
-   WebKitSecurityOrigin *sorigin;
+   //WebKitSecurityOrigin *sorigin;
    char *msg= NULL;
    FILE *fp;
    const gchar *tmp;
@@ -1177,10 +1177,11 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
    FILE *fp;
 
    const gchar *url;
-   char *tmp;
+   gchar *tmp,*tmp2;
    char *path;
    char textdate[100];
    const gchar *csspath = NULL;
+   WebKitSecurityOrigin *sorigin;
 
     switch (event) {
         case WEBKIT_LOAD_STARTED:
@@ -1210,11 +1211,16 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
          recordhistory= TRUE;
 
          tmp = g_strdup(url);
-
+       
+         
+	 
   	 if(tmp) {
-	 path  = basename(tmp);
-//	printf("%s/n",path);
-//         csspath = g_hash_table_lookup(tablecss,path);
+         sorigin =webkit_security_origin_new_for_uri (tmp);
+         tmp2 = webkit_security_origin_to_string (sorigin);
+	 path  = basename(tmp2);
+   //  printf("%s\n",path);
+	
+         csspath = g_hash_table_lookup(tablecss,path);
 	 gchar *contents;
          if(csspath){
            if(g_file_get_contents(csspath,&contents,NULL,NULL)){
@@ -1224,10 +1230,14 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
 	     webkit_user_style_sheet_new(contents,WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,WEBKIT_USER_STYLE_LEVEL_USER,NULL, NULL));
 
 	   g_free(contents);
+
+
+ 
+	  
 	  }
 
 	 }
-	/* else;
+/* else
           {
 		if(!c->s)
                   webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));
