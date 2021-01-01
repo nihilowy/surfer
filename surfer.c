@@ -29,6 +29,7 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 #include <libnotify/notify.h>
+#include <libgen.h>
 #include "config.h"
 
 
@@ -110,8 +111,6 @@ gchar *surfer_img_dir;
 gchar *js_dir;
 gchar *bin_dir;
 
-
-static gchar *fullname = "";
 
 static gboolean isrelated = TRUE;
 static gboolean recordhistory= TRUE;
@@ -1176,11 +1175,10 @@ changed_url(WebKitWebView *rv,Client *c) {
 static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client *c)
 {
    FILE *fp;
-//    g_autofree gchar *tmp,*path2,*path = NULL;
 
    const gchar *url;
-    gchar *tmp;
-   char *path2,*path;
+   char *tmp;
+   char *path;
    char textdate[100];
    const gchar *csspath = NULL;
 
@@ -1214,11 +1212,12 @@ static void changed_webload(WebKitWebView *webview, WebKitLoadEvent event,Client
          tmp = g_strdup(url);
 
   	 if(tmp) {
-  	 path2 = strchr(tmp, '/');
-         path = strtok(path2, "/");
-//         csspath = g_hash_table_lookup(tablecss,path);
-         gchar *contents;
+	 path  = basename(tmp);
 
+         csspath = g_hash_table_lookup(tablecss,path);
+  	 
+	 gchar *contents;       
+  
          if(csspath){
            if(g_file_get_contents(csspath,&contents,NULL,NULL)){
             webkit_user_content_manager_remove_all_style_sheets(webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(c->webView)));

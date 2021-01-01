@@ -21,6 +21,8 @@ Look also at manual ( man surfer).
  
  Beside it can toggle JS and History. Ephemeral (priv mode) on links.
 
+ You can also set css for sites in .surfer/tablecss.txt file. 
+
  Search or translate for selected text, settable in config.h 
   
 
