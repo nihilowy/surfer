@@ -428,7 +428,7 @@ contentmanager = webkit_user_content_manager_new();
 
 
 
-if (g_file_test(contentpath, G_FILE_TEST_EXISTS && !priv )){
+if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv ){
      GFile* contentFilterFile = g_file_new_for_path(contentpath);
 
         FilterSaveData saveData;
