@@ -399,17 +399,19 @@ gchar *cachedir = g_build_filename(g_get_user_cache_dir(), g_get_prgname(), NULL
 
 
 if (rv) {
-		if(isrelated)
+	//	if(isrelated)
 		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(rv));
                  //  printf("related\n");
-		else{
-		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context(webkit_web_view_get_context(rv)));
-		isrelated = TRUE;
-		}
+//		else{
+//		view = WEBKIT_WEB_VIEW(webkit_web_view_new()); //_with_context(webkit_web_view_get_context(rv)));
+//		isrelated = TRUE;
+//		}
 	}
 
 
 else {
+    
+
 
   if(priv)
    mgr = webkit_website_data_manager_new_ephemeral();
@@ -428,7 +430,7 @@ contentmanager = webkit_user_content_manager_new();
 
 
 
-if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv ){
+if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
      GFile* contentFilterFile = g_file_new_for_path(contentpath);
 
         FilterSaveData saveData;
