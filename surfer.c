@@ -90,6 +90,7 @@ typedef struct {
 
 static GMainContext* context;
 
+
 static GtkWidget *menuitem1;
 static GtkWidget *menu;
 
@@ -437,12 +438,12 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
 
 
         webkit_user_content_filter_store_load(store, "BrowserFilter", NULL, (GAsyncReadyCallback)filterLoadedCallback, &saveData);      
-        saveData.mainLoop = g_main_loop_new(context, FALSE);
+        saveData.mainLoop = g_main_loop_new(NULL, FALSE);
         g_main_loop_run(saveData.mainLoop);
 
         if (!saveData.filter){
            webkit_user_content_filter_store_save_from_file(store, "BrowserFilter", contentFilterFile, NULL, (GAsyncReadyCallback)filterSavedCallback, &saveData);
-           saveData.mainLoop = g_main_loop_new(context, FALSE);
+           saveData.mainLoop = g_main_loop_new(NULL, FALSE);
            g_main_loop_run(saveData.mainLoop);
         }
         g_object_unref(store);
@@ -2030,8 +2031,8 @@ int main(int argc, char *argv[]) {
     //char textdate[100];
 
     gtk_init(&argc, &argv);
-    //context = g_context_new();
-    GOptionContext* context = g_option_context_new(NULL);
+    //context = g_main_context_new();
+    //GOptionContext *context = g_option_context_new(NULL);
 
     menu =gtk_menu_new();
     menuitem1 = gtk_menu_item_new_with_label("Click to cancel");
