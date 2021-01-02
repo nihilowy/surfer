@@ -1309,7 +1309,7 @@ void decide_navaction(WebKitPolicyDecision *decision,Client *c) {
 
        webkit_policy_decision_ignore(decision);
    //                 printf("new\n");
-       isrelated = FALSE;
+     //  isrelated = FALSE;
 
        rc = client_new(c);
        loadurl(rc,t);
@@ -1443,7 +1443,7 @@ keyboard(GtkWidget *widget,GdkEvent *event, Client *c,  gpointer data) {
 
                 case SURFER_NEW_WINDOW_KEY:
                     recordhistory=FALSE;
-		    isrelated = FALSE;
+		 //   isrelated = FALSE;
                     rc = client_new(c);
                     loadurl(rc,home);
                     return TRUE;
