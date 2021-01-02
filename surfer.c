@@ -428,7 +428,7 @@ contentmanager = webkit_user_content_manager_new();
 
 
 
-if (g_file_test(contentpath, G_FILE_TEST_EXISTS)){
+if (g_file_test(contentpath, G_FILE_TEST_EXISTS && !priv )){
      GFile* contentFilterFile = g_file_new_for_path(contentpath);
 
         FilterSaveData saveData;
@@ -2031,8 +2031,8 @@ int main(int argc, char *argv[]) {
     //char textdate[100];
 
     gtk_init(&argc, &argv);
-    //context = g_main_context_new();
-    //GOptionContext *context = g_option_context_new(NULL);
+ //   context = g_main_context_new();
+  //  GOptionContext *context = g_option_context_new(NULL);
 
     menu =gtk_menu_new();
     menuitem1 = gtk_menu_item_new_with_label("Click to cancel");
