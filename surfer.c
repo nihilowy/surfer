@@ -2030,7 +2030,7 @@ int main(int argc, char *argv[]) {
     //char textdate[100];
 
     gtk_init(&argc, &argv);
-GOptionContext* context = g_option_context_new(NULL);
+    //GOptionContext* context = g_option_context_new(NULL);
 
     menu =gtk_menu_new();
     menuitem1 = gtk_menu_item_new_with_label("Click to cancel");
