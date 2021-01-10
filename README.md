@@ -10,7 +10,7 @@ Look also at manual ( man surfer).
 
 ## Adblock, videos, other info
  
- For videos install gstreamer packages.
+ `For videos` install gstreamer packages.
 
  config.h - customize keys, dirs and some other settings before compile. 
 
@@ -24,9 +24,8 @@ Look also at manual ( man surfer).
 
  Search or translate for selected text, settable in config.h 
 
- You can also set css for sites in .surfer/tablecss.txt file. 
 
- For adblock:
+ `For adblock:`
 
  Install https://github.com/jun7/wyebadblock
  Then sudo ln -s /usr/lib/wyebrowser/adblock.so /usr/lib/surfer
@@ -36,7 +35,7 @@ Look also at manual ( man surfer).
  Or save to .surfer/adblock.json file (ie from https://easylist-downloads.adblockplus.org/easylist_min_content_blocker.json )
  
 
- For JS scripts:
+ `For JS scripts:`
 
  Js scripts (i.e. from  greasefork site) place in .local/share/surfer/
 
