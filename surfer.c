@@ -58,6 +58,8 @@ typedef struct Client{
     WebKitFindController *fc;
     WebKitHitTestResult *mousepos;
 
+    int findCount;
+    
     gboolean f;
     gboolean fs;
     gboolean s;
@@ -178,6 +180,7 @@ static void openlink(GtkWidget *widget,Client *c);
 static void find(GtkWidget *widget,Client *c);
 static void find_close( Client *c);
 static void find_back(GtkWidget * widget,Client *c);
+//static void counted_matches(WebKitFindController *fc,guint match_count,Client *c);
 
 static void togglejs_cb(GtkWidget * widget,Client *c);
 static void toggleab_cb(GtkWidget * widget,Client *c);
@@ -309,6 +312,9 @@ Client *client_new(Client *rc) {
     gtk_widget_show_all (menuitem1);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem1);
 
+    //  char padstr[80];
+    // sprintf (padstr, "%d);", c->findCount);
+    
     c->button_find_close = gtk_button_new_with_label ("Close");
     c->button_find_back = gtk_button_new_with_label ("Find Back");
     c->entry_find = gtk_entry_new();
@@ -349,6 +355,7 @@ Client *client_new(Client *rc) {
     g_signal_connect(G_OBJECT(c->button_history), "clicked", G_CALLBACK(togglehistory_cb), c);
     g_signal_connect(G_OBJECT(c->button_js), "clicked", G_CALLBACK(togglejs_cb), c);
     g_signal_connect(G_OBJECT(c->entry_find), "activate", G_CALLBACK(find), c);
+   // g_signal_connect_after(c->fc, "counted-matches", G_CALLBACK(counted_matches),c);
     g_signal_connect(G_OBJECT(c->button_find_back), "clicked", G_CALLBACK(find_back), c);
     g_signal_connect_swapped (G_OBJECT (c->button_find_close), "clicked",G_CALLBACK (find_close),c);
 
@@ -1514,6 +1521,12 @@ openlink(GtkWidget * widget,Client *c){
    g_free(link);
    gtk_widget_hide(c->box_open);
 }
+void counted_matches(WebKitFindController *fc,guint match_count,Client *c)
+{
+c->findCount = match_count;
+
+}
+
 
 void
 find(GtkWidget * widget,Client *c) {
@@ -1528,6 +1541,7 @@ find(GtkWidget * widget,Client *c) {
     if(search_text != NULL){
 
     webkit_find_controller_search(c->fc, search_text,WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE | WEBKIT_FIND_OPTIONS_WRAP_AROUND, G_MAXUINT);
+    webkit_find_controller_count_matches(c->fc, search_text,WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE | WEBKIT_FIND_OPTIONS_WRAP_AROUND, G_MAXUINT);
     g_free(search_text);
 
     }
@@ -1558,10 +1572,11 @@ webkit_find_controller_search_previous(c->fc);
 void
 png_finished(GObject *object, GAsyncResult *result, gpointer user_data) {
 
-  const gchar *tmp,*title,*url;
-  gchar *path,*path2,*pngpath;
+  const gchar *title,*url;
+  gchar *path,*tmp2,*tmp,*pngpath;
   static char *png_file = NULL;
   FILE *fp;
+  WebKitSecurityOrigin *sorigin;
 
   GdkPixbuf *snapshot, *scaled;
   int orig_width, orig_height;
@@ -1572,24 +1587,32 @@ png_finished(GObject *object, GAsyncResult *result, gpointer user_data) {
   url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(web_view));
   title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(web_view));
 
-   tmp = g_strdup(url);
+  tmp = g_strdup(url);
 
 
-   if(tmp) {
-      path2 = strchr(tmp, '/');
-      path = strtok(path2, "/");
-      }
 
-    pngpath = (gchar *) g_strdup_printf("%s.png",path);
+    if(tmp) {
+    	sorigin =webkit_security_origin_new_for_uri (tmp);
+    	tmp2 = webkit_security_origin_to_string (sorigin);
+	path  = basename(tmp2);
 
-    png_file = g_build_filename(surfer_img_dir,pngpath, NULL);
+	pngpath = (gchar *) g_strdup_printf("%s.png",path);
+
+	png_file = g_build_filename(surfer_img_dir,pngpath, NULL);
+
+
+	}
+
+    g_free(tmp);
+    g_free(tmp2);
 
 
     GError *error = NULL;
     surface = webkit_web_view_get_snapshot_finish(web_view, result, &error);
+
     if (surface == NULL) {
-        g_error( "error creating snapshot: %s",error );
-    }
+	g_error( "error creating snapshot: %s",error );
+	}
 
 
   orig_width = cairo_image_surface_get_width (surface);
@@ -1629,7 +1652,7 @@ bookmark_cb(WebKitWebView *webview,Client *c){
 
 
 
-  webkit_web_view_get_snapshot(c->webView,WEBKIT_SNAPSHOT_REGION_FULL_DOCUMENT,WEBKIT_SNAPSHOT_OPTIONS_NONE,NULL,png_finished,NULL);
+  webkit_web_view_get_snapshot(c->webView,WEBKIT_SNAPSHOT_REGION_VISIBLE,WEBKIT_SNAPSHOT_OPTIONS_NONE,NULL,png_finished,NULL);
 
 }
 
