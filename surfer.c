@@ -372,7 +372,8 @@ Client *client_new(Client *rc) {
 
 
  c->enablejs =TRUE;
- 
+ webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(c->webView),  SURFER_ZOOM_LEVEL); 
+
     clients++;
  return c;
 }
@@ -390,6 +391,7 @@ WebKitCookieManager *cookiemgr;
 WebKitWebContext *wc;
 WebKitSettings *settings;
 
+int z;
 
 FILE *File;
 
@@ -487,7 +489,7 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
     webkit_settings_set_enable_smooth_scrolling(settings,SURFER_SMOOTH_SCROLLING);
     webkit_settings_set_enable_resizable_text_areas (settings,SURFER_RESIZABLE_TEXT);
     webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
-
+     
 
     webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
 
@@ -1023,6 +1025,7 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
 {
 
 
+
     WebKitContextMenuItem *menu_item;
     GSimpleAction *action;
 
@@ -1061,6 +1064,7 @@ menucreate_cb (WebKitWebView *web_view, WebKitContextMenu *context_menu,GdkEvent
         webkit_context_menu_append(context_menu, menu_item);
         g_object_unref(action);
 
+	
     }
     if (webkit_hit_test_result_context_is_selection(h)){
 
@@ -1242,17 +1246,20 @@ mousetargetchanged(WebKitWebView *v, WebKitHitTestResult *h, guint modifiers,Cli
 {
    WebKitHitTestResultContext hc = webkit_hit_test_result_get_context(h);
 
-
+   gchar *t = NULL;
    c->mousepos = h;
 
-   if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_LINK)
- 		c->targeturi = webkit_hit_test_result_get_link_uri(h);
+   if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_LINK){
+ 	c->targeturi = webkit_hit_test_result_get_link_uri(h);  
+        t = (char*)c->targeturi;
+        gtk_window_set_title(GTK_WINDOW(c->main_window), t);
+   }
    else if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_IMAGE)
-  		c->targeturi = webkit_hit_test_result_get_image_uri(h);
+  	c->targeturi = webkit_hit_test_result_get_image_uri(h);
    else if (hc & WEBKIT_HIT_TEST_RESULT_CONTEXT_MEDIA)
-  		c->targeturi = webkit_hit_test_result_get_media_uri(h);
+  	c->targeturi = webkit_hit_test_result_get_media_uri(h);
    else
-  		c->targeturi = NULL;
+  	c->targeturi = NULL;
 
   //	update_title(c);
 }
