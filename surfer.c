@@ -536,7 +536,7 @@ g_object_connect(
         G_OBJECT(view),"signal::load-changed", G_CALLBACK(changed_webload),c,
                        "signal::notify::title", G_CALLBACK(changed_title),c ,
 //                       "signal::notify::url", G_CALLBACK(changed_url), c,
-#ifndef WAIT_FOR_SITE_FULLLOAD
+#ifndef DONT_WAIT_FOR_SITE_FULLLOAD
 		       "signal::ready-to-show",G_CALLBACK(display_webview), c,
 #endif
                        "signal::notify::estimated-load-progress",G_CALLBACK(changed_estimated),c,
