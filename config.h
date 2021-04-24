@@ -60,6 +60,8 @@ Hardware acceleration is always disabled, even for websites requesting it.
 
 #define WEB_EXTENSIONS_DIRECTORY 	"/usr/lib/surfer"
 
+//#define WAIT_FOR_SITE_FULLLOAD //just uncomment if you want so, dont define !
+
 #define HISTORY_ENABLE 0					       //change to 1 to enable history
 
 #define SURFER_DIR	".surfer"                                      // upper directory(s) must exist

@@ -489,7 +489,6 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
     webkit_settings_set_enable_smooth_scrolling(settings,SURFER_SMOOTH_SCROLLING);
     webkit_settings_set_enable_resizable_text_areas (settings,SURFER_RESIZABLE_TEXT);
     webkit_settings_set_enable_spatial_navigation(settings,SURFER_SPATIAL_NAVIGATION);
-     
 
     webkit_settings_set_hardware_acceleration_policy(settings, SURFER_ACCELERATION_POLICY);
 
@@ -537,10 +536,12 @@ g_object_connect(
         G_OBJECT(view),"signal::load-changed", G_CALLBACK(changed_webload),c,
                        "signal::notify::title", G_CALLBACK(changed_title),c ,
 //                       "signal::notify::url", G_CALLBACK(changed_url), c,
+#ifndef WAIT_FOR_SITE_FULLLOAD
+		       "signal::ready-to-show",G_CALLBACK(display_webview), c,
+#endif
                        "signal::notify::estimated-load-progress",G_CALLBACK(changed_estimated),c,
                        "signal::decide-policy", G_CALLBACK(decide_policy),c,
                        "signal::close", G_CALLBACK(close_request), c,
-                       "signal::ready-to-show",G_CALLBACK(display_webview), c,
                        "signal::create",G_CALLBACK(create_request), c,
                        "signal::context-menu",G_CALLBACK(menucreate_cb), c,
                        "signal::mouse-target-changed",G_CALLBACK(mousetargetchanged), c,
