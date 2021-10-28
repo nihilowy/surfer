@@ -500,10 +500,10 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
     webkit_web_context_initialize_notification_permissions(wc,permited,denied);
 
 
-    webkit_web_context_set_sandbox_enabled(wc, FALSE);
+//    webkit_web_context_set_sandbox_enabled(wc, FALSE);
 
-    webkit_web_context_add_path_to_sandbox(wc, WEB_EXTENSIONS_DIRECTORY, TRUE);
-    webkit_web_context_add_path_to_sandbox(wc, js_dir, TRUE);
+     webkit_web_context_add_path_to_sandbox(wc, WEB_EXTENSIONS_DIRECTORY, TRUE);
+     webkit_web_context_add_path_to_sandbox(wc, js_dir, TRUE);
 
 
 
