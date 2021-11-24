@@ -500,7 +500,7 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
     webkit_web_context_initialize_notification_permissions(wc,permited,denied);
 
 
-//    webkit_web_context_set_sandbox_enabled(wc, FALSE);
+    //webkit_web_context_set_sandbox_enabled(wc, FALSE);
 
      webkit_web_context_add_path_to_sandbox(wc, WEB_EXTENSIONS_DIRECTORY, TRUE);
      webkit_web_context_add_path_to_sandbox(wc, js_dir, TRUE);
@@ -624,7 +624,7 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
 
 
    //WebKitSecurityOrigin *sorigin;
-   char *msg= NULL;
+   char *msg =NULL;
    FILE *fp;
    const gchar *tmp;
    gchar *tmp2;
@@ -649,6 +649,7 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
                                                 GTK_DIALOG_MODAL,
                                                 GTK_MESSAGE_QUESTION,
                                                 GTK_BUTTONS_YES_NO,
+						"%s",
                                                 msg);
     gtk_widget_show (dialog);
     gint result = gtk_dialog_run (GTK_DIALOG (dialog));
@@ -1608,7 +1609,7 @@ png_finished(GObject *object, GAsyncResult *result, gpointer user_data) {
     surface = webkit_web_view_get_snapshot_finish(web_view, result, &error);
 
     if (surface == NULL) {
-	g_error( "error creating snapshot: %s",error );
+	g_error( "error creating snapshot: %s",error->message );
 	}
 
 
