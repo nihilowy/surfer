@@ -52,7 +52,6 @@ Look also at manual ( man surfer).
 
   make &&  sudo make install
 
-  on Arch: pacaur -S surfer-git
   
   Depends on webkit2gtk, gtk3 development files (install it on your distro)
 
