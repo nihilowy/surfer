@@ -47,7 +47,7 @@ Hardware acceleration is always disabled, even for websites requesting it.
 
 #define SURFER_THUMBNAIL_WIDTH 80
 #define SURFER_THUMBNAIL_HEIGHT 80
-#define SURFER_SMOOTH_SCROLLING	TRUE
+#define SURFER_SMOOTH_SCROLLING FALSE
 #define SURFER_RESIZABLE_TEXT	TRUE
 #define SURFER_ZOOM_LEVEL 1
 

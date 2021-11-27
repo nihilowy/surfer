@@ -5,10 +5,10 @@ ifeq ($(DEBUG), 1)
 	CFLAGS += -Wall -g
 else
 	DEBUG = 0
-	CFLAGS += -Wno-deprecated-declarations
+#	CFLAGS += -march=x86-64  -mtune=generic -O2 -pipe -fno-plt -fexceptions -Wp,-D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security -fstack-clash-protection -fcf-protection -Wformat  -Werror=format-security -fstack-clash-protection -fcf-protection -Wno-deprecated-declarations
 
 
-#CFLAGS   += -std=c99 -pipe -Wall -fPIC
+CFLAGS   += -std=c99 -pipe -Wall -fPIC
 endif
 DDEBUG=-DDEBUG=${DEBUG}
 

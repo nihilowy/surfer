@@ -401,7 +401,8 @@ gchar *datadir  = g_build_filename(g_get_user_data_dir() , g_get_prgname(), NULL
 gchar *cachedir = g_build_filename(g_get_user_cache_dir(), g_get_prgname(), NULL);
 
 
-if (rv) {
+if (rv) 
+	
 	//	if(isrelated)
 		view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(rv));
                  //  printf("related\n");
@@ -409,7 +410,7 @@ if (rv) {
 //		view = WEBKIT_WEB_VIEW(webkit_web_view_new()); //_with_context(webkit_web_view_get_context(rv)));
 //		isrelated = TRUE;
 //		}
-	}
+	
 
 
 else {
@@ -634,6 +635,12 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
 //   if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(request))
 //        msg = "Allow desktop notifications";
 
+   if (WEBKIT_IS_WEBSITE_DATA_ACCESS_PERMISSION_REQUEST(request)) {
+        WebKitWebsiteDataAccessPermissionRequest *websiteDataAccessRequest = WEBKIT_WEBSITE_DATA_ACCESS_PERMISSION_REQUEST(request);
+        const gchar *requesting = webkit_website_data_access_permission_request_get_requesting_domain(websiteDataAccessRequest);
+        const gchar *current = webkit_website_data_access_permission_request_get_current_domain(websiteDataAccessRequest);
+            msg = g_strdup_printf("Allow \"%s\" to use cookies while browsing \"%s\"?",requesting, current);
+	}
    else if (WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request)) {
         if (webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request))) {
             msg = "Allow access the microphone";
