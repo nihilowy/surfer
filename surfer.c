@@ -496,7 +496,7 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
     webkit_web_context_set_process_model(wc,WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
 
     webkit_web_context_set_web_extensions_directory(wc, WEB_EXTENSIONS_DIRECTORY);
-
+    webkit_website_data_manager_set_itp_enabled(webkit_web_context_get_website_data_manager(wc), true);
 
     webkit_web_context_initialize_notification_permissions(wc,permited,denied);
 
