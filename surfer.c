@@ -280,9 +280,9 @@ Client *client_new(Client *rc) {
    c->webView = clientview(c,NULL);
    priv = FALSE;
    }
-   else
+   else{
     c->webView = clientview(c, rc ? rc->webView : NULL);
-
+   }
  
     c->fc= webkit_web_view_get_find_controller(c->webView);
 
@@ -420,6 +420,7 @@ else {
   if(priv)
    mgr = webkit_website_data_manager_new_ephemeral();
   else
+
    mgr = webkit_website_data_manager_new("base-data-directory" , datadir,"base-cache-directory", cachedir,NULL);
 
 
@@ -459,7 +460,7 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
         } else
             g_printerr("Cannot save filter '%s': %s\n", contentpath, saveData.error->message);
 
-        g_clear_pointer(&saveData.error, g_error_free);
+      //  g_clear_pointer(&saveData.error, g_error_free);
         g_clear_pointer(&saveData.filter, webkit_user_content_filter_unref);
         g_main_loop_unref(saveData.mainLoop);
         g_object_unref(contentFilterFile);
@@ -485,7 +486,7 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
     g_object_set(G_OBJECT(settings),"enable-javascript", TRUE, NULL);
 
 
-    webkit_settings_set_enable_accelerated_2d_canvas (settings,SURFER_ACCELERATION_2DCANVAS);
+   
 
     webkit_settings_set_enable_smooth_scrolling(settings,SURFER_SMOOTH_SCROLLING);
     webkit_settings_set_enable_resizable_text_areas (settings,SURFER_RESIZABLE_TEXT);
@@ -524,8 +525,8 @@ if (g_file_test(contentpath, G_FILE_TEST_EXISTS) && !priv){
    webkit_cookie_manager_set_persistent_storage(cookiemgr, cookie_file,WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
    webkit_cookie_manager_set_accept_policy(cookiemgr,SURFER_COOKIE_POLICY);
 
-
-   webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+   webkit_website_data_manager_set_tls_errors_policy(mgr, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+   //webkit_web_context_set_tls_errors_policy(wc, WEBKIT_TLS_ERRORS_POLICY_IGNORE);
 
 
 view=g_object_new(WEBKIT_TYPE_WEB_VIEW,"settings",settings,"user-content-manager",contentmanager,"web-context",wc,NULL);
