@@ -1,5 +1,5 @@
-EXTENSION_DIR=$(DESTDIR)/usr/lib/surfer/
-
+DESTDIR=/usr
+EXTENSION_DIR=$(DESTDIR)/lib/surfer/
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += -Wall -g
@@ -34,25 +34,25 @@ ephy-scripts.so: ephy-scripts.c Makefile
 
 
 install:all
-	install -d $(DESTDIR)/usr/share/surfer
-	install -d $(DESTDIR)/usr/lib
-	install -d $(DESTDIR)/usr/lib/surfer
-	install -Dm644 ephy-scripts.so $(DESTDIR)/usr/lib/surfer/
-#	install -Dm644 adblock.so $(DESTDIR)/usr/lib/surfer/
-	install -Dm755 surfer $(DESTDIR)/usr/bin/surfer
-	install -Dm644 surfer.desktop $(DESTDIR)/usr/share/applications/surfer.desktop
-	install -Dm644 surfer.1 $(DESTDIR)/usr/share/man/man1/surfer.1
-	install -Dm644 black.css $(DESTDIR)/usr/share/surfer/black.css
-	install -Dm644 icons/24x24/surfer.png $(DESTDIR)/usr/share/icons/hicolor/24x24/surfer.png
-	install -Dm644 icons/32x32/surfer.png $(DESTDIR)/usr/share/icons/hicolor/32x32/surfer.png
-	install -Dm644 icons/48x48/surfer.png $(DESTDIR)/usr/share/icons/hicolor/48x48/surfer.png
-#	install -Dm644 icons/surfer.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/surfer.svg
+	install -d $(DESTDIR)/share/surfer
+	install -d $(DESTDIR)/lib
+	install -d $(DESTDIR)/lib/surfer
+	install -Dm644 ephy-scripts.so $(DESTDIR)/lib/surfer/
+#	install -Dm644 adblock.so $(DESTDIR)/lib/surfer/
+	install -Dm755 surfer $(DESTDIR)/bin/surfer
+	install -Dm644 surfer.desktop $(DESTDIR)/share/applications/surfer.desktop
+	install -Dm644 surfer.1 $(DESTDIR)/share/man/man1/surfer.1
+	install -Dm644 black.css $(DESTDIR)/share/surfer/black.css
+	install -Dm644 icons/24x24/surfer.png $(DESTDIR)/share/icons/hicolor/24x24/surfer.png
+	install -Dm644 icons/32x32/surfer.png $(DESTDIR)/share/icons/hicolor/32x32/surfer.png
+	install -Dm644 icons/48x48/surfer.png $(DESTDIR)/share/icons/hicolor/48x48/surfer.png
+#	install -Dm644 icons/surfer.svg $(DESTDIR)/share/icons/hicolor/scalable/apps/surfer.svg
 
 uninstall:
-	$(RM) $(DESTDIR)/usr/bin/surfer
-	$(RM) $(DESTDIR)/usr/man/man1/surfer.1
-	$(RM) $(DESTDIR)/usr/share/surfer/black.css
-	$(RM) $(DESTDIR)/usr/share/applications/surfer.desktop
+	$(RM) $(DESTDIR)bin/surfer
+	$(RM) $(DESTDIR)/man/man1/surfer.1
+	$(RM) $(DESTDIR)//share/surfer/black.css
+	$(RM) $(DESTDIR)/share/applications/surfer.desktop
 
 
 

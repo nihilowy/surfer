@@ -658,7 +658,7 @@ gboolean permission_request_cb (WebKitWebView *web_view,WebKitPermissionRequest 
                                                 GTK_MESSAGE_QUESTION,
                                                 GTK_BUTTONS_YES_NO,
 						"%s",
-                                                msg);
+                                               msg);
     gtk_widget_show (dialog);
     gint result = gtk_dialog_run (GTK_DIALOG (dialog));
 

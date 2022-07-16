@@ -42,8 +42,8 @@ Hardware acceleration is always disabled, even for websites requesting it.
 */
 
 #define SURFER_SPATIAL_NAVIGATION 	FALSE//TRUE to enable 
-#define SURFER_WINDOW_WIDTH	1100
-#define SURFER_WINDOW_HEIGHT	680
+#define SURFER_WINDOW_WIDTH	800
+#define SURFER_WINDOW_HEIGHT	600
 
 #define SURFER_THUMBNAIL_WIDTH 80
 #define SURFER_THUMBNAIL_HEIGHT 80
