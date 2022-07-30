@@ -73,4 +73,3 @@ Hardware acceleration is always disabled, even for websites requesting it.
 #define SURFER_SEARCH_SITE  "https://translate.google.com/#auto/en/"
 
 //"https://www.google.com/search?q="
-

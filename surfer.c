@@ -210,8 +210,23 @@ destroy_window(GtkWidget* w,Client *c) {
     free(c);
     clients--;
 
+
+    gchar *cmd = "pkill -9 WebKitWebProces";
+    GError *err = NULL;
+
     if (clients == 0){
         destroy_hash_table(tablecss);
+
+     
+
+    cmd = g_strdup_printf("%s", cmd);
+     
+   if (!g_spawn_command_line_async (cmd,&err))
+    {
+      g_warning("Surfer cant't spawn '%s' %s",cmd,err->message);
+      g_error_free (err);
+    }
+	
         gtk_main_quit();
 	}
 }
